@@ -5,7 +5,7 @@ import path from 'node:path'
 import { isLinux, isMac, isWin } from '@main/constant'
 import { getBinaryPath, isBinaryExists, runInstallScript } from '@main/utils/process'
 import { handleZoomFactor } from '@main/utils/zoom'
-import { FeedUrl, UpgradeChannel } from '@shared/config/constant'
+import { UpgradeChannel } from '@shared/config/constant'
 import { IpcChannel } from '@shared/IpcChannel'
 import { FileMetadata, Provider, Shortcut, ThemeMode } from '@types'
 import { BrowserWindow, dialog, ipcMain, session, shell, systemPreferences, webContents } from 'electron'
@@ -301,10 +301,7 @@ export function registerIpc(mainWindow: BrowserWindow, app: Electron.App) {
       await fs.promises.cp(oldPath, newPath, {
         recursive: true,
         filter: (src) => {
-          if (occupiedDirs.some((dir) => src.startsWith(path.resolve(dir)))) {
-            return false
-          }
-          return true
+          return !occupiedDirs.some((dir) => src.startsWith(path.resolve(dir)))
         }
       })
       return { success: true }
@@ -572,7 +569,6 @@ export function registerIpc(mainWindow: BrowserWindow, app: Electron.App) {
   SelectionService.registerIpcHandler()
 
   ipcMain.handle(IpcChannel.App_QuoteToMain, (_, text: string) => windowService.quoteToMainWindow(text))
-
 
   ipcMain.handle(IpcChannel.MainWindow_SetPin, (_, isPinned) => windowService.setMainWindowPin(isPinned))
 
