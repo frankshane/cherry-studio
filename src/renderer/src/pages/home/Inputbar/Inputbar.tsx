@@ -12,6 +12,7 @@ import {
   isVisionModels,
   isWebSearchModel
 } from '@renderer/config/models'
+import { REFERENCE_DOCUMENT_PROMPT } from '@renderer/config/prompts'
 import db from '@renderer/databases'
 import { useAssistant } from '@renderer/hooks/useAssistant'
 import { useKnowledgeBases } from '@renderer/hooks/useKnowledge'
@@ -37,6 +38,7 @@ import type { MessageInputBaseParams } from '@renderer/types/newMessage'
 import { classNames, delay, formatFileSize, getFileExtension } from '@renderer/utils'
 import { formatQuotedText } from '@renderer/utils/formats'
 import { getFilesFromDropEvent, getSendMessageShortcutLabel, isSendMessageKeyPressed } from '@renderer/utils/input'
+import { getLanguageByLangcode } from '@renderer/utils/translate'
 import { documentExts, imageExts, textExts } from '@shared/config/constant'
 import { IpcChannel } from '@shared/IpcChannel'
 import { Button, Tooltip } from 'antd'
@@ -58,8 +60,8 @@ import TokenCount from './TokenCount'
 
 interface Props {
   assistant: Assistant
-  setActiveTopic: (topic: Topic) => void
   topic: Topic
+  setActiveTopic: (topic: Topic) => void
 }
 
 let _text = ''
@@ -68,7 +70,7 @@ let _files: FileType[] = []
 const Inputbar: FC<Props> = ({ assistant: _assistant, setActiveTopic, topic }) => {
   const [text, setText] = useState(_text)
   const [inputFocus, setInputFocus] = useState(false)
-  const { assistant, addTopic, model, setModel, updateAssistant } = useAssistant(_assistant.id)
+  const { assistant, addTopic, model, setModel, updateAssistant, updateTopic } = useAssistant(_assistant.id)
   const {
     targetLanguage,
     sendMessageShortcut,
@@ -220,6 +222,19 @@ const Inputbar: FC<Props> = ({ assistant: _assistant, setActiveTopic, topic }) =
         baseUserMessage.files = uploadedFiles
       }
 
+      // reference file
+      if (assistant.attachedDocument && !assistant.attachedDocument.disabled) {
+        baseUserMessage.files = [...(baseUserMessage.files || []), assistant.attachedDocument]
+      }
+
+      if (!isEmpty(topic.attachedPages)) {
+        const pageContent =
+          topic.attachedPages?.reduce((acc, page) => acc + `\r\nIndex${page.index}: ${page.content}`, '') || ''
+        const pagePrompt = REFERENCE_DOCUMENT_PROMPT.replace('{document_content}', pageContent)
+
+        assistant.prompt = assistant.prompt ? `${assistant.prompt}\n${pagePrompt}` : pagePrompt
+      }
+
       if (mentionedModels) {
         baseUserMessage.mentions = mentionedModels
       }
@@ -253,7 +268,7 @@ const Inputbar: FC<Props> = ({ assistant: _assistant, setActiveTopic, topic }) =
 
     try {
       setIsTranslating(true)
-      const translatedText = await translateText(text, targetLanguage)
+      const translatedText = await translateText(text, getLanguageByLangcode(targetLanguage))
       translatedText && setText(translatedText)
       setTimeout(() => resizeTextArea(), 0)
     } catch (error) {
@@ -434,7 +449,6 @@ const Inputbar: FC<Props> = ({ assistant: _assistant, setActiveTopic, topic }) =
     await modelGenerating()
 
     const topic = getDefaultTopic(assistant.id)
-
     await db.topics.add({ id: topic.id, messages: [] })
 
     // Clear previous state
@@ -821,7 +835,15 @@ const Inputbar: FC<Props> = ({ assistant: _assistant, setActiveTopic, topic }) =
           id="inputbar"
           className={classNames('inputbar-container', inputFocus && 'focus', isFileDragging && 'file-dragging')}
           ref={containerRef}>
-          {files.length > 0 && <AttachmentPreview files={files} setFiles={setFiles} />}
+          <AttachmentPreview
+            assistant={assistant}
+            topic={topic}
+            setActiveTopic={setActiveTopic}
+            updateTopic={updateTopic}
+            updateAssistant={updateAssistant}
+            files={files}
+            setFiles={setFiles}
+          />
           {selectedKnowledgeBases.length > 0 && (
             <KnowledgeBaseInput
               selectedKnowledgeBases={selectedKnowledgeBases}

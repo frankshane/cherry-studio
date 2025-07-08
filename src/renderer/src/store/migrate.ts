@@ -6,7 +6,7 @@ import { TRANSLATE_PROMPT } from '@renderer/config/prompts'
 import { INITIAL_TTS_PROVIDERS } from '@renderer/config/tts'
 import db from '@renderer/databases'
 import i18n from '@renderer/i18n'
-import { Assistant, Provider, WebSearchProvider } from '@renderer/types'
+import { Assistant, LanguageCode, Provider, WebSearchProvider } from '@renderer/types'
 import { getDefaultGroupName, getLeadingEmoji, runAsyncFunction, uuid } from '@renderer/utils'
 import { UpgradeChannel } from '@shared/config/constant'
 import { isEmpty } from 'lodash'
@@ -898,6 +898,7 @@ const migrateConfig = {
   },
   '65': (state: RootState) => {
     try {
+      // @ts-ignore expect error
       state.settings.targetLanguage = 'english'
       return state
     } catch (error) {
@@ -1723,19 +1724,41 @@ const migrateConfig = {
       addProvider(state, 'new-api')
       state.llm.providers = moveProvider(state.llm.providers, 'new-api', 16)
       state.settings.disableHardwareAcceleration = false
-      // migrate to enable memory feature on sidebar
-      if (state.settings && state.settings.sidebarIcons) {
-        // Check if 'memory' is not already in visible icons
-        if (!state.settings.sidebarIcons.visible.includes('memory' as any)) {
-          state.settings.sidebarIcons.visible = [...state.settings.sidebarIcons.visible, 'memory' as any]
-        }
-      }
       return state
     } catch (error) {
       return state
     }
   },
   '120': (state: RootState) => {
+    try {
+      if (!state.settings.s3) {
+        state.settings.s3 = settingsInitialState.s3
+      }
+
+      const langMap: Record<string, LanguageCode> = {
+        english: 'en-us',
+        chinese: 'zh-cn',
+        'chinese-traditional': 'zh-tw',
+        japanese: 'ja-jp',
+        russian: 'ru-ru'
+      }
+
+      const origin = state.settings.targetLanguage
+      const newLang = langMap[origin]
+      if (newLang) state.settings.targetLanguage = newLang
+      else state.settings.targetLanguage = 'en-us'
+
+      state.settings.localBackupMaxBackups = 0
+      state.settings.localBackupSkipBackupFile = false
+      state.settings.localBackupDir = ''
+      state.settings.localBackupAutoSync = false
+      state.settings.localBackupSyncInterval = 0
+      return state
+    } catch (error) {
+      return state
+    }
+  },
+  '121': (state: RootState) => {
     try {
       // migrate to remove memory feature from sidebar (moved to settings)
       if (state.settings && state.settings.sidebarIcons) {
@@ -1795,9 +1818,9 @@ const migrateConfig = {
           }
         }
       })
-
       return state
     } catch (error) {
+      console.error('[Migration 119] Error occurred during migration:', error)
       return state
     }
   }

@@ -533,4 +533,8 @@ Examples:
   summaries.
 - If the query is in a specific language, prioritize sources published in that
   language.
+  `
+export const REFERENCE_DOCUMENT_PROMPT = `
+  以下是参考资料内容：
+  {document_content}
 `
