@@ -9,16 +9,15 @@ import {
   QuestionCircleOutlined,
   UploadOutlined
 } from '@ant-design/icons'
-import DragableList from '@renderer/components/DragableList'
+import { DraggableVirtualList as DraggableList } from '@renderer/components/DraggableList'
 import CopyIcon from '@renderer/components/Icons/CopyIcon'
 import ObsidianExportPopup from '@renderer/components/Popups/ObsidianExportPopup'
 import PromptPopup from '@renderer/components/Popups/PromptPopup'
-import Scrollbar from '@renderer/components/Scrollbar'
 import { isMac } from '@renderer/config/constant'
 import { useAssistant, useAssistants } from '@renderer/hooks/useAssistant'
 import { modelGenerating } from '@renderer/hooks/useRuntime'
 import { useSettings } from '@renderer/hooks/useSettings'
-import { TopicManager } from '@renderer/hooks/useTopic'
+import { finishTopicRenaming, startTopicRenaming, TopicManager } from '@renderer/hooks/useTopic'
 import { fetchMessagesSummary } from '@renderer/services/ApiService'
 import { EVENT_NAMES, EventEmitter } from '@renderer/services/EventService'
 import store from '@renderer/store'
@@ -26,7 +25,7 @@ import { RootState } from '@renderer/store'
 import { setGenerating } from '@renderer/store/runtime'
 import { Assistant, Topic } from '@renderer/types'
 import { removeSpecialCharactersForFileName } from '@renderer/utils'
-import { copyTopicAsMarkdown } from '@renderer/utils/copy'
+import { copyTopicAsMarkdown, copyTopicAsPlainText } from '@renderer/utils/copy'
 import {
   exportMarkdownToJoplin,
   exportMarkdownToSiyuan,
@@ -57,6 +56,9 @@ const Topics: FC<Props> = ({ assistant: _assistant, activeTopic, setActiveTopic 
   const { t } = useTranslation()
   const { showTopicTime, pinTopicsToTop, setTopicPosition } = useSettings()
 
+  const renamingTopics = useSelector((state: RootState) => state.runtime.chat.renamingTopics)
+  const newlyRenamedTopics = useSelector((state: RootState) => state.runtime.chat.newlyRenamedTopics)
+
   const borderRadius = showTopicTime ? 12 : 'var(--list-item-border-radius)'
 
   const [deletingTopicId, setDeletingTopicId] = useState<string | null>(null)
@@ -82,6 +84,20 @@ const Topics: FC<Props> = ({ assistant: _assistant, activeTopic, setActiveTopic 
       return false
     },
     [activeTopic.id, pendingTopics]
+  )
+
+  const isRenaming = useCallback(
+    (topicId: string) => {
+      return renamingTopics.includes(topicId)
+    },
+    [renamingTopics]
+  )
+
+  const isNewlyRenamed = useCallback(
+    (topicId: string) => {
+      return newlyRenamedTopics.includes(topicId)
+    },
+    [newlyRenamedTopics]
   )
 
   const handleDeleteClick = useCallback((topicId: string, e: React.MouseEvent) => {
@@ -110,11 +126,13 @@ const Topics: FC<Props> = ({ assistant: _assistant, activeTopic, setActiveTopic 
       }
       await modelGenerating()
       const index = findIndex(assistant.topics, (t) => t.id === topic.id)
-      setActiveTopic(assistant.topics[index + 1 === assistant.topics.length ? index - 1 : index + 1])
+      if (topic.id === activeTopic.id) {
+        setActiveTopic(assistant.topics[index + 1 === assistant.topics.length ? index - 1 : index + 1])
+      }
       removeTopic(topic)
       setDeletingTopicId(null)
     },
-    [assistant.topics, onClearMessages, removeTopic, setActiveTopic]
+    [activeTopic.id, assistant.topics, onClearMessages, removeTopic, setActiveTopic]
   )
 
   const onPinTopic = useCallback(
@@ -170,16 +188,21 @@ const Topics: FC<Props> = ({ assistant: _assistant, activeTopic, setActiveTopic 
         label: t('chat.topics.auto_rename'),
         key: 'auto-rename',
         icon: <i className="iconfont icon-business-smart-assistant" style={{ fontSize: '14px' }} />,
+        disabled: isRenaming(topic.id),
         async onClick() {
           const messages = await TopicManager.getTopicMessages(topic.id)
           if (messages.length >= 2) {
-            const summaryText = await fetchMessagesSummary({ messages, assistant })
-            if (summaryText) {
-              const updatedTopic = { ...topic, name: summaryText, isNameManuallyEdited: false }
-              updateTopic(updatedTopic)
-              topic.id === activeTopic.id && setActiveTopic(updatedTopic)
-            } else {
-              window.message?.error(t('message.error.fetchTopicName'))
+            startTopicRenaming(topic.id)
+            try {
+              const summaryText = await fetchMessagesSummary({ messages, assistant })
+              if (summaryText) {
+                const updatedTopic = { ...topic, name: summaryText, isNameManuallyEdited: false }
+                updateTopic(updatedTopic)
+              } else {
+                window.message?.error(t('message.error.fetchTopicName'))
+              }
+            } finally {
+              finishTopicRenaming(topic.id)
             }
           }
         }
@@ -188,6 +211,7 @@ const Topics: FC<Props> = ({ assistant: _assistant, activeTopic, setActiveTopic 
         label: t('chat.topics.edit.title'),
         key: 'rename',
         icon: <EditOutlined />,
+        disabled: isRenaming(topic.id),
         async onClick() {
           const name = await PromptPopup.show({
             title: t('chat.topics.edit.title'),
@@ -197,7 +221,6 @@ const Topics: FC<Props> = ({ assistant: _assistant, activeTopic, setActiveTopic 
           if (name && topic?.name !== name) {
             const updatedTopic = { ...topic, name, isNameManuallyEdited: true }
             updateTopic(updatedTopic)
-            topic.id === activeTopic.id && setActiveTopic(updatedTopic)
           }
         }
       },
@@ -280,6 +303,11 @@ const Topics: FC<Props> = ({ assistant: _assistant, activeTopic, setActiveTopic 
             label: t('chat.topics.copy.md'),
             key: 'md',
             onClick: () => copyTopicAsMarkdown(topic)
+          },
+          {
+            label: t('chat.topics.copy.plain_text'),
+            key: 'plain_text',
+            onClick: () => copyTopicAsPlainText(topic)
           }
         ]
       },
@@ -383,6 +411,7 @@ const Topics: FC<Props> = ({ assistant: _assistant, activeTopic, setActiveTopic 
   }, [
     targetTopic,
     t,
+    isRenaming,
     exportMenuOptions.image,
     exportMenuOptions.markdown,
     exportMenuOptions.markdown_reason,
@@ -417,84 +446,85 @@ const Topics: FC<Props> = ({ assistant: _assistant, activeTopic, setActiveTopic 
   }, [assistant.topics, pinTopicsToTop])
 
   return (
-    <Dropdown menu={{ items: getTopicMenuItems }} trigger={['contextMenu']}>
-      <Container className="topics-tab">
-        <DragableList list={sortedTopics} onUpdate={updateTopics}>
-          {(topic) => {
-            const isActive = topic.id === activeTopic?.id
-            const topicName = topic.name.replace('`', '')
-            const topicPrompt = topic.prompt
-            const fullTopicPrompt = t('common.prompt') + ': ' + topicPrompt
-            return (
-              <TopicListItem
-                onContextMenu={() => setTargetTopic(topic)}
-                className={isActive ? 'active' : ''}
-                onClick={() => onSwitchTopic(topic)}
-                style={{ borderRadius }}>
-                {isPending(topic.id) && !isActive && <PendingIndicator />}
-                <TopicNameContainer>
-                  <TopicName className="name" title={topicName}>
-                    {topicName}
-                  </TopicName>
-                  {isActive && !topic.pinned && (
-                    <Tooltip
-                      placement="bottom"
-                      mouseEnterDelay={0.7}
-                      title={
-                        <div>
-                          <div style={{ fontSize: '12px', opacity: 0.8, fontStyle: 'italic' }}>
-                            {t('chat.topics.delete.shortcut', { key: isMac ? '⌘' : 'Ctrl' })}
-                          </div>
+    <DraggableList
+      className="topics-tab"
+      list={sortedTopics}
+      onUpdate={updateTopics}
+      style={{ padding: '10px 0 10px 10px' }}
+      itemContainerStyle={{ paddingBottom: '8px' }}>
+      {(topic) => {
+        const isActive = topic.id === activeTopic?.id
+        const topicName = topic.name.replace('`', '')
+        const topicPrompt = topic.prompt
+        const fullTopicPrompt = t('common.prompt') + ': ' + topicPrompt
+
+        const getTopicNameClassName = () => {
+          if (isRenaming(topic.id)) return 'shimmer'
+          if (isNewlyRenamed(topic.id)) return 'typing'
+          return ''
+        }
+
+        return (
+          <Dropdown menu={{ items: getTopicMenuItems }} trigger={['contextMenu']}>
+            <TopicListItem
+              onContextMenu={() => setTargetTopic(topic)}
+              className={isActive ? 'active' : ''}
+              onClick={() => onSwitchTopic(topic)}
+              style={{ borderRadius }}>
+              {isPending(topic.id) && !isActive && <PendingIndicator />}
+              <TopicNameContainer>
+                <TopicName className={getTopicNameClassName()} title={topicName}>
+                  {topicName}
+                </TopicName>
+                {!topic.pinned && (
+                  <Tooltip
+                    placement="bottom"
+                    mouseEnterDelay={0.7}
+                    title={
+                      <div>
+                        <div style={{ fontSize: '12px', opacity: 0.8, fontStyle: 'italic' }}>
+                          {t('chat.topics.delete.shortcut', { key: isMac ? '⌘' : 'Ctrl' })}
                         </div>
-                      }>
-                      <MenuButton
-                        className="menu"
-                        onClick={(e) => {
-                          if (e.ctrlKey || e.metaKey) {
-                            handleConfirmDelete(topic, e)
-                          } else if (deletingTopicId === topic.id) {
-                            handleConfirmDelete(topic, e)
-                          } else {
-                            handleDeleteClick(topic.id, e)
-                          }
-                        }}>
-                        {deletingTopicId === topic.id ? (
-                          <DeleteOutlined style={{ color: 'var(--color-error)' }} />
-                        ) : (
-                          <CloseOutlined />
-                        )}
-                      </MenuButton>
-                    </Tooltip>
-                  )}
-                  {topic.pinned && (
-                    <MenuButton className="pin">
-                      <PushpinOutlined />
+                      </div>
+                    }>
+                    <MenuButton
+                      className="menu"
+                      onClick={(e) => {
+                        if (e.ctrlKey || e.metaKey) {
+                          handleConfirmDelete(topic, e)
+                        } else if (deletingTopicId === topic.id) {
+                          handleConfirmDelete(topic, e)
+                        } else {
+                          handleDeleteClick(topic.id, e)
+                        }
+                      }}>
+                      {deletingTopicId === topic.id ? (
+                        <DeleteOutlined style={{ color: 'var(--color-error)' }} />
+                      ) : (
+                        <CloseOutlined />
+                      )}
                     </MenuButton>
-                  )}
-                </TopicNameContainer>
-                {topicPrompt && (
-                  <TopicPromptText className="prompt" title={fullTopicPrompt}>
-                    {fullTopicPrompt}
-                  </TopicPromptText>
+                  </Tooltip>
                 )}
-                {showTopicTime && (
-                  <TopicTime className="time">{dayjs(topic.createdAt).format('MM/DD HH:mm')}</TopicTime>
+                {topic.pinned && (
+                  <MenuButton className="pin">
+                    <PushpinOutlined />
+                  </MenuButton>
                 )}
-              </TopicListItem>
-            )
-          }}
-        </DragableList>
-        <div style={{ minHeight: '10px' }}></div>
-      </Container>
-    </Dropdown>
+              </TopicNameContainer>
+              {topicPrompt && (
+                <TopicPromptText className="prompt" title={fullTopicPrompt}>
+                  {fullTopicPrompt}
+                </TopicPromptText>
+              )}
+              {showTopicTime && <TopicTime className="time">{dayjs(topic.createdAt).format('MM/DD HH:mm')}</TopicTime>}
+            </TopicListItem>
+          </Dropdown>
+        )
+      }}
+    </DraggableList>
   )
 }
-
-const Container = styled(Scrollbar)`
-  display: flex;
-  flex-direction: column;
-  padding: 10px;
-`
 
 const TopicListItem = styled.div`
   padding: 7px 12px;
@@ -513,6 +543,10 @@ const TopicListItem = styled.div`
   }
   &:hover {
     background-color: var(--color-list-item-hover);
+    transition: background-color 0.1s;
+    .menu {
+      opacity: 1;
+    }
   }
   &.active {
     background-color: var(--color-list-item);
@@ -539,6 +573,46 @@ const TopicName = styled.div`
   -webkit-box-orient: vertical;
   overflow: hidden;
   font-size: 13px;
+  position: relative;
+  will-change: background-position, width;
+
+  --color-shimmer-mid: var(--color-text-1);
+  --color-shimmer-end: color-mix(in srgb, var(--color-text-1) 25%, transparent);
+
+  &.shimmer {
+    background: linear-gradient(to left, var(--color-shimmer-end), var(--color-shimmer-mid), var(--color-shimmer-end));
+    background-size: 200% 100%;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer 3s linear infinite;
+  }
+
+  &.typing {
+    display: block;
+    -webkit-line-clamp: unset;
+    -webkit-box-orient: unset;
+    white-space: nowrap;
+    overflow: hidden;
+    animation: typewriter 0.5s steps(40, end);
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  @keyframes typewriter {
+    from {
+      width: 0;
+    }
+    to {
+      width: 100%;
+    }
+  }
 `
 
 const PendingIndicator = styled.div.attrs({

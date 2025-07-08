@@ -1,4 +1,5 @@
 import { PlusOutlined, RedoOutlined } from '@ant-design/icons'
+import AiProvider from '@renderer/aiCore'
 import IcImageUp from '@renderer/assets/images/paintings/ic_ImageUp.svg'
 import { Navbar, NavbarCenter, NavbarRight } from '@renderer/components/app/Navbar'
 import { HStack } from '@renderer/components/Layout'
@@ -6,17 +7,17 @@ import Scrollbar from '@renderer/components/Scrollbar'
 import TranslateButton from '@renderer/components/TranslateButton'
 import { isMac } from '@renderer/config/constant'
 import { getProviderLogo } from '@renderer/config/providers'
+import { LanguagesEnum } from '@renderer/config/translate'
 import { useTheme } from '@renderer/context/ThemeProvider'
 import { usePaintings } from '@renderer/hooks/usePaintings'
 import { useAllProviders } from '@renderer/hooks/useProvider'
 import { useRuntime } from '@renderer/hooks/useRuntime'
 import { useSettings } from '@renderer/hooks/useSettings'
-import AiProvider from '@renderer/providers/AiProvider'
 import FileManager from '@renderer/services/FileManager'
 import { translateText } from '@renderer/services/TranslateService'
 import { useAppDispatch } from '@renderer/store'
 import { setGenerating } from '@renderer/store/runtime'
-import type { FileType } from '@renderer/types'
+import type { FileMetadata } from '@renderer/types'
 import type { PaintingAction, PaintingsState } from '@renderer/types'
 import { getErrorMessage, uuid } from '@renderer/utils'
 import { Avatar, Button, Input, InputNumber, Radio, Segmented, Select, Slider, Switch, Tooltip, Upload } from 'antd'
@@ -47,7 +48,7 @@ const AihubmixPage: FC<{ Options: string[] }> = ({ Options }) => {
   const [abortController, setAbortController] = useState<AbortController | null>(null)
   const [spaceClickCount, setSpaceClickCount] = useState(0)
   const [isTranslating, setIsTranslating] = useState(false)
-  const [fileMap, setFileMap] = useState<{ [key: string]: FileType }>({})
+  const [fileMap, setFileMap] = useState<{ [key: string]: FileMetadata }>({})
 
   const { t } = useTranslation()
   const { theme } = useTheme()
@@ -127,7 +128,7 @@ const AihubmixPage: FC<{ Options: string[] }> = ({ Options }) => {
       })
     )
 
-    return downloadedFiles.filter((file): file is FileType => file !== null)
+    return downloadedFiles.filter((file): file is FileMetadata => file !== null)
   }
 
   const onGenerate = async () => {
@@ -182,11 +183,9 @@ const AihubmixPage: FC<{ Options: string[] }> = ({ Options }) => {
           const base64s = await AI.generateImage({
             prompt,
             model: painting.model,
-            config: {
-              aspectRatio: painting.aspectRatio?.replace('ASPECT_', '').replace('_', ':'),
-              numberOfImages: painting.model.startsWith('imagen-4.0-ultra-generate-exp') ? 1 : painting.numberOfImages,
-              personGeneration: painting.personGeneration
-            }
+            imageSize: painting.aspectRatio?.replace('ASPECT_', '').replace('_', ':') || '1:1',
+            batchSize: painting.model.startsWith('imagen-4.0-ultra-generate-exp') ? 1 : painting.numberOfImages || 1,
+            personGeneration: painting.personGeneration
           })
           if (base64s?.length > 0) {
             const validFiles = await Promise.all(
@@ -545,7 +544,7 @@ const AihubmixPage: FC<{ Options: string[] }> = ({ Options }) => {
 
     try {
       setIsTranslating(true)
-      const translatedText = await translateText(painting.prompt, 'english')
+      const translatedText = await translateText(painting.prompt, LanguagesEnum.enUS)
       updatePaintingState({ prompt: translatedText })
     } catch (error) {
       console.error('Translation failed:', error)
@@ -724,7 +723,7 @@ const AihubmixPage: FC<{ Options: string[] }> = ({ Options }) => {
             listType="picture-card"
             beforeUpload={(file) => {
               const path = URL.createObjectURL(file)
-              setFileMap({ ...fileMap, [path]: file as unknown as FileType })
+              setFileMap({ ...fileMap, [path]: file as unknown as FileMetadata })
               updatePaintingState({ [item.key!]: path })
               return false // 阻止默认上传行为
             }}>

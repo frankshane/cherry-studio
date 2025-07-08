@@ -1,5 +1,5 @@
 import { DownOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons'
-import DragableList from '@renderer/components/DragableList'
+import { DraggableList } from '@renderer/components/DraggableList'
 import Scrollbar from '@renderer/components/Scrollbar'
 import { useAgents } from '@renderer/hooks/useAgents'
 import { useAssistants } from '@renderer/hooks/useAssistant'
@@ -27,10 +27,9 @@ const Assistants: FC<AssistantsTabProps> = ({
 }) => {
   const { assistants, removeAssistant, addAssistant, updateAssistants } = useAssistants()
   const [dragging, setDragging] = useState(false)
-  const [collapsedTags, setCollapsedTags] = useState<Record<string, boolean>>({})
   const { addAgent } = useAgents()
   const { t } = useTranslation()
-  const { getGroupedAssistants } = useTags()
+  const { getGroupedAssistants, collapsedTags, toggleTagCollapse } = useTags()
   const { assistantsTabSortType = 'list', setAssistantsTabSortType } = useAssistantsTabSortType()
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -45,13 +44,6 @@ const Assistants: FC<AssistantsTabProps> = ({
     },
     [activeAssistant, assistants, removeAssistant, setActiveAssistant, onCreateDefaultAssistant]
   )
-
-  const toggleTagCollapse = useCallback((tag: string) => {
-    setCollapsedTags((prev) => ({
-      ...prev,
-      [tag]: !prev[tag]
-    }))
-  }, [])
 
   const handleSortByChange = useCallback(
     (sortType: AssistantsSortType) => {
@@ -100,10 +92,9 @@ const Assistants: FC<AssistantsTabProps> = ({
               )}
               {!collapsedTags[group.tag] && (
                 <div>
-                  <DragableList
+                  <DraggableList
                     list={group.assistants}
                     onUpdate={(newList) => handleGroupReorder(group.tag, newList)}
-                    style={{ paddingBottom: dragging ? '34px' : 0 }}
                     onDragStart={() => setDragging(true)}
                     onDragEnd={() => setDragging(false)}>
                     {(assistant) => (
@@ -120,7 +111,7 @@ const Assistants: FC<AssistantsTabProps> = ({
                         handleSortByChange={handleSortByChange}
                       />
                     )}
-                  </DragableList>
+                  </DraggableList>
                 </div>
               )}
             </TagsContainer>
@@ -138,10 +129,9 @@ const Assistants: FC<AssistantsTabProps> = ({
 
   return (
     <Container className="assistants-tab" ref={containerRef}>
-      <DragableList
+      <DraggableList
         list={assistants}
         onUpdate={updateAssistants}
-        style={{ paddingBottom: dragging ? '34px' : 0 }}
         onDragStart={() => setDragging(true)}
         onDragEnd={() => setDragging(false)}>
         {(assistant) => (
@@ -158,7 +148,7 @@ const Assistants: FC<AssistantsTabProps> = ({
             handleSortByChange={handleSortByChange}
           />
         )}
-      </DragableList>
+      </DraggableList>
       {!dragging && (
         <AssistantAddItem onClick={onCreateAssistant}>
           <AssistantName>

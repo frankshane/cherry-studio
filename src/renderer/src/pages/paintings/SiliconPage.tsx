@@ -1,4 +1,5 @@
 import { PlusOutlined, RedoOutlined } from '@ant-design/icons'
+import AiProvider from '@renderer/aiCore'
 import ImageSize1_1 from '@renderer/assets/images/paintings/image-size-1-1.svg'
 import ImageSize1_2 from '@renderer/assets/images/paintings/image-size-1-2.svg'
 import ImageSize3_2 from '@renderer/assets/images/paintings/image-size-3-2.svg'
@@ -11,18 +12,18 @@ import Scrollbar from '@renderer/components/Scrollbar'
 import TranslateButton from '@renderer/components/TranslateButton'
 import { isMac } from '@renderer/config/constant'
 import { TEXT_TO_IMAGES_MODELS } from '@renderer/config/models'
+import { LanguagesEnum } from '@renderer/config/translate'
 import { useTheme } from '@renderer/context/ThemeProvider'
 import { usePaintings } from '@renderer/hooks/usePaintings'
 import { useAllProviders } from '@renderer/hooks/useProvider'
 import { useRuntime } from '@renderer/hooks/useRuntime'
 import { useSettings } from '@renderer/hooks/useSettings'
-import AiProvider from '@renderer/providers/AiProvider'
 import { getProviderByModel } from '@renderer/services/AssistantService'
 import FileManager from '@renderer/services/FileManager'
 import { translateText } from '@renderer/services/TranslateService'
 import { useAppDispatch } from '@renderer/store'
 import { setGenerating } from '@renderer/store/runtime'
-import type { FileType, Painting } from '@renderer/types'
+import type { FileMetadata, Painting } from '@renderer/types'
 import { getErrorMessage, uuid } from '@renderer/utils'
 import { Button, Input, InputNumber, Radio, Select, Slider, Switch, Tooltip } from 'antd'
 import TextArea from 'antd/es/input/TextArea'
@@ -229,7 +230,7 @@ const SiliconPage: FC<{ Options: string[] }> = ({ Options }) => {
           })
         )
 
-        const validFiles = downloadedFiles.filter((file): file is FileType => file !== null)
+        const validFiles = downloadedFiles.filter((file): file is FileMetadata => file !== null)
 
         await FileManager.addFiles(validFiles)
 
@@ -302,7 +303,7 @@ const SiliconPage: FC<{ Options: string[] }> = ({ Options }) => {
 
     try {
       setIsTranslating(true)
-      const translatedText = await translateText(painting.prompt, 'english')
+      const translatedText = await translateText(painting.prompt, LanguagesEnum.enUS)
       updatePaintingState({ prompt: translatedText })
     } catch (error) {
       console.error('Translation failed:', error)

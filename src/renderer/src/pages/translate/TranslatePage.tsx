@@ -1,36 +1,42 @@
-import { CheckOutlined, DeleteOutlined, HistoryOutlined, SendOutlined } from '@ant-design/icons'
+import { CheckOutlined, DeleteOutlined, HistoryOutlined, RedoOutlined, SendOutlined } from '@ant-design/icons'
 import { Navbar, NavbarCenter } from '@renderer/components/app/Navbar'
 import CopyIcon from '@renderer/components/Icons/CopyIcon'
 import { HStack } from '@renderer/components/Layout'
 import { isEmbeddingModel } from '@renderer/config/models'
-import { translateLanguageOptions } from '@renderer/config/translate'
+import { TRANSLATE_PROMPT } from '@renderer/config/prompts'
+import { LanguagesEnum, translateLanguageOptions } from '@renderer/config/translate'
+import { useCodeStyle } from '@renderer/context/CodeStyleProvider'
 import db from '@renderer/databases'
 import { useDefaultModel } from '@renderer/hooks/useAssistant'
 import { useProviders } from '@renderer/hooks/useProvider'
+import { useSettings } from '@renderer/hooks/useSettings'
 import { fetchTranslate } from '@renderer/services/ApiService'
 import { getDefaultTranslateAssistant } from '@renderer/services/AssistantService'
 import { getModelUniqId, hasModel } from '@renderer/services/ModelService'
-import type { Model, TranslateHistory } from '@renderer/types'
+import { useAppDispatch } from '@renderer/store'
+import { setTranslateModelPrompt } from '@renderer/store/settings'
+import type { Language, LanguageCode, Model, TranslateHistory } from '@renderer/types'
 import { runAsyncFunction, uuid } from '@renderer/utils'
 import {
   createInputScrollHandler,
   createOutputScrollHandler,
   detectLanguage,
-  determineTargetLanguage
+  determineTargetLanguage,
+  getLanguageByLangcode
 } from '@renderer/utils/translate'
 import { Button, Dropdown, Empty, Flex, Modal, Popconfirm, Select, Space, Switch, Tooltip } from 'antd'
 import TextArea, { TextAreaRef } from 'antd/es/input/TextArea'
 import dayjs from 'dayjs'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { find, isEmpty, sortBy } from 'lodash'
-import { HelpCircle, Settings2, TriangleAlert } from 'lucide-react'
+import { ChevronDown, HelpCircle, Settings2, TriangleAlert } from 'lucide-react'
 import { FC, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
 let _text = ''
 let _result = ''
-let _targetLanguage = 'english'
+let _targetLanguage = LanguagesEnum.enUS
 
 const TranslateSettings: FC<{
   visible: boolean
@@ -39,8 +45,10 @@ const TranslateSettings: FC<{
   setIsScrollSyncEnabled: (value: boolean) => void
   isBidirectional: boolean
   setIsBidirectional: (value: boolean) => void
-  bidirectionalPair: [string, string]
-  setBidirectionalPair: (value: [string, string]) => void
+  enableMarkdown: boolean
+  setEnableMarkdown: (value: boolean) => void
+  bidirectionalPair: [Language, Language]
+  setBidirectionalPair: (value: [Language, Language]) => void
   translateModel: Model | undefined
   onModelChange: (model: Model) => void
   allModels: Model[]
@@ -52,6 +60,8 @@ const TranslateSettings: FC<{
   setIsScrollSyncEnabled,
   isBidirectional,
   setIsBidirectional,
+  enableMarkdown,
+  setEnableMarkdown,
   bidirectionalPair,
   setBidirectionalPair,
   translateModel,
@@ -60,7 +70,11 @@ const TranslateSettings: FC<{
   selectOptions
 }) => {
   const { t } = useTranslation()
-  const [localPair, setLocalPair] = useState<[string, string]>(bidirectionalPair)
+  const { translateModelPrompt } = useSettings()
+  const dispatch = useAppDispatch()
+  const [localPair, setLocalPair] = useState<[Language, Language]>(bidirectionalPair)
+  const [showPrompt, setShowPrompt] = useState(false)
+  const [localPrompt, setLocalPrompt] = useState(translateModelPrompt)
 
   const defaultTranslateModel = useMemo(
     () => (hasModel(translateModel) ? getModelUniqId(translateModel) : undefined),
@@ -69,7 +83,8 @@ const TranslateSettings: FC<{
 
   useEffect(() => {
     setLocalPair(bidirectionalPair)
-  }, [bidirectionalPair, visible])
+    setLocalPrompt(translateModelPrompt)
+  }, [bidirectionalPair, translateModelPrompt, visible])
 
   const handleSave = () => {
     if (localPair[0] === localPair[1]) {
@@ -80,8 +95,11 @@ const TranslateSettings: FC<{
       return
     }
     setBidirectionalPair(localPair)
-    db.settings.put({ id: 'translate:bidirectional:pair', value: localPair })
+    db.settings.put({ id: 'translate:bidirectional:pair', value: [localPair[0].langCode, localPair[1].langCode] })
     db.settings.put({ id: 'translate:scroll:sync', value: isScrollSyncEnabled })
+    db.settings.put({ id: 'translate:markdown:enabled', value: enableMarkdown })
+    db.settings.put({ id: 'translate:model:prompt', value: localPrompt })
+    dispatch(setTranslateModelPrompt(localPrompt))
     window.message.success({
       content: t('message.save.success.title'),
       key: 'translate-settings-save'
@@ -106,7 +124,14 @@ const TranslateSettings: FC<{
       width={420}>
       <Flex vertical gap={16} style={{ marginTop: 16 }}>
         <div>
-          <div style={{ marginBottom: 8, fontWeight: 500 }}>{t('translate.settings.model')}</div>
+          <div style={{ marginBottom: 8, fontWeight: 500, display: 'flex', alignItems: 'center' }}>
+            {t('translate.settings.model')}
+            <Tooltip title={t('translate.settings.model_desc')}>
+              <span style={{ marginLeft: 4, display: 'flex', alignItems: 'center' }}>
+                <HelpCircle size={14} style={{ color: 'var(--color-text-3)' }} />
+              </span>
+            </Tooltip>
+          </div>
           <HStack alignItems="center" gap={5}>
             <Select
               style={{ width: '100%' }}
@@ -130,9 +155,13 @@ const TranslateSettings: FC<{
               </HStack>
             </div>
           )}
-          <div style={{ marginTop: 8, fontSize: 12, color: 'var(--color-text-3)' }}>
-            {t('translate.settings.model_desc')}
-          </div>
+        </div>
+
+        <div>
+          <Flex align="center" justify="space-between">
+            <div style={{ fontWeight: 500 }}>{t('translate.settings.preview')}</div>
+            <Switch checked={enableMarkdown} onChange={setEnableMarkdown} />
+          </Flex>
         </div>
 
         <div>
@@ -143,7 +172,7 @@ const TranslateSettings: FC<{
         </div>
 
         <div>
-          <Flex align="center" justify="space-between" style={{ marginBottom: 8 }}>
+          <Flex align="center" justify="space-between">
             <div style={{ fontWeight: 500 }}>
               <HStack alignItems="center" gap={5}>
                 {t('translate.settings.bidirectional')}
@@ -156,21 +185,21 @@ const TranslateSettings: FC<{
             </div>
             <Switch checked={isBidirectional} onChange={setIsBidirectional} />
           </Flex>
-          <Space direction="vertical" style={{ width: '100%' }}>
-            {isBidirectional && (
+          {isBidirectional && (
+            <Space direction="vertical" style={{ width: '100%', marginTop: 8 }}>
               <Flex align="center" justify="space-between" gap={10}>
                 <Select
                   style={{ flex: 1 }}
-                  value={localPair[0]}
-                  onChange={(value) => setLocalPair([value, localPair[1]])}
-                  options={translateLanguageOptions().map((lang) => ({
-                    value: lang.value,
+                  value={localPair[0].langCode}
+                  onChange={(value) => setLocalPair([getLanguageByLangcode(value), localPair[1]])}
+                  options={translateLanguageOptions.map((lang) => ({
+                    value: lang.langCode,
                     label: (
                       <Space.Compact direction="horizontal" block>
                         <span role="img" aria-label={lang.emoji} style={{ marginRight: 8 }}>
                           {lang.emoji}
                         </span>
-                        <Space.Compact block>{lang.label}</Space.Compact>
+                        <Space.Compact block>{lang.label()}</Space.Compact>
                       </Space.Compact>
                     )
                   }))}
@@ -178,23 +207,66 @@ const TranslateSettings: FC<{
                 <span>⇆</span>
                 <Select
                   style={{ flex: 1 }}
-                  value={localPair[1]}
-                  onChange={(value) => setLocalPair([localPair[0], value])}
-                  options={translateLanguageOptions().map((lang) => ({
-                    value: lang.value,
+                  value={localPair[1].langCode}
+                  onChange={(value) => setLocalPair([localPair[0], getLanguageByLangcode(value)])}
+                  options={translateLanguageOptions.map((lang) => ({
+                    value: lang.langCode,
                     label: (
                       <Space.Compact direction="horizontal" block>
                         <span role="img" aria-label={lang.emoji} style={{ marginRight: 8 }}>
                           {lang.emoji}
                         </span>
-                        <div style={{ textAlign: 'left', flex: 1 }}>{lang.label}</div>
+                        <div style={{ textAlign: 'left', flex: 1 }}>{lang.label()}</div>
                       </Space.Compact>
                     )
                   }))}
                 />
               </Flex>
+            </Space>
+          )}
+        </div>
+
+        <div>
+          <Flex align="center" justify="space-between">
+            <div
+              style={{
+                fontWeight: 500,
+                display: 'flex',
+                alignItems: 'center',
+                cursor: 'pointer'
+              }}
+              onClick={() => setShowPrompt(!showPrompt)}>
+              {t('settings.models.translate_model_prompt_title')}
+              <ChevronDown
+                size={16}
+                style={{
+                  transform: showPrompt ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.3s',
+                  marginLeft: 5
+                }}
+              />
+            </div>
+            {localPrompt !== TRANSLATE_PROMPT && (
+              <Tooltip title={t('common.reset')}>
+                <Button
+                  icon={<RedoOutlined />}
+                  size="small"
+                  type="text"
+                  onClick={() => setLocalPrompt(TRANSLATE_PROMPT)}
+                />
+              </Tooltip>
             )}
-          </Space>
+          </Flex>
+        </div>
+
+        <div style={{ display: showPrompt ? 'block' : 'none' }}>
+          <Textarea
+            rows={8}
+            value={localPrompt}
+            onChange={(e) => setLocalPrompt(e.target.value)}
+            placeholder={t('settings.models.translate_model_prompt_message')}
+            style={{ borderRadius: '8px' }}
+          />
         </div>
       </Flex>
     </Modal>
@@ -203,18 +275,25 @@ const TranslateSettings: FC<{
 
 const TranslatePage: FC = () => {
   const { t } = useTranslation()
-  const [targetLanguage, setTargetLanguage] = useState(_targetLanguage)
+  const { shikiMarkdownIt } = useCodeStyle()
   const [text, setText] = useState(_text)
   const [result, setResult] = useState(_result)
+  const [renderedMarkdown, setRenderedMarkdown] = useState<string>('')
   const { translateModel, setTranslateModel } = useDefaultModel()
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [historyDrawerVisible, setHistoryDrawerVisible] = useState(false)
   const [isScrollSyncEnabled, setIsScrollSyncEnabled] = useState(false)
   const [isBidirectional, setIsBidirectional] = useState(false)
-  const [bidirectionalPair, setBidirectionalPair] = useState<[string, string]>(['english', 'chinese'])
+  const [enableMarkdown, setEnableMarkdown] = useState(false)
+  const [bidirectionalPair, setBidirectionalPair] = useState<[Language, Language]>([
+    LanguagesEnum.enUS,
+    LanguagesEnum.zhCN
+  ])
   const [settingsVisible, setSettingsVisible] = useState(false)
-  const [detectedLanguage, setDetectedLanguage] = useState<string | null>(null)
+  const [detectedLanguage, setDetectedLanguage] = useState<Language | null>(null)
+  const [sourceLanguage, setSourceLanguage] = useState<Language | 'auto'>('auto')
+  const [targetLanguage, setTargetLanguage] = useState<Language>(_targetLanguage)
   const contentContainerRef = useRef<HTMLDivElement>(null)
   const textAreaRef = useRef<TextAreaRef>(null)
   const outputTextRef = useRef<HTMLDivElement>(null)
@@ -254,8 +333,8 @@ const TranslatePage: FC = () => {
   const saveTranslateHistory = async (
     sourceText: string,
     targetText: string,
-    sourceLanguage: string,
-    targetLanguage: string
+    sourceLanguage: LanguageCode,
+    targetLanguage: LanguageCode
   ) => {
     const history: TranslateHistory = {
       id: uuid(),
@@ -288,10 +367,16 @@ const TranslatePage: FC = () => {
 
     setLoading(true)
     try {
-      const sourceLanguage = await detectLanguage(text)
-      console.log('检测到的语言:', sourceLanguage)
-      setDetectedLanguage(sourceLanguage)
-      const result = determineTargetLanguage(sourceLanguage, targetLanguage, isBidirectional, bidirectionalPair)
+      // 确定源语言：如果用户选择了特定语言，使用用户选择的；如果选择'auto'，则自动检测
+      let actualSourceLanguage: Language
+      if (sourceLanguage === 'auto') {
+        actualSourceLanguage = await detectLanguage(text)
+        setDetectedLanguage(actualSourceLanguage)
+      } else {
+        actualSourceLanguage = sourceLanguage
+      }
+
+      const result = determineTargetLanguage(actualSourceLanguage, targetLanguage, isBidirectional, bidirectionalPair)
       if (!result.success) {
         let errorMessage = ''
         if (result.errorType === 'same_language') {
@@ -308,7 +393,7 @@ const TranslatePage: FC = () => {
         return
       }
 
-      const actualTargetLanguage = result.language as string
+      const actualTargetLanguage = result.language as Language
       if (isBidirectional) {
         setTargetLanguage(actualTargetLanguage)
       }
@@ -324,7 +409,7 @@ const TranslatePage: FC = () => {
         }
       })
 
-      await saveTranslateHistory(text, translatedText, sourceLanguage, actualTargetLanguage)
+      await saveTranslateHistory(text, translatedText, actualSourceLanguage.langCode, actualTargetLanguage.langCode)
       setLoading(false)
     } catch (error) {
       console.error('Translation error:', error)
@@ -351,27 +436,60 @@ const TranslatePage: FC = () => {
   const onHistoryItemClick = (history: TranslateHistory) => {
     setText(history.sourceText)
     setResult(history.targetText)
-    setTargetLanguage(history.targetLanguage)
+    setTargetLanguage(getLanguageByLangcode(history.targetLanguage))
   }
 
   useEffect(() => {
     isEmpty(text) && setResult('')
   }, [text])
 
+  // Render markdown content when result or enableMarkdown changes
+  useEffect(() => {
+    if (enableMarkdown && result) {
+      let isMounted = true
+      shikiMarkdownIt(result).then((rendered) => {
+        if (isMounted) {
+          setRenderedMarkdown(rendered)
+        }
+      })
+      return () => {
+        isMounted = false
+      }
+    } else {
+      setRenderedMarkdown('')
+      return undefined
+    }
+  }, [result, enableMarkdown, shikiMarkdownIt])
+
   useEffect(() => {
     runAsyncFunction(async () => {
       const targetLang = await db.settings.get({ id: 'translate:target:language' })
-      targetLang && setTargetLanguage(targetLang.value)
+      targetLang && setTargetLanguage(getLanguageByLangcode(targetLang.value))
+
+      const sourceLang = await db.settings.get({ id: 'translate:source:language' })
+      sourceLang &&
+        setSourceLanguage(sourceLang.value === 'auto' ? sourceLang.value : getLanguageByLangcode(sourceLang.value))
 
       const bidirectionalPairSetting = await db.settings.get({ id: 'translate:bidirectional:pair' })
       if (bidirectionalPairSetting) {
         const langPair = bidirectionalPairSetting.value
+        let source: undefined | Language
+        let target: undefined | Language
+
         if (Array.isArray(langPair) && langPair.length === 2 && langPair[0] !== langPair[1]) {
-          setBidirectionalPair(langPair as [string, string])
+          source = getLanguageByLangcode(langPair[0])
+          target = getLanguageByLangcode(langPair[1])
+        }
+
+        if (source && target) {
+          setBidirectionalPair([source, target])
         } else {
-          const defaultPair: [string, string] = ['english', 'chinese']
+          const defaultPair: [Language, Language] = [LanguagesEnum.enUS, LanguagesEnum.zhCN]
           setBidirectionalPair(defaultPair)
-          db.settings.put({ id: 'translate:bidirectional:pair', value: defaultPair })
+          db.settings.put({
+            id: 'translate:bidirectional:pair',
+            value: [defaultPair[0].langCode, defaultPair[1].langCode]
+          })
         }
       }
 
@@ -380,11 +498,14 @@ const TranslatePage: FC = () => {
 
       const scrollSyncSetting = await db.settings.get({ id: 'translate:scroll:sync' })
       setIsScrollSyncEnabled(scrollSyncSetting ? scrollSyncSetting.value : false)
+
+      const markdownSetting = await db.settings.get({ id: 'translate:markdown:enabled' })
+      setEnableMarkdown(markdownSetting ? markdownSetting.value : false)
     })
   }, [])
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    const isEnterPressed = e.keyCode == 13
+    const isEnterPressed = e.key === 'Enter'
     if (isEnterPressed && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
       e.preventDefault()
       onTranslate()
@@ -396,32 +517,37 @@ const TranslatePage: FC = () => {
 
   // 获取当前语言状态显示
   const getLanguageDisplay = () => {
-    if (isBidirectional) {
-      return (
-        <Flex align="center" style={{ width: 160 }}>
-          <BidirectionalLanguageDisplay>
-            {`${t(`languages.${bidirectionalPair[0]}`)} ⇆ ${t(`languages.${bidirectionalPair[1]}`)}`}
-          </BidirectionalLanguageDisplay>
-        </Flex>
-      )
+    try {
+      if (isBidirectional) {
+        return (
+          <Flex align="center" style={{ width: 160 }}>
+            <BidirectionalLanguageDisplay>
+              {`${bidirectionalPair[0].label()} ⇆ ${bidirectionalPair[1].label()}`}
+            </BidirectionalLanguageDisplay>
+          </Flex>
+        )
+      }
+    } catch (error) {
+      console.error('Error getting language display:', error)
+      setBidirectionalPair([LanguagesEnum.enUS, LanguagesEnum.zhCN])
     }
 
     return (
       <Select
         style={{ width: 160 }}
-        value={targetLanguage}
+        value={targetLanguage.langCode}
         onChange={(value) => {
-          setTargetLanguage(value)
+          setTargetLanguage(getLanguageByLangcode(value))
           db.settings.put({ id: 'translate:target:language', value })
         }}
-        options={translateLanguageOptions().map((lang) => ({
-          value: lang.value,
+        options={translateLanguageOptions.map((lang) => ({
+          value: lang.langCode,
           label: (
             <Space.Compact direction="horizontal" block>
               <span role="img" aria-label={lang.emoji} style={{ marginRight: 8 }}>
                 {lang.emoji}
               </span>
-              <Space.Compact block>{lang.label}</Space.Compact>
+              <Space.Compact block>{lang.label()}</Space.Compact>
             </Space.Compact>
           )
         }))}
@@ -498,15 +624,32 @@ const TranslatePage: FC = () => {
             <Flex align="center" gap={20}>
               <Select
                 showSearch
-                value="auto"
+                value={sourceLanguage !== 'auto' ? sourceLanguage.langCode : 'auto'}
                 style={{ width: 180 }}
                 optionFilterProp="label"
-                disabled
+                onChange={(value: LanguageCode | 'auto') => {
+                  if (value !== 'auto') setSourceLanguage(getLanguageByLangcode(value))
+                  else setSourceLanguage('auto')
+                  db.settings.put({ id: 'translate:source:language', value })
+                }}
                 options={[
                   {
-                    label: detectedLanguage ? t(`languages.${detectedLanguage}`) : t('translate.detected.language'),
-                    value: 'auto'
-                  }
+                    value: 'auto',
+                    label: detectedLanguage
+                      ? `${t('translate.detected.language')} (${detectedLanguage.label()})`
+                      : t('translate.detected.language')
+                  },
+                  ...translateLanguageOptions.map((lang) => ({
+                    value: lang.langCode,
+                    label: (
+                      <Space.Compact direction="horizontal" block>
+                        <span role="img" aria-label={lang.emoji} style={{ marginRight: 8 }}>
+                          {lang.emoji}
+                        </span>
+                        <Space.Compact block>{lang.label()}</Space.Compact>
+                      </Space.Compact>
+                    )
+                  }))
                 ]}
               />
               <Button
@@ -564,8 +707,14 @@ const TranslatePage: FC = () => {
             />
           </OperationBar>
 
-          <OutputText ref={outputTextRef} onScroll={handleOutputScroll} className="selectable">
-            {result || t('translate.output.placeholder')}
+          <OutputText ref={outputTextRef} onScroll={handleOutputScroll} className={'selectable'}>
+            {!result ? (
+              t('translate.output.placeholder')
+            ) : enableMarkdown ? (
+              <div className="markdown" dangerouslySetInnerHTML={{ __html: renderedMarkdown }} />
+            ) : (
+              <div className="plain">{result}</div>
+            )}
           </OutputText>
         </OutputContainer>
       </ContentContainer>
@@ -577,6 +726,8 @@ const TranslatePage: FC = () => {
         setIsScrollSyncEnabled={setIsScrollSyncEnabled}
         isBidirectional={isBidirectional}
         setIsBidirectional={toggleBidirectional}
+        enableMarkdown={enableMarkdown}
+        setEnableMarkdown={setEnableMarkdown}
         bidirectionalPair={bidirectionalPair}
         setBidirectionalPair={setBidirectionalPair}
         translateModel={translateModel}
@@ -652,7 +803,19 @@ const OutputText = styled.div`
   flex: 1;
   padding: 5px 16px;
   overflow-y: auto;
-  white-space: pre-wrap;
+
+  .plain {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+  }
+
+  .markdown {
+    /* for shiki code block overflow */
+    .line * {
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+    }
+  }
 `
 
 const TranslateButton = styled(Button)``
