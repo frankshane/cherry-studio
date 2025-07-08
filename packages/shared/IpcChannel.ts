@@ -75,6 +75,8 @@ export enum IpcChannel {
   Mcp_ServersUpdated = 'mcp:servers-updated',
   Mcp_CheckConnectivity = 'mcp:check-connectivity',
   Mcp_UploadDxt = 'mcp:upload-dxt',
+  Mcp_SetProgress = 'mcp:set-progress',
+  Mcp_AbortTool = 'mcp:abort-tool',
 
   // Python
   Python_Execute = 'python:execute',

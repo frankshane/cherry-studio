@@ -3,6 +3,7 @@ import { CompletionsContext } from '@renderer/aiCore/middleware/types'
 import {
   isOpenAIChatCompletionOnlyModel,
   isOpenAIDeepResearchModel,
+  isOpenAILLMModel,
   isSupportedReasoningEffortOpenAIModel,
   isVisionModel
 } from '@renderer/config/models'
@@ -65,10 +66,10 @@ export class OpenAIResponseAPIClient extends OpenAIBaseClient<
    * 根据模型特征选择合适的客户端
    */
   public getClient(model: Model) {
-    if (isOpenAIChatCompletionOnlyModel(model)) {
-      return this.client
-    } else {
+    if (isOpenAILLMModel(model) && !isOpenAIChatCompletionOnlyModel(model)) {
       return this
+    } else {
+      return this.client
     }
   }
 

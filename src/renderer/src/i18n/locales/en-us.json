@@ -477,6 +477,14 @@
       "messages": "Messages",
       "user": "User"
     },
+    "endpoint_type": {
+      "openai": "OpenAI",
+      "openai-response": "OpenAI-Response",
+      "anthropic": "Anthropic",
+      "gemini": "Gemini",
+      "image-generation": "Image Generation",
+      "jina-rerank": "Jina Rerank"
+    },
     "files": {
       "actions": "Actions",
       "all": "All Files",
@@ -712,8 +720,12 @@
       "success.yuque.export": "Successfully exported to Yuque",
       "switch.disabled": "Please wait for the current reply to complete",
       "tools": {
+        "pending": "Pending",
+        "cancelled": "Cancelled",
         "completed": "Completed",
         "invoking": "Invoking",
+        "aborted": "Tool call aborted",
+        "abort_failed": "Tool call abort failed",
         "error": "Error occurred",
         "raw": "Raw",
         "preview": "Preview"
@@ -870,6 +882,8 @@
       "title": "Ollama"
     },
     "paintings": {
+      "no_image_generation_model": "No available image generation model, please add a model and set the endpoint type to {{endpoint_type}}",
+      "go_to_settings": "Go to Settings",
       "button.delete.image": "Delete Image",
       "button.delete.image.confirm": "Are you sure you want to delete this image?",
       "button.new.image": "New Image",
@@ -942,6 +956,9 @@
         "allow_all": "Allow all",
         "allow_adult": "Allow adult",
         "allow_none": "Not allowed"
+      },
+      "image_size_options": {
+        "auto": "Auto"
       },
       "quality": "Quality",
       "moderation": "Moderation",
@@ -1274,7 +1291,7 @@
           "title": "WebDAV",
           "user": "WebDAV User",
           "maxBackups": "Maximum Backups",
-          "maxBackups.unlimited": "Unlimited"
+          "maxBackups.unlimited": "[to be translated]:不限"
         },
         "local": {
           "autoSync": "Auto Backup",
@@ -2167,8 +2184,8 @@
         "role": "Voice Role",
         "role.description": "Select voice age and gender role",
         "play": "Play Speech",
-        "pause": "Pause Playback",
-        "resume": "Resume Playback",
+        "pause": "Pause",
+        "resume": "Resume",
         "stop": "Stop Playback",
         "not.available": "TTS is not available, please enable it in settings",
         "play.failed": "TTS playback failed",
@@ -2195,9 +2212,7 @@
         "pause_support": {
           "title": "Enable Pause Function",
           "description": "Enable pause/resume for streaming audio (increases memory usage)"
-        },
-        "pause": "Pause",
-        "resume": "Resume"
+        }
       },
       "mineru.api_key": "Mineru now offers a daily free quota of 500 pages, and you do not need to enter a key."
     },
