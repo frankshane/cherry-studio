@@ -629,6 +629,35 @@ const McpSettings: React.FC = () => {
                   tokenSeparators={[',']}
                 />
               </Form.Item>
+
+              <Form.Item
+                label={t('settings.mcp.toolApproval', 'Tool Approval')}
+                tooltip={t(
+                  'settings.mcp.toolApprovalTooltip',
+                  'Reset tool approval status to require confirmation again'
+                )}>
+                <Flex align="center" gap={12}>
+                  <span style={{ fontSize: '14px', color: 'var(--color-text-2)' }}>
+                    {server.isApproved
+                      ? t('settings.mcp.toolApprovalStatus.approved', 'Tools are auto-approved')
+                      : t('settings.mcp.toolApprovalStatus.notApproved', 'Tools require confirmation')}
+                  </span>
+                  {server.isApproved && (
+                    <Button
+                      size="small"
+                      onClick={() => {
+                        updateMCPServer({ ...server, isApproved: false })
+                        window.message.success({
+                          content: t('settings.mcp.toolApprovalReset', 'Tool approval reset successfully'),
+                          key: 'tool-approval-reset'
+                        })
+                      }}
+                      type="default">
+                      {t('settings.mcp.resetApproval', 'Reset Approval')}
+                    </Button>
+                  )}
+                </Flex>
+              </Form.Item>
             </>
           )}
         </Form>

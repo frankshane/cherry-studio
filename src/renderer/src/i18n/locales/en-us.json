@@ -714,7 +714,7 @@
       "success.yuque.export": "Successfully exported to Yuque",
       "switch.disabled": "Please wait for the current reply to complete",
       "tools": {
-        "pending": "Pending",
+        "pending": "Awaiting Approval",
         "cancelled": "Cancelled",
         "completed": "Completed",
         "invoking": "Invoking",
@@ -722,7 +722,8 @@
         "abort_failed": "Tool call abort failed",
         "error": "Error occurred",
         "raw": "Raw",
-        "preview": "Preview"
+        "preview": "Preview",
+        "serverApproved": "Server is approved - tools will auto-execute"
       },
       "topic.added": "New topic added",
       "upgrade.success.button": "Restart",
@@ -1717,7 +1718,16 @@
         "tags": "Tags",
         "tagsPlaceholder": "Enter tags",
         "providerPlaceholder": "Provider name",
-        "advancedSettings": "Advanced Settings"
+        "advancedSettings": "Advanced Settings",
+        "toolApproval": "Tool Approval",
+        "toolApprovalHelp": "When tool approval is enabled, approving a tool for the first time will automatically approve the entire server, and subsequent tool calls will execute automatically",
+        "serverApprovalStatus": "Server Approval Status",
+        "serverApprovalStatusApproved": "Approved",
+        "serverApprovalStatusNotApproved": "Not Approved",
+        "resetApprovalStatus": "Reset Approval Status",
+        "resetApprovalStatusHelp": "After reset, you will need to reconfirm tool calls",
+        "resetApprovalConfirm": "Are you sure you want to reset the approval status for this server? You will need to reconfirm tool calls after reset.",
+        "resetApprovalSuccess": "Approval status has been reset"
       },
       "messages.prompt": "Show prompt",
       "messages.tokens": "Show token usage",

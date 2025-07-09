@@ -721,8 +721,9 @@
         "error": "發生錯誤",
         "raw": "原始碼",
         "preview": "預覽",
-        "pending": "等待中",
-        "cancelled": "已取消"
+        "pending": "等待批准中",
+        "cancelled": "已取消",
+        "serverApproved": "伺服器已批准 - 工具將自動執行"
       },
       "topic.added": "新話題已新增",
       "upgrade.success.button": "重新啟動",
@@ -1708,7 +1709,16 @@
         "tags": "標籤",
         "tagsPlaceholder": "輸入標籤",
         "providerPlaceholder": "提供者名稱",
-        "advancedSettings": "高級設定"
+        "advancedSettings": "高級設定",
+        "toolApproval": "工具批准",
+        "toolApprovalHelp": "啟用工具批准後，首次批准工具將自動批准整個伺服器，後續的工具調用將自動執行",
+        "serverApprovalStatus": "伺服器批准狀態",
+        "serverApprovalStatusApproved": "已批准",
+        "serverApprovalStatusNotApproved": "未批准",
+        "resetApprovalStatus": "重置批准狀態",
+        "resetApprovalStatusHelp": "重置後，您需要重新確認工具調用",
+        "resetApprovalConfirm": "確定要重置此伺服器的批准狀態嗎？重置後，您需要重新確認工具調用。",
+        "resetApprovalSuccess": "批准狀態已重置"
       },
       "messages.prompt": "提示詞顯示",
       "messages.tokens": "Token 用量顯示",

@@ -1,7 +1,14 @@
-import { CheckOutlined, CloseOutlined, LoadingOutlined, WarningOutlined } from '@ant-design/icons'
+import {
+  CheckOutlined,
+  CloseOutlined,
+  LoadingOutlined,
+  SafetyCertificateOutlined,
+  WarningOutlined
+} from '@ant-design/icons'
 import { useCodeStyle } from '@renderer/context/CodeStyleProvider'
 import { useSettings } from '@renderer/hooks/useSettings'
 import type { ToolMessageBlock } from '@renderer/types/newMessage'
+import { getMcpServerByTool } from '@renderer/utils/mcp-tools'
 import { cancelToolAction, confirmToolAction } from '@renderer/utils/userConfirmation'
 import { Collapse, message as antdMessage, Tooltip } from 'antd'
 import { message } from 'antd'
@@ -28,6 +35,10 @@ const MessageTools: FC<Props> = ({ block }) => {
   const isPending = status === 'pending'
   const isInvoking = status === 'invoking'
   const isDone = status === 'done'
+
+  // 检查服务器是否已批准
+  const server = getMcpServerByTool(tool)
+  const isServerApproved = server?.isApproved === true
 
   const argsString = useMemo(() => {
     if (toolResponse?.arguments) {
@@ -104,7 +115,23 @@ const MessageTools: FC<Props> = ({ block }) => {
       label: (
         <MessageTitleLabel>
           <TitleContent>
-            <ToolName>{tool.name}</ToolName>
+            <ToolName>
+              {tool.name}
+              {isServerApproved && (
+                <Tooltip
+                  title={t('message.tools.serverApproved', 'Server is approved - tools will auto-execute')}
+                  mouseEnterDelay={0.5}>
+                  <SafetyCertificateOutlined
+                    style={{
+                      marginLeft: 8,
+                      color: 'var(--color-success)',
+                      fontSize: '12px',
+                      opacity: 0.8
+                    }}
+                  />
+                </Tooltip>
+              )}
+            </ToolName>
             <StatusIndicator status={status} hasError={hasError}>
               {(() => {
                 switch (status) {

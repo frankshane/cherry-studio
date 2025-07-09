@@ -719,8 +719,9 @@
         "error": "エラーが発生しました",
         "raw": "生データ",
         "preview": "プレビュー",
-        "pending": "保留中",
-        "cancelled": "キャンセル"
+        "pending": "承認待ち",
+        "cancelled": "キャンセル",
+        "serverApproved": "サーバーが承認されました - ツールは自動的に実行されます"
       },
       "topic.added": "新しいトピックが追加されました",
       "upgrade.success.button": "再起動",
@@ -1705,7 +1706,16 @@
         "tags": "タグ",
         "tagsPlaceholder": "タグを入力",
         "providerPlaceholder": "プロバイダー名",
-        "advancedSettings": "詳細設定"
+        "advancedSettings": "詳細設定",
+        "toolApproval": "ツールの承認",
+        "toolApprovalHelp": "ツール承認が有効になっている場合、ツールを初めて承認すると、サーバー全体が自動的に承認され、以降のツール呼び出しは自動的に実行されます。",
+        "serverApprovalStatus": "サーバー承認ステータス",
+        "serverApprovalStatusApproved": "承認済み",
+        "serverApprovalStatusNotApproved": "未承認",
+        "resetApprovalStatus": "承認ステータスのリセット",
+        "resetApprovalStatusHelp": "リセット後、ツール呼び出しを再確認する必要があります",
+        "resetApprovalConfirm": "このサーバーの承認ステータスをリセットしてもよろしいですか？リセット後、ツール呼び出しを再確認する必要があります。",
+        "resetApprovalSuccess": "承認ステータスがリセットされました"
       },
       "messages.prompt": "プロンプト表示",
       "messages.tokens": "トークン使用量を表示",

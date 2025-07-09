@@ -632,6 +632,7 @@ export interface MCPServer {
   logoUrl?: string // URL of the MCP server's logo
   tags?: string[] // List of tags associated with this server
   timeout?: number // Timeout in seconds for requests to this server, default is 60 seconds
+  isApproved?: boolean // Whether the MCP server is approved
 }
 
 export interface MCPToolInputSchema {

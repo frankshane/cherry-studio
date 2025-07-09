@@ -714,7 +714,7 @@
       "success.yuque.export": "成功导出到语雀",
       "switch.disabled": "请等待当前回复完成后操作",
       "tools": {
-        "pending": "等待中",
+        "pending": "等待批准中",
         "cancelled": "已取消",
         "completed": "已完成",
         "invoking": "调用中",
@@ -722,7 +722,8 @@
         "abort_failed": "工具调用中断失败",
         "error": "发生错误",
         "raw": "原始",
-        "preview": "预览"
+        "preview": "预览",
+        "serverApproved": "服务器已批准 - 工具将自动执行"
       },
       "topic.added": "话题添加成功",
       "upgrade.success.button": "重启",
@@ -1717,7 +1718,16 @@
         "tags": "标签",
         "tagsPlaceholder": "输入标签",
         "providerPlaceholder": "提供者名称",
-        "advancedSettings": "高级设置"
+        "advancedSettings": "高级设置",
+        "toolApproval": "工具批准",
+        "toolApprovalHelp": "当启用工具批准后，首次同意某个工具会自动批准整个服务器，后续工具调用将自动执行",
+        "serverApprovalStatus": "服务器批准状态",
+        "serverApprovalStatusApproved": "已批准",
+        "serverApprovalStatusNotApproved": "未批准",
+        "resetApprovalStatus": "重置批准状态",
+        "resetApprovalStatusHelp": "重置后将需要重新确认工具调用",
+        "resetApprovalConfirm": "确定要重置此服务器的批准状态吗？重置后将需要重新确认工具调用。",
+        "resetApprovalSuccess": "批准状态已重置"
       },
       "messages.prompt": "显示提示词",
       "messages.tokens": "显示 Token 用量",

@@ -4,7 +4,7 @@ import Logger from '@renderer/config/logger'
 import { isFunctionCallingModel, isVisionModel } from '@renderer/config/models'
 import i18n from '@renderer/i18n'
 import store from '@renderer/store'
-import { addMCPServer } from '@renderer/store/mcp'
+import { addMCPServer, updateMCPServer } from '@renderer/store/mcp'
 import {
   Assistant,
   MCPCallToolResponse,
@@ -31,6 +31,26 @@ import { requestToolConfirmation } from './userConfirmation'
 
 const MCP_AUTO_INSTALL_SERVER_NAME = '@cherry/mcp-auto-install'
 const EXTRA_SCHEMA_KEYS = ['schema', 'headers']
+
+/**
+ * 检查MCP服务器是否已被用户批准
+ */
+function isServerApproved(tool: MCPTool): boolean {
+  const server = getMcpServerByTool(tool)
+  return server?.isApproved === true
+}
+
+/**
+ * 将MCP服务器标记为已批准
+ */
+function markServerAsApproved(tool: MCPTool): void {
+  const server = getMcpServerByTool(tool)
+  if (server && !server.isApproved) {
+    const updatedServer = { ...server, isApproved: true }
+    store.dispatch(updateMCPServer(updatedServer))
+    Logger.log(`🔧 [MCP] Server ${server.name} marked as approved`)
+  }
+}
 
 // const ensureValidSchema = (obj: Record<string, any>) => {
 //   // Filter out unsupported keys for Gemini
@@ -575,12 +595,27 @@ export async function parseAndCallTools<R>(
   const confirmedTools: MCPToolResponse[] = []
   const pendingPromises: Promise<void>[] = []
 
-  curToolResponses.forEach((toolResponse) => {
-    const confirmationPromise = requestToolConfirmation(toolResponse.id, abortSignal)
+  // 在开始处理前，为每个工具记录其服务器的初始批准状态
+  // 这样确保同一轮调用中的批准操作不会影响其他工具
+  const toolsWithApprovalStatus = curToolResponses.map((toolResponse) => ({
+    ...toolResponse,
+    _initialServerApprovalStatus: isServerApproved(toolResponse.tool)
+  }))
+
+  toolsWithApprovalStatus.forEach((toolResponse) => {
+    // 使用初始批准状态，而不是动态检查
+    const serverAlreadyApproved = toolResponse._initialServerApprovalStatus
+    const confirmationPromise = serverAlreadyApproved
+      ? Promise.resolve(true)
+      : requestToolConfirmation(toolResponse.id, abortSignal)
 
     const processingPromise = confirmationPromise
       .then(async (confirmed) => {
         if (confirmed) {
+          // 无论是否是第一次确认，都标记服务器为已批准（为下次调用做准备）
+          // 但这不会影响当前轮次中其他待确认的工具
+          markServerAsApproved(toolResponse.tool)
+
           // 立即更新为invoking状态
           upsertMCPToolResponse(
             allToolResponses,
