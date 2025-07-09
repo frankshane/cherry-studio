@@ -726,6 +726,7 @@
         "error": "Error occurred",
         "raw": "Raw",
         "preview": "Preview",
+        "invoking": "Invoking",
         "serverApproved": "Server is approved - tools will auto-execute",
         "confirmTitle": "Allow tool from \"{{serverName}}\"?",
         "batchConfirmTitle": "Allow {{count}} tools from \"{{serverName}}\"?",

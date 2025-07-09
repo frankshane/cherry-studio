@@ -726,6 +726,7 @@
         "error": "发生错误",
         "raw": "原始",
         "preview": "预览",
+        "invoking": "调用中",
         "serverApproved": "服务器已批准 - 工具将自动执行",
         "confirmTitle": "允许来自\"{{serverName}}\"的工具？",
         "batchConfirmTitle": "批量允许来自\"{{serverName}}\"的{{count}}个工具？",

@@ -727,6 +727,7 @@
         "error": "エラーが発生しました",
         "raw": "生データ",
         "preview": "プレビュー",
+        "invoking": "呼び出し中",
         "pending": "承認待ち",
         "serverApproved": "サーバーが承認されました - ツールは自動的に実行されます",
         "confirmTitle": "「{{serverName}}」からのツールを許可しますか？",

@@ -728,6 +728,7 @@
         "raw": "原始碼",
         "preview": "預覽",
         "pending": "等待批准中",
+        "invoking": "調用中",
         "serverApproved": "伺服器已批准 - 工具將自動執行",
         "confirmTitle": "允許來自 \"{{serverName}}\" 的工具嗎？",
         "batchConfirmTitle": "允許來自 \"{{serverName}}\" 的 {{count}} 個工具嗎？",
