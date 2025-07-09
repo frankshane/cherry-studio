@@ -5,7 +5,6 @@ import {
   SafetyCertificateOutlined,
   WarningOutlined
 } from '@ant-design/icons'
-import { showServerConfirmation } from '@renderer/components/Popups/ToolConfirmationModal'
 import { useCodeStyle } from '@renderer/context/CodeStyleProvider'
 import { useSettings } from '@renderer/hooks/useSettings'
 import type { ToolMessageBlock } from '@renderer/types/newMessage'
@@ -32,22 +31,12 @@ const MessageTools: FC<Props> = ({ block }) => {
 
   const { id, tool, status, response } = toolResponse!
 
-  const isPending = status === 'pending'
   const isInvoking = status === 'invoking'
   const isDone = status === 'done'
 
   // 检查服务器是否已批准
   const server = getMcpServerByTool(tool)
   const isServerApproved = server?.isApproved === true
-
-  // 当工具状态变为pending时，显示确认弹窗
-  useEffect(() => {
-    if (isPending && tool && !isServerApproved) {
-      if (server) {
-        showServerConfirmation(server.id, server.name, [tool], [id])
-      }
-    }
-  }, [isPending, id, tool, isServerApproved, server, status])
 
   const argsString = useMemo(() => {
     if (toolResponse?.arguments) {

@@ -27,6 +27,7 @@ import {
 } from 'openai/resources'
 
 import { CompletionsParams } from '../aiCore/middleware/schemas'
+import { showServerConfirmation } from '../components/Popups/ToolConfirmationModal'
 import { requestServerConfirmation, ToolConfirmationResult } from './userConfirmation'
 
 const MCP_AUTO_INSTALL_SERVER_NAME = '@cherry/mcp-auto-install'
@@ -608,6 +609,11 @@ export async function parseAndCallTools<R>(
     const confirmationPromise = serverAlreadyApproved
       ? Promise.resolve('approved' as ToolConfirmationResult)
       : requestServerConfirmation(server.id, tools, toolIds, abortSignal)
+
+    // 如果服务器未批准，显示确认弹窗
+    if (!serverAlreadyApproved) {
+      showServerConfirmation(server.id, server.name, tools, toolIds)
+    }
 
     const processingPromise = confirmationPromise
       .then(async (confirmationResult: ToolConfirmationResult) => {
