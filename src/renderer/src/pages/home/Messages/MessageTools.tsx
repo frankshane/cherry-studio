@@ -5,11 +5,11 @@ import {
   SafetyCertificateOutlined,
   WarningOutlined
 } from '@ant-design/icons'
+import { showServerConfirmation } from '@renderer/components/Popups/ToolConfirmationModal'
 import { useCodeStyle } from '@renderer/context/CodeStyleProvider'
 import { useSettings } from '@renderer/hooks/useSettings'
 import type { ToolMessageBlock } from '@renderer/types/newMessage'
 import { getMcpServerByTool } from '@renderer/utils/mcp-tools'
-import { cancelToolAction, confirmToolAction } from '@renderer/utils/userConfirmation'
 import { Collapse, message as antdMessage, Tooltip } from 'antd'
 import { message } from 'antd'
 import Logger from 'electron-log/renderer'
@@ -39,6 +39,15 @@ const MessageTools: FC<Props> = ({ block }) => {
   // 检查服务器是否已批准
   const server = getMcpServerByTool(tool)
   const isServerApproved = server?.isApproved === true
+
+  // 当工具状态变为pending时，显示确认弹窗
+  useEffect(() => {
+    if (isPending && tool && !isServerApproved) {
+      if (server) {
+        showServerConfirmation(server.id, server.name, [tool], [id])
+      }
+    }
+  }, [isPending, id, tool, isServerApproved, server, status])
 
   const argsString = useMemo(() => {
     if (toolResponse?.arguments) {
@@ -75,14 +84,6 @@ const MessageTools: FC<Props> = ({ block }) => {
 
   const handleCollapseChange = (keys: string | string[]) => {
     setActiveKeys(Array.isArray(keys) ? keys : [keys])
-  }
-
-  const handleConfirmTool = () => {
-    confirmToolAction(id)
-  }
-
-  const handleCancelTool = () => {
-    cancelToolAction(id)
   }
 
   const handleAbortTool = async () => {
@@ -179,31 +180,6 @@ const MessageTools: FC<Props> = ({ block }) => {
             </StatusIndicator>
           </TitleContent>
           <ActionButtonsContainer>
-            {isPending && (
-              <>
-                <Tooltip title={t('common.cancel')} mouseEnterDelay={0.3}>
-                  <ActionButton
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleCancelTool()
-                    }}
-                    aria-label={t('common.cancel')}>
-                    <CloseOutlined style={{ fontSize: '14px' }} />
-                  </ActionButton>
-                </Tooltip>
-                <Tooltip title={t('common.confirm')} mouseEnterDelay={0.3}>
-                  <ActionButton
-                    className="confirm-button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleConfirmTool()
-                    }}
-                    aria-label={t('common.confirm')}>
-                    <CheckOutlined style={{ fontSize: '14px' }} />
-                  </ActionButton>
-                </Tooltip>
-              </>
-            )}
             {isInvoking && toolResponse?.id && (
               <Tooltip title={t('chat.input.pause')} mouseEnterDelay={0.3}>
                 <ActionButton
@@ -414,15 +390,6 @@ const ActionButton = styled.button`
     opacity: 1;
     color: var(--color-text);
     background-color: var(--color-bg-3);
-  }
-
-  &.confirm-button {
-    color: var(--color-primary);
-
-    &:hover {
-      background-color: var(--color-primary-bg);
-      color: var(--color-primary);
-    }
   }
 
   &:focus-visible {

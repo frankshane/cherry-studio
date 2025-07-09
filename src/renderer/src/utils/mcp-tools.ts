@@ -16,7 +16,7 @@ import {
 } from '@renderer/types'
 import type { MCPToolCompleteChunk, MCPToolInProgressChunk, MCPToolPendingChunk } from '@renderer/types/chunk'
 import { ChunkType } from '@renderer/types/chunk'
-import { isArray, isObject, pull, transform } from 'lodash'
+import { groupBy, isArray, isObject, pull, transform } from 'lodash'
 import { nanoid } from 'nanoid'
 import OpenAI from 'openai'
 import {
@@ -27,24 +27,15 @@ import {
 } from 'openai/resources'
 
 import { CompletionsParams } from '../aiCore/middleware/schemas'
-import { requestToolConfirmation } from './userConfirmation'
+import { requestServerConfirmation, ToolConfirmationResult } from './userConfirmation'
 
 const MCP_AUTO_INSTALL_SERVER_NAME = '@cherry/mcp-auto-install'
 const EXTRA_SCHEMA_KEYS = ['schema', 'headers']
 
 /**
- * 检查MCP服务器是否已被用户批准
- */
-function isServerApproved(tool: MCPTool): boolean {
-  const server = getMcpServerByTool(tool)
-  return server?.isApproved === true
-}
-
-/**
  * 将MCP服务器标记为已批准
  */
-function markServerAsApproved(tool: MCPTool): void {
-  const server = getMcpServerByTool(tool)
+function markServerAsApproved(server: MCPServer): void {
   if (server && !server.isApproved) {
     const updatedServer = { ...server, isApproved: true }
     store.dispatch(updateMCPServer(updatedServer))
@@ -481,6 +472,11 @@ export function getMcpServerByTool(tool: MCPTool) {
   return servers.find((s) => s.id === tool.serverId)
 }
 
+export function getMcpServerByName(name: string) {
+  const servers = store.getState().mcp.servers
+  return servers.find((s) => s.name === name)
+}
+
 export function parseToolUse(content: string, mcpTools: MCPTool[], startIdx: number = 0): ToolUseResponse[] {
   if (!content || !mcpTools || mcpTools.length === 0) {
     return []
@@ -591,97 +587,131 @@ export async function parseAndCallTools<R>(
     )
   }
 
-  // 创建工具确认Promise映射，并立即处理每个确认
+  // Group tools by server
+  const toolsByServer = groupBy(curToolResponses, (tool) => tool.tool.serverName)
+
+  // 创建服务器确认Promise映射，并立即处理每个服务器的确认
   const confirmedTools: MCPToolResponse[] = []
   const pendingPromises: Promise<void>[] = []
 
-  // 在开始处理前，为每个工具记录其服务器的初始批准状态
-  // 这样确保同一轮调用中的批准操作不会影响其他工具
-  const toolsWithApprovalStatus = curToolResponses.map((toolResponse) => ({
-    ...toolResponse,
-    _initialServerApprovalStatus: isServerApproved(toolResponse.tool)
-  }))
+  for (const [serverName, toolsForServer] of Object.entries(toolsByServer)) {
+    const server = getMcpServerByName(serverName)
+    if (!server) {
+      Logger.error(`Server not found for tools: ${serverName}`)
+      continue
+    }
 
-  toolsWithApprovalStatus.forEach((toolResponse) => {
-    // 使用初始批准状态，而不是动态检查
-    const serverAlreadyApproved = toolResponse._initialServerApprovalStatus
+    const serverAlreadyApproved = server.isApproved
+    const tools = toolsForServer.map((tr) => tr.tool)
+    const toolIds = toolsForServer.map((tr) => tr.id)
+
     const confirmationPromise = serverAlreadyApproved
-      ? Promise.resolve(true)
-      : requestToolConfirmation(toolResponse.id, abortSignal)
+      ? Promise.resolve('approved' as ToolConfirmationResult)
+      : requestServerConfirmation(server.id, tools, toolIds, abortSignal)
 
     const processingPromise = confirmationPromise
-      .then(async (confirmed) => {
-        if (confirmed) {
-          // 无论是否是第一次确认，都标记服务器为已批准（为下次调用做准备）
-          // 但这不会影响当前轮次中其他待确认的工具
-          markServerAsApproved(toolResponse.tool)
+      .then(async (confirmationResult: ToolConfirmationResult) => {
+        if (confirmationResult === 'approved' || confirmationResult === 'allow_once') {
+          if (confirmationResult === 'approved') {
+            markServerAsApproved(server)
+          }
 
           // 立即更新为invoking状态
-          upsertMCPToolResponse(
-            allToolResponses,
-            {
-              ...toolResponse,
-              status: 'invoking'
-            },
-            onChunk!
-          )
+          for (const toolResponse of toolsForServer) {
+            upsertMCPToolResponse(
+              allToolResponses,
+              {
+                ...toolResponse,
+                status: 'invoking'
+              },
+              onChunk!
+            )
+          }
 
           // 执行工具调用
           try {
             const images: string[] = []
-            const toolCallResponse = await callMCPTool(toolResponse)
 
-            // 立即更新为done状态
-            upsertMCPToolResponse(
-              allToolResponses,
-              {
-                ...toolResponse,
-                status: 'done',
-                response: toolCallResponse
-              },
-              onChunk!
-            )
+            // 批量执行所有工具调用
+            for (let i = 0; i < toolsForServer.length; i++) {
+              const toolResponse = toolsForServer[i]
+              const toolCallResponse = await callMCPTool(toolResponse)
 
-            // 处理图片
-            for (const content of toolCallResponse.content) {
-              if (content.type === 'image' && content.data) {
-                images.push(`data:${content.mimeType};base64,${content.data}`)
+              // 立即更新为done状态
+              upsertMCPToolResponse(
+                allToolResponses,
+                {
+                  ...toolResponse,
+                  status: 'done',
+                  response: toolCallResponse
+                },
+                onChunk!
+              )
+
+              // 处理图片
+              for (const content of toolCallResponse.content) {
+                if (content.type === 'image' && content.data) {
+                  images.push(`data:${content.mimeType};base64,${content.data}`)
+                }
+              }
+
+              if (images.length) {
+                onChunk?.({
+                  type: ChunkType.IMAGE_CREATED
+                })
+                onChunk?.({
+                  type: ChunkType.IMAGE_COMPLETE,
+                  image: {
+                    type: 'base64',
+                    images: images
+                  }
+                })
+              }
+
+              // 转换消息并添加到结果
+              const convertedMessage = convertToMessage(toolResponse, toolCallResponse, model)
+              if (convertedMessage) {
+                confirmedTools.push(toolResponse)
+                toolResults.push(convertedMessage)
               }
             }
-
-            if (images.length) {
-              onChunk?.({
-                type: ChunkType.IMAGE_CREATED
-              })
-              onChunk?.({
-                type: ChunkType.IMAGE_COMPLETE,
-                image: {
-                  type: 'base64',
-                  images: images
-                }
-              })
-            }
-
-            // 转换消息并添加到结果
-            const convertedMessage = convertToMessage(toolResponse, toolCallResponse, model)
-            if (convertedMessage) {
-              confirmedTools.push(toolResponse)
-              toolResults.push(convertedMessage)
-            }
           } catch (error) {
-            Logger.error(`🔧 [MCP] Error executing tool ${toolResponse.id}:`, error)
+            Logger.error(`🔧 [MCP] Error executing tool ${toolsForServer[0].id}:`, error)
             // 更新为错误状态
+            for (const toolResponse of toolsForServer) {
+              upsertMCPToolResponse(
+                allToolResponses,
+                {
+                  ...toolResponse,
+                  status: 'done',
+                  response: {
+                    isError: true,
+                    content: [
+                      {
+                        type: 'text',
+                        text: `Error executing tool: ${error instanceof Error ? error.message : 'Unknown error'}`
+                      }
+                    ]
+                  }
+                },
+                onChunk!
+              )
+            }
+          }
+        } else {
+          // 立即更新为cancelled状态
+          for (const toolResponse of toolsForServer) {
             upsertMCPToolResponse(
               allToolResponses,
               {
                 ...toolResponse,
-                status: 'done',
+                status: 'cancelled',
                 response: {
-                  isError: true,
+                  isError: false,
                   content: [
                     {
                       type: 'text',
-                      text: `Error executing tool: ${error instanceof Error ? error.message : 'Unknown error'}`
+                      text: 'Tool call cancelled by user.'
                     }
                   ]
                 }
@@ -689,19 +719,23 @@ export async function parseAndCallTools<R>(
               onChunk!
             )
           }
-        } else {
-          // 立即更新为cancelled状态
+        }
+      })
+      .catch((error) => {
+        Logger.error(`🔧 [MCP] Error waiting for tool confirmation ${toolsForServer[0].id}:`, error)
+        // 立即更新为cancelled状态
+        for (const toolResponse of toolsForServer) {
           upsertMCPToolResponse(
             allToolResponses,
             {
               ...toolResponse,
               status: 'cancelled',
               response: {
-                isError: false,
+                isError: true,
                 content: [
                   {
                     type: 'text',
-                    text: 'Tool call cancelled by user.'
+                    text: `Error in confirmation process: ${error instanceof Error ? error.message : 'Unknown error'}`
                   }
                 ]
               }
@@ -710,30 +744,9 @@ export async function parseAndCallTools<R>(
           )
         }
       })
-      .catch((error) => {
-        Logger.error(`🔧 [MCP] Error waiting for tool confirmation ${toolResponse.id}:`, error)
-        // 立即更新为cancelled状态
-        upsertMCPToolResponse(
-          allToolResponses,
-          {
-            ...toolResponse,
-            status: 'cancelled',
-            response: {
-              isError: true,
-              content: [
-                {
-                  type: 'text',
-                  text: `Error in confirmation process: ${error instanceof Error ? error.message : 'Unknown error'}`
-                }
-              ]
-            }
-          },
-          onChunk!
-        )
-      })
 
     pendingPromises.push(processingPromise)
-  })
+  }
 
   Logger.info(
     `🔧 [MCP] Waiting for tool confirmations:`,
