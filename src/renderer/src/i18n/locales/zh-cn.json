@@ -1855,6 +1855,26 @@
           "tools": "工具"
         },
         "tags": "标签",
+        "timeout": "超时",
+        "timeoutTooltip": "对该服务器请求的超时时间（秒），默认为 60 秒",
+        "title": "MCP 设置",
+        "tools": {
+          "availableTools": "可用工具",
+          "inputSchema": "输入模式",
+          "loadError": "获取工具失败",
+          "noToolsAvailable": "无可用工具"
+        },
+        "type": "类型",
+        "types": {
+          "inMemory": "内置",
+          "sse": "SSE",
+          "stdio": "STDIO",
+          "streamableHttp": "流式"
+        },
+        "updateError": "更新服务器失败",
+        "updateSuccess": "服务器更新成功",
+        "url": "URL",
+        "user": "用户",
         "tagsPlaceholder": "输入标签",
         "providerPlaceholder": "提供者名称",
         "toolApproval": "工具批准",

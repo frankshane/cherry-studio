@@ -1859,6 +1859,26 @@
         },
         "tags": "標籤",
         "tagsPlaceholder": "輸入標籤",
+        "timeout": "超時",
+        "timeoutTooltip": "對該伺服器請求的超時時間（秒），預設為 60 秒",
+        "title": "MCP 設定",
+        "tools": {
+          "availableTools": "可用工具",
+          "inputSchema": "輸入模式",
+          "loadError": "獲取工具失敗",
+          "noToolsAvailable": "無可用工具"
+        },
+        "type": "類型",
+        "types": {
+          "inMemory": "內置",
+          "sse": "SSE",
+          "stdio": "STDIO",
+          "streamableHttp": "流式"
+        },
+        "updateError": "更新伺服器失敗",
+        "updateSuccess": "伺服器更新成功",
+        "url": "URL",
+        "user": "用戶",
         "toolApproval": "工具批准",
         "toolApprovalHelp": "啟用工具批准後，首次批准工具將自動批准整個伺服器，後續的工具調用將自動執行",
         "serverApprovalStatus": "伺服器批准狀態",

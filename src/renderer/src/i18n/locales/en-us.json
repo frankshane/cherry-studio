@@ -1857,6 +1857,26 @@
         },
         "tags": "Tags",
         "tagsPlaceholder": "Enter tags",
+        "timeout": "Timeout",
+        "timeoutTooltip": "Timeout in seconds for requests to this server, default is 60 seconds",
+        "title": "MCP Settings",
+        "tools": {
+          "availableTools": "Available Tools",
+          "inputSchema": "Input Schema",
+          "loadError": "Get tools Error",
+          "noToolsAvailable": "No tools available"
+        },
+        "type": "Type",
+        "types": {
+          "inMemory": "In Memory",
+          "sse": "SSE",
+          "stdio": "STDIO",
+          "streamableHttp": "Streamable HTTP"
+        },
+        "updateError": "Failed to update server",
+        "updateSuccess": "Server updated successfully",
+        "url": "URL",
+        "user": "User",
         "toolApproval": "Tool Approval",
         "toolApprovalHelp": "When tool approval is enabled, approving a tool for the first time will automatically approve the entire server, and subsequent tool calls will execute automatically",
         "serverApprovalStatus": "Server Approval Status",

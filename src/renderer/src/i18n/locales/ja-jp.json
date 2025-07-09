@@ -1858,6 +1858,26 @@
         },
         "tags": "タグ",
         "tagsPlaceholder": "タグを入力",
+        "timeout": "タイムアウト",
+        "timeoutTooltip": "このサーバーへのリクエストのタイムアウト時間（秒）、デフォルトは60秒です",
+        "title": "MCP 設定",
+        "tools": {
+          "availableTools": "利用可能なツール",
+          "inputSchema": "入力スキーマ",
+          "loadError": "ツール取得エラー",
+          "noToolsAvailable": "利用可能なツールなし"
+        },
+        "type": "タイプ",
+        "types": {
+          "inMemory": "組み込み",
+          "sse": "SSE",
+          "stdio": "STDIO",
+          "streamableHttp": "ストリーミング"
+        },
+        "updateError": "サーバーの更新に失敗しました",
+        "updateSuccess": "サーバーが正常に更新されました",
+        "url": "URL",
+        "user": "ユーザー",
         "providerPlaceholder": "プロバイダー名",
         "toolApproval": "ツールの承認",
         "toolApprovalHelp": "ツール承認が有効になっている場合、ツールを初めて承認すると、サーバー全体が自動的に承認され、以降のツール呼び出しは自動的に実行されます。",
