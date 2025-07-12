@@ -15,7 +15,7 @@ import { setNarrowMode } from '@renderer/store/settings'
 import { Assistant, Topic } from '@renderer/types'
 import { Tooltip } from 'antd'
 import { t } from 'i18next'
-import { LayoutGrid, MessageSquareDiff, PanelLeftClose, PanelRightClose, Pin, PinOff, Search } from 'lucide-react'
+import { MessageSquareDiff, PanelLeftClose, PanelRightClose, Pin, PinOff, Search } from 'lucide-react'
 import { FC, useCallback, useState } from 'react'
 import styled from 'styled-components'
 
