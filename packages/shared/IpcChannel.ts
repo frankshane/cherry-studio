@@ -76,8 +76,10 @@ export enum IpcChannel {
   Mcp_ServersChanged = 'mcp:servers-changed',
   Mcp_ServersUpdated = 'mcp:servers-updated',
   Mcp_CheckConnectivity = 'mcp:check-connectivity',
+  Mcp_UploadDxt = 'mcp:upload-dxt',
   Mcp_SetProgress = 'mcp:set-progress',
   Mcp_AbortTool = 'mcp:abort-tool',
+  Mcp_GetServerVersion = 'mcp:get-server-version',
 
   // Python
   Python_Execute = 'python:execute',
@@ -244,5 +246,17 @@ export enum IpcChannel {
   Selection_ActionWindowMinimize = 'selection:action-window-minimize',
   Selection_ActionWindowPin = 'selection:action-window-pin',
   Selection_ProcessAction = 'selection:process-action',
-  Selection_UpdateActionData = 'selection:update-action-data'
+  Selection_UpdateActionData = 'selection:update-action-data',
+
+  // Memory
+  Memory_Add = 'memory:add',
+  Memory_Search = 'memory:search',
+  Memory_List = 'memory:list',
+  Memory_Delete = 'memory:delete',
+  Memory_Update = 'memory:update',
+  Memory_Get = 'memory:get',
+  Memory_SetConfig = 'memory:set-config',
+  Memory_DeleteUser = 'memory:delete-user',
+  Memory_DeleteAllMemoriesForUser = 'memory:delete-all-memories-for-user',
+  Memory_GetUsersList = 'memory:get-users-list'
 }
