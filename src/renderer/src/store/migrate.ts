@@ -1799,6 +1799,14 @@ const migrateConfig = {
     } catch (error) {
       return state
     }
+  },
+  '122': (state: RootState) => {
+    try {
+      addShortcuts(state, ['pin_window'], 'mini_window')
+      return state
+    } catch (error) {
+      return state
+    }
   }
 }
 
