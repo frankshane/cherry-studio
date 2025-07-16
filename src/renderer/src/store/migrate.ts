@@ -1802,6 +1802,16 @@ const migrateConfig = {
   },
   '122': (state: RootState) => {
     try {
+      if (state.settings && typeof state.settings.webdavDisableStream === 'undefined') {
+        state.settings.webdavDisableStream = false
+      }
+      return state
+    } catch (error) {
+      return state
+    }
+  },
+  '123': (state: RootState) => {
+    try {
       addShortcuts(state, ['pin_window'], 'mini_window')
       return state
     } catch (error) {
