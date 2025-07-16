@@ -433,16 +433,16 @@ export class WindowService {
     this.showMainWindow()
   }
 
-  public setMainWindowPin(isPinned: boolean): Promise<boolean> {
+  public setMainWindowPin(isPinned: boolean): boolean {
     try {
       this.isMainWindowPinned = isPinned
       if (this.mainWindow && !this.mainWindow.isDestroyed()) {
         this.mainWindow.setAlwaysOnTop(isPinned, 'floating')
       }
-      return Promise.resolve(isPinned)
+      return isPinned
     } catch (error) {
       Logger.error('Failed to set main window pin:', error as Error)
-      return Promise.reject(error)
+      throw error
     }
   }
 
