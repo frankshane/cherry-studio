@@ -1820,6 +1820,10 @@ const migrateConfig = {
         state.settings.sidebarIcons.visible = [...state.settings.sidebarIcons.visible, 'notes' as any]
       }
     }
+
+    if (state.settings && state.settings.showWorkspace === undefined) {
+      state.settings.showWorkspace = true
+    }
     return state
   }
 }

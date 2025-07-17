@@ -73,7 +73,8 @@
     "os-proxy-config": "^1.1.2",
     "pdfjs-dist": "4.10.38",
     "selection-hook": "^1.0.6",
-    "turndown": "7.2.0"
+    "turndown": "7.2.0",
+    "vditor": "^3.11.1"
   },
   "devDependencies": {
     "@agentic/exa": "^7.3.3",
