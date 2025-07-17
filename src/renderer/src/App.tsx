@@ -1,5 +1,6 @@
 import '@renderer/databases'
 
+import NotesPage from '@renderer/pages/notes/NotesPage'
 import store, { persistor } from '@renderer/store'
 import { Provider } from 'react-redux'
 import { HashRouter, Route, Routes } from 'react-router-dom'
@@ -43,6 +44,7 @@ function App(): React.ReactElement {
                         <Route path="/files" element={<FilesPage />} />
                         <Route path="/knowledge" element={<KnowledgePage />} />
                         <Route path="/apps" element={<AppsPage />} />
+                        <Route path="/notes" element={<NotesPage />} />
                         <Route path="/settings/*" element={<SettingsPage />} />
                       </Routes>
                     </HashRouter>

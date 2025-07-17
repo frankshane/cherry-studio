@@ -2558,6 +2558,9 @@
       "select_embedding_model_placeholder": "选择嵌入模型",
       "embedding_dimensions": "嵌入维度",
       "stored_memories": "已存储记忆"
+    },
+    "notes": {
+      "title": "笔记"
     }
   }
 }

@@ -1812,6 +1812,15 @@ const migrateConfig = {
     } catch (error) {
       return state
     }
+  },
+  '122': (state: RootState) => {
+    if (state.settings && state.settings.sidebarIcons) {
+      // Check if 'notes' is not already in visible icons
+      if (!state.settings.sidebarIcons.visible.includes('notes' as any)) {
+        state.settings.sidebarIcons.visible = [...state.settings.sidebarIcons.visible, 'notes' as any]
+      }
+    }
+    return state
   }
 }
 
