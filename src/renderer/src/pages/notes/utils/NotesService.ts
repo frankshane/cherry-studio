@@ -1,9 +1,11 @@
+import db from '@renderer/databases'
 import FileManager from '@renderer/services/FileManager'
-import { FileTypes } from '@renderer/types/file'
+import { FileMetadata, FileTypes } from '@renderer/types'
 import { NotesTreeNode } from '@renderer/types/note'
 import { v4 as uuidv4 } from 'uuid'
 
 const NOTES_FOLDER_PREFIX = 'notes'
+const MARKDOWN_EXT = '.md'
 
 export class NotesService {
   private static readonly NOTES_STORAGE_KEY = 'notes-tree-structure'
@@ -14,14 +16,77 @@ export class NotesService {
   static async getNotesTree(): Promise<NotesTreeNode[]> {
     try {
       const storedTree = localStorage.getItem(this.NOTES_STORAGE_KEY)
-      if (storedTree) {
-        return JSON.parse(storedTree)
-      }
-      return []
+      const tree: NotesTreeNode[] = storedTree ? JSON.parse(storedTree) : []
+
+      await this.syncFileNames(tree)
+
+      return tree
     } catch (error) {
       console.error('Failed to get notes tree:', error)
       return []
     }
+  }
+
+  /**
+   * 同步所有文件节点的名称
+   */
+  private static async syncFileNames(tree: NotesTreeNode[]): Promise<void> {
+    // 收集所有文件ID
+    const fileIds: string[] = []
+    this.collectFileIds(tree, fileIds)
+
+    if (fileIds.length === 0) return
+
+    try {
+      const filesMetadata = await Promise.all(fileIds.map((id) => FileManager.getFile(id)))
+      const metadataMap = new Map(filesMetadata.filter((file) => file !== null).map((file) => [file!.id, file]))
+      const hasChanges = this.updateFileNames(tree, metadataMap)
+
+      if (hasChanges) {
+        await this.saveNotesTree(tree)
+      }
+    } catch (error) {
+      console.error('Failed to sync file names:', error)
+    }
+  }
+
+  /**
+   * 收集树中所有文件节点的ID
+   */
+  private static collectFileIds(tree: NotesTreeNode[], fileIds: string[]): void {
+    for (const node of tree) {
+      if (node.type === 'file' && node.fileId) {
+        fileIds.push(node.fileId)
+      }
+      if (node.children && node.children.length > 0) {
+        this.collectFileIds(node.children, fileIds)
+      }
+    }
+  }
+
+  /**
+   * 更新树中的文件名称
+   * @returns 是否有名称更新
+   */
+  private static updateFileNames(tree: NotesTreeNode[], metadataMap: Map<string, any>): boolean {
+    let hasChanges = false
+
+    for (const node of tree) {
+      if (node.type === 'file' && node.fileId) {
+        const metadata = metadataMap.get(node.fileId)
+        if (metadata && metadata.origin_name !== node.name) {
+          node.name = metadata.origin_name
+          node.updatedAt = new Date().toISOString()
+          hasChanges = true
+        }
+      }
+      if (node.children && node.children.length > 0) {
+        const childChanges = this.updateFileNames(node.children, metadataMap)
+        hasChanges = hasChanges || childChanges
+      }
+    }
+
+    return hasChanges
   }
 
   /**
@@ -62,37 +127,43 @@ export class NotesService {
 
   /**
    * 创建新笔记文件
+   * 只允许创建Markdown格式的文件，以noteId.md的格式存储
    */
   static async createNote(name: string, content: string = '', parentId?: string): Promise<NotesTreeNode> {
     const noteId = uuidv4()
     const notePath = this.buildPath(name, parentId)
 
-    try {
-      // 创建临时文件并写入内容
-      const tempPath = await window.api.file.createTempFile(noteId)
-      await window.api.file.write(tempPath, content)
+    // 确保文件名是markdown格式
+    let displayName = name
+    if (!displayName.toLowerCase().endsWith(MARKDOWN_EXT)) {
+      displayName += MARKDOWN_EXT
+    }
 
-      // 通过FileManager上传文件
-      const fileMetadata = await FileManager.uploadFile({
+    try {
+      const fileMetadata: FileMetadata = {
         id: noteId,
-        name,
-        origin_name: name,
-        path: tempPath,
+        name: noteId + MARKDOWN_EXT,
+        origin_name: displayName,
+        path: notePath,
         size: content.length,
-        ext: '.md',
+        ext: MARKDOWN_EXT,
         type: FileTypes.TEXT,
         created_at: new Date().toISOString(),
         count: 1
-      })
+      }
 
+      await window.api.file.writeWithId(fileMetadata.id + fileMetadata.ext, content)
+      await FileManager.addFile(fileMetadata)
+
+      // 创建树节点
       const note: NotesTreeNode = {
         id: noteId,
-        name,
+        name: displayName,
         type: 'file',
         path: notePath,
-        fileId: fileMetadata.id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        fileId: noteId,
+        createdAt: fileMetadata.created_at,
+        updatedAt: fileMetadata.created_at
       }
 
       const tree = await this.getNotesTree()
@@ -115,8 +186,12 @@ export class NotesService {
     }
 
     try {
-      // 直接使用文件ID读取
-      return await window.api.file.read(node.fileId)
+      const fileMetadata = await FileManager.getFile(node.fileId)
+      if (!fileMetadata) {
+        throw new Error('Note file not found in database')
+      }
+
+      return await window.api.file.read(fileMetadata.id + fileMetadata.ext)
     } catch (error) {
       console.error('Failed to read note:', error)
       throw error
@@ -132,9 +207,17 @@ export class NotesService {
     }
 
     try {
-      await window.api.file.writeWithId(node.fileId, content)
+      const fileMetadata = await FileManager.getFile(node.fileId)
+      if (!fileMetadata) {
+        throw new Error('Note file not found in database')
+      }
 
-      // 更新树结构中的修改时间
+      await window.api.file.writeWithId(fileMetadata.id + fileMetadata.ext, content)
+      await db.files.update(fileMetadata.id, {
+        size: content.length,
+        count: fileMetadata.count + 1
+      })
+
       const tree = await this.getNotesTree()
       const targetNode = this.findNodeInTree(tree, node.id)
       if (targetNode) {
@@ -159,10 +242,7 @@ export class NotesService {
     }
 
     try {
-      // 递归删除所有子节点的文件
       await this.deleteNodeRecursively(node)
-
-      // 从树结构中移除节点
       this.removeNodeFromTree(tree, nodeId)
       await this.saveNotesTree(tree)
     } catch (error) {
@@ -182,8 +262,32 @@ export class NotesService {
       throw new Error('Node not found')
     }
 
-    node.name = newName
+    // 为文件类型自动添加.md后缀
+    let finalName = newName
+    if (node.type === 'file' && !finalName.toLowerCase().endsWith(MARKDOWN_EXT)) {
+      finalName += MARKDOWN_EXT
+    }
+
+    // 更新节点名称
+    node.name = finalName
     node.updatedAt = new Date().toISOString()
+
+    // 如果是文件类型，还需要更新文件记录
+    if (node.type === 'file' && node.fileId) {
+      try {
+        // 获取文件元数据
+        const fileMetadata = await FileManager.getFile(node.fileId)
+        if (fileMetadata) {
+          // 更新文件的原始名称（显示名称）
+          await db.files.update(node.fileId, {
+            origin_name: finalName
+          })
+        }
+      } catch (error) {
+        console.error('Failed to update file metadata:', error)
+        throw error
+      }
+    }
 
     await this.saveNotesTree(tree)
   }
@@ -225,10 +329,8 @@ export class NotesService {
       throw new Error('Node not found')
     }
 
-    // 从当前位置移除
     this.removeNodeFromTree(tree, nodeId)
 
-    // 插入到新位置
     this.insertNodeIntoTree(tree, node, newParentId)
 
     await this.saveNotesTree(tree)
@@ -309,10 +411,12 @@ export class NotesService {
    */
   private static async deleteNodeRecursively(node: NotesTreeNode): Promise<void> {
     if (node.type === 'file' && node.fileId) {
-      // 删除文件
-      await FileManager.deleteFile(node.fileId)
+      try {
+        await FileManager.deleteFile(node.fileId, true)
+      } catch (error) {
+        console.error(`Failed to delete file with id ${node.fileId}:`, error)
+      }
     } else if (node.type === 'folder' && node.children) {
-      // 递归删除子节点
       for (const child of node.children) {
         await this.deleteNodeRecursively(child)
       }

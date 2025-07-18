@@ -4,10 +4,11 @@ import Scrollbar from '@renderer/components/Scrollbar'
 import { useTheme } from '@renderer/context/ThemeProvider'
 import { useSettings } from '@renderer/hooks/useSettings'
 import NotesNavbar from '@renderer/pages/notes/NotesNavbar'
+import FileManager from '@renderer/services/FileManager'
 import { ThemeMode } from '@renderer/types'
 import { NotesTreeNode } from '@renderer/types/note'
 import { Empty } from 'antd'
-import { FC, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 import Vditor from 'vditor'
@@ -25,6 +26,37 @@ const NotesPage: FC = () => {
   const [activeNodeId, setActiveNodeId] = useState<string | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(false)
 
+  // 查找树节点 by ID
+  const findNodeById = useCallback((tree: NotesTreeNode[], nodeId: string): NotesTreeNode | null => {
+    for (const node of tree) {
+      if (node.id === nodeId) {
+        return node
+      }
+      if (node.children) {
+        const found = findNodeById(node.children, nodeId)
+        if (found) return found
+      }
+    }
+    return null
+  }, [])
+
+  // 保存当前笔记内容
+  const saveCurrentNote = useCallback(
+    async (content: string) => {
+      if (!activeNodeId) return
+
+      try {
+        const activeNode = findNodeById(notesTree, activeNodeId)
+        if (activeNode && activeNode.type === 'file') {
+          await NotesService.updateNote(activeNode, content)
+        }
+      } catch (error) {
+        console.error('Failed to save note:', error)
+      }
+    },
+    [activeNodeId, findNodeById, notesTree]
+  )
+
   useEffect(() => {
     const loadNotesTree = async () => {
       try {
@@ -38,55 +70,71 @@ const NotesPage: FC = () => {
     loadNotesTree()
   }, [])
 
-  // 初始化编辑器 - 只有在选择笔记后才初始化
   useEffect(() => {
-    if (editorRef.current && !vditor && activeNodeId) {
-      const editor = new Vditor(editorRef.current, {
-        height: '100%',
-        mode: 'ir',
-        theme: theme === ThemeMode.dark ? 'dark' : 'classic',
-        toolbar: [
-          'headings',
-          'bold',
-          'italic',
-          'strike',
-          'link',
-          '|',
-          'list',
-          'ordered-list',
-          'check',
-          'outdent',
-          'indent',
-          '|',
-          'quote',
-          'line',
-          'code',
-          'inline-code',
-          '|',
-          'upload',
-          'table',
-          '|',
-          'undo',
-          'redo',
-          '|',
-          'fullscreen',
-          'preview'
-        ],
-        placeholder: t('notes.content_placeholder'),
-        cache: {
-          enable: false
-        },
-        after: () => {
-          setVditor(editor)
-        },
-        input: (value) => {
-          // 自动保存当前笔记
-          if (activeNodeId) {
-            saveCurrentNote(value)
+    const initEditor = async () => {
+      if (editorRef.current && !vditor && activeNodeId) {
+        const editor = new Vditor(editorRef.current, {
+          height: '100%',
+          mode: 'ir',
+          theme: theme === ThemeMode.dark ? 'dark' : 'classic',
+          toolbar: [
+            'headings',
+            'bold',
+            'italic',
+            'strike',
+            'link',
+            '|',
+            'list',
+            'ordered-list',
+            'check',
+            'outdent',
+            'indent',
+            '|',
+            'quote',
+            'line',
+            'code',
+            'inline-code',
+            '|',
+            'upload',
+            'table',
+            '|',
+            'undo',
+            'redo',
+            '|',
+            'fullscreen',
+            'preview'
+          ],
+          placeholder: t('notes.content_placeholder'),
+          cache: {
+            enable: false
+          },
+          after: async () => {
+            setVditor(editor)
+
+            // 编辑器初始化完成后，加载笔记内容
+            if (activeNodeId) {
+              try {
+                const activeNode = findNodeById(notesTree, activeNodeId)
+                if (activeNode && activeNode.type === 'file') {
+                  const content = await NotesService.readNote(activeNode)
+                  editor.setValue(content)
+                }
+              } catch (error) {
+                console.error('Failed to load note content after editor init:', error)
+              }
+            }
+          },
+          input: (value) => {
+            // 自动保存当前笔记
+            if (activeNodeId) {
+              saveCurrentNote(value)
+            }
           }
-        }
-      })
+        })
+      }
     }
+
+    initEditor()
 
     return () => {
       if (vditor) {
@@ -94,7 +142,7 @@ const NotesPage: FC = () => {
         setVditor(null)
       }
     }
-  }, [theme, activeNodeId, t])
+  }, [theme, activeNodeId, t, notesTree, vditor, findNodeById, saveCurrentNote])
 
   // 监听主题变化，更新编辑器样式
   useEffect(() => {
@@ -106,34 +154,6 @@ const NotesPage: FC = () => {
       )
     }
   }, [theme, vditor])
-
-  // 自动保存笔记内容
-  const saveCurrentNote = async (content: string) => {
-    if (!activeNodeId) return
-
-    try {
-      const activeNode = findNodeById(notesTree, activeNodeId)
-      if (activeNode && activeNode.type === 'file') {
-        await NotesService.updateNote(activeNode, content)
-      }
-    } catch (error) {
-      console.error('Failed to save note:', error)
-    }
-  }
-
-  // 在树中查找节点
-  const findNodeById = (tree: NotesTreeNode[], nodeId: string): NotesTreeNode | null => {
-    for (const node of tree) {
-      if (node.id === nodeId) {
-        return node
-      }
-      if (node.children) {
-        const found = findNodeById(node.children, nodeId)
-        if (found) return found
-      }
-    }
-    return null
-  }
 
   // 创建文件夹
   const handleCreateFolder = async (name: string, parentId?: string) => {
@@ -153,7 +173,13 @@ const NotesPage: FC = () => {
   const handleCreateNote = async (name: string, parentId?: string) => {
     try {
       setIsLoading(true)
-      const newNote = await NotesService.createNote(name, '', parentId)
+
+      let noteName = name
+      if (!noteName.toLowerCase().endsWith('.md')) {
+        noteName += '.md'
+      }
+
+      const newNote = await NotesService.createNote(noteName, '', parentId)
       const updatedTree = await NotesService.getNotesTree()
       setNotesTree(updatedTree)
 
@@ -173,10 +199,20 @@ const NotesPage: FC = () => {
         setIsLoading(true)
         setActiveNodeId(node.id)
 
-        // 读取笔记内容
-        const content = await NotesService.readNote(node)
+        if (node.fileId) {
+          const updatedFileMetadata = await FileManager.getFile(node.fileId)
+          if (updatedFileMetadata && updatedFileMetadata.origin_name !== node.name) {
+            // 如果数据库中的显示名称与树节点中的名称不同，更新树节点
+            const updatedTree = [...notesTree]
+            const updatedNode = findNodeById(updatedTree, node.id)
+            if (updatedNode) {
+              updatedNode.name = updatedFileMetadata.origin_name
+              setNotesTree(updatedTree)
+            }
+          }
+        }
 
-        // 如果编辑器已初始化，则更新内容
+        const content = await NotesService.readNote(node)
         if (vditor) {
           vditor.setValue(content)
         }
