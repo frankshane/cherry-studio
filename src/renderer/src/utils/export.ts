@@ -1,10 +1,12 @@
 import { Client } from '@notionhq/client'
 import i18n from '@renderer/i18n'
+import { NotesService } from '@renderer/pages/notes/utils/NotesService'
 import { getMessageTitle } from '@renderer/services/MessagesService'
 import store from '@renderer/store'
 import { setExportState } from '@renderer/store/runtime'
 import type { Topic } from '@renderer/types'
 import type { Message } from '@renderer/types/newMessage'
+import { NotesTreeNode } from '@renderer/types/note'
 import { removeSpecialCharactersForFileName } from '@renderer/utils/file'
 import { convertMathFormula, markdownToPlainText } from '@renderer/utils/markdown'
 import { getCitationContent, getMainTextContent, getThinkingContent } from '@renderer/utils/messageUtils/find'
@@ -735,4 +737,56 @@ async function createSiyuanDoc(
   }
 
   return data.data
+}
+
+/**
+ * 导出消息到笔记工作区
+ * @returns 创建的笔记节点
+ * @param title
+ * @param content
+ */
+export const exportMessageToNotes = async (title: string, content: string): Promise<NotesTreeNode | null> => {
+  try {
+    const note = await NotesService.createNote(title, content)
+
+    window.message.success({
+      content: i18n.t('message.success.notes.export'),
+      key: 'notes-export-success'
+    })
+
+    return note
+  } catch (error) {
+    console.error('导出到笔记失败:', error)
+    window.message.error({
+      content: i18n.t('message.error.notes.export'),
+      key: 'notes-export-error'
+    })
+    return null
+  }
+}
+
+/**
+ * 导出话题到笔记工作区
+ * @param topic 要导出的话题
+ * @returns 创建的笔记节点
+ */
+export const exportTopicToNotes = async (topic: Topic): Promise<NotesTreeNode | null> => {
+  try {
+    const content = await topicToMarkdown(topic)
+    const note = await NotesService.createNote(topic.name, content)
+
+    window.message.success({
+      content: i18n.t('message.success.notes.export'),
+      key: 'notes-export-success'
+    })
+
+    return note
+  } catch (error) {
+    console.error('导出到笔记失败:', error)
+    window.message.error({
+      content: i18n.t('message.error.notes.export'),
+      key: 'notes-export-error'
+    })
+    return null
+  }
 }

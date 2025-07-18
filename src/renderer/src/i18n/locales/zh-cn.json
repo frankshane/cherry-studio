@@ -313,6 +313,7 @@
       "topics.export.md.reason": "导出为 Markdown (包含思考)",
       "topics.export.notion": "导出到 Notion",
       "topics.export.obsidian": "导出到 Obsidian",
+      "topics.export.notes": "导出到笔记",
       "topics.export.obsidian_atributes": "配置笔记属性",
       "topics.export.obsidian_btn": "确定",
       "topics.export.obsidian_created": "创建时间",
@@ -713,6 +714,7 @@
       "error.siyuan.no_config": "未配置思源笔记 API 地址或令牌",
       "error.yuque.export": "导出语雀错误，请检查连接状态并对照文档检查配置",
       "error.yuque.no_config": "未配置语雀 Token 或 知识库 URL",
+      "error.notes.export": "导出笔记失败",
       "group.delete.content": "删除分组消息会删除用户提问和所有助手的回答",
       "group.delete.title": "删除分组消息",
       "ignore.knowledge.base": "联网模式开启，忽略知识库",
@@ -747,6 +749,7 @@
       "success.notion.export": "成功导出到 Notion",
       "success.siyuan.export": "导出到思源笔记成功",
       "success.yuque.export": "成功导出到语雀",
+      "success.notes.export": "成功导出到笔记",
       "switch.disabled": "请等待当前回复完成后操作",
       "tools": {
         "abort_failed": "工具调用中断失败",
@@ -1405,7 +1408,8 @@
           "plain_text": "复制为纯文本",
           "siyuan": "导出到思源笔记",
           "title": "导出菜单设置",
-          "yuque": "导出到语雀"
+          "yuque": "导出到语雀",
+          "notes": "导出到笔记"
         },
         "hour_interval_one": "{{count}} 小时",
         "hour_interval_other": "{{count}} 小时",
