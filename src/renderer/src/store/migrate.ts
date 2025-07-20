@@ -1838,7 +1838,7 @@ const migrateConfig = {
   },
   '122': (state: RootState) => {
     try {
-      state.settings.topicPosition = 'left'
+      state.settings.navbarPosition = 'left'
       return state
     } catch (error) {
       logger.error('migrate 122 error', error)
