@@ -914,10 +914,11 @@
         "refresh": "Refresh",
         "rightclick_copyurl": "Right-click to copy URL"
       },
+      "add_to_launchpad": "Add to Launchpad",
+      "add_to_sidebar": "Add to Sidebar",
+      "remove_from_launchpad": "Remove from Launchpad",
+      "remove_from_sidebar": "Remove from Sidebar",
       "sidebar": {
-        "add": {
-          "title": "Add to Sidebar"
-        },
         "close": {
           "title": "Close"
         },
@@ -926,9 +927,6 @@
         },
         "hide": {
           "title": "Hide"
-        },
-        "remove": {
-          "title": "Remove from Sidebar"
         },
         "remove_custom": {
           "title": "Delete Custom App"

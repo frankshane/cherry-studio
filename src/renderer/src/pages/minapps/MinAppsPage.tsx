@@ -1,4 +1,5 @@
 import { Navbar, NavbarMain } from '@renderer/components/app/Navbar'
+import App from '@renderer/components/MinApp/MinApp'
 import Scrollbar from '@renderer/components/Scrollbar'
 import { useMinapps } from '@renderer/hooks/useMinapps'
 import { useNavbarPosition } from '@renderer/hooks/useSettings'
@@ -8,7 +9,6 @@ import React, { FC, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
-import App from './App'
 import MinappSettingsPopup from './MiniappSettings/MinappSettingsPopup'
 import NewAppButton from './NewAppButton'
 

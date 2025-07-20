@@ -914,10 +914,11 @@
         "refresh": "更新",
         "rightclick_copyurl": "右クリックでURLをコピー"
       },
+      "add_to_launchpad": "スタート画面に追加",
+      "add_to_sidebar": "サイドバーに追加",
+      "remove_from_launchpad": "スタート画面から削除",
+      "remove_from_sidebar": "サイドバーから削除",
       "sidebar": {
-        "add": {
-          "title": "サイドバーに追加"
-        },
         "close": {
           "title": "閉じる"
         },
@@ -926,9 +927,6 @@
         },
         "hide": {
           "title": "非表示"
-        },
-        "remove": {
-          "title": "サイドバーから削除"
         },
         "remove_custom": {
           "title": "カスタムアプリを削除"

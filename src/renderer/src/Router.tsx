@@ -8,11 +8,11 @@ import TabsContainer from './components/Tab/TabContainer'
 import NavigationHandler from './handler/NavigationHandler'
 import { useNavbarPosition } from './hooks/useSettings'
 import AgentsPage from './pages/agents/AgentsPage'
-import AppsPage from './pages/apps/AppsPage'
 import FilesPage from './pages/files/FilesPage'
 import HomePage from './pages/home/HomePage'
 import KnowledgePage from './pages/knowledge/KnowledgePage'
 import LaunchpadPage from './pages/launchpad/LaunchpadPage'
+import MinAppsPage from './pages/minapps/MinAppsPage'
 import PaintingsRoutePage from './pages/paintings/PaintingsRoutePage'
 import SettingsPage from './pages/settings/SettingsPage'
 import TranslatePage from './pages/translate/TranslatePage'
@@ -29,7 +29,7 @@ const Router: FC = () => {
         <Route path="/translate" element={<TranslatePage />} />
         <Route path="/files" element={<FilesPage />} />
         <Route path="/knowledge" element={<KnowledgePage />} />
-        <Route path="/apps" element={<AppsPage />} />
+        <Route path="/apps" element={<MinAppsPage />} />
         <Route path="/settings/*" element={<SettingsPage />} />
         <Route path="/launchpad" element={<LaunchpadPage />} />
       </Routes>

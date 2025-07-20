@@ -914,10 +914,11 @@
         "refresh": "刷新",
         "rightclick_copyurl": "右键复制 URL"
       },
+      "add_to_launchpad": "添加到启动台",
+      "add_to_sidebar": "添加到侧边栏",
+      "remove_from_launchpad": "从启动台移除",
+      "remove_from_sidebar": "从侧边栏移除",
       "sidebar": {
-        "add": {
-          "title": "添加到侧边栏"
-        },
         "close": {
           "title": "关闭"
         },
@@ -926,9 +927,6 @@
         },
         "hide": {
           "title": "隐藏"
-        },
-        "remove": {
-          "title": "从侧边栏移除"
         },
         "remove_custom": {
           "title": "删除自定义应用"

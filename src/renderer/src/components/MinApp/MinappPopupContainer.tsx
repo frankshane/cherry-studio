@@ -143,6 +143,7 @@ const MinappPopupContainer: React.FC = () => {
   const { pinned, updatePinnedMinapps } = useMinapps()
   const { t } = useTranslation()
   const backgroundColor = useNavBackgroundColor()
+  const { isTopNavbar } = useNavbarPosition()
   const dispatch = useAppDispatch()
 
   /** control the drawer open or close */
@@ -422,7 +423,15 @@ const MinappPopupContainer: React.FC = () => {
           </Tooltip>
           {appInfo.canPinned && (
             <Tooltip
-              title={appInfo.isPinned ? t('minapp.sidebar.remove.title') : t('minapp.sidebar.add.title')}
+              title={
+                appInfo.isPinned
+                  ? isTopNavbar
+                    ? t('minapp.remove_from_launchpad')
+                    : t('minapp.remove_from_sidebar')
+                  : isTopNavbar
+                    ? t('minapp.add_to_launchpad')
+                    : t('minapp.add_to_sidebar')
+              }
               mouseEnterDelay={0.8}
               placement="bottom">
               <TitleButton onClick={() => handleTogglePin(appInfo.id)} className={appInfo.isPinned ? 'pinned' : ''}>

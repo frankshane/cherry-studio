@@ -1,6 +1,4 @@
-import MinAppIcon from '@renderer/components/Icons/MinAppIcon'
-import IndicatorLight from '@renderer/components/IndicatorLight'
-import { useMinappPopup } from '@renderer/hooks/useMinappPopup'
+import App from '@renderer/components/MinApp/MinApp'
 import { useMinapps } from '@renderer/hooks/useMinapps'
 import { useRuntime } from '@renderer/hooks/useRuntime'
 import { useSettings } from '@renderer/hooks/useSettings'
@@ -15,8 +13,7 @@ const LaunchpadPage: FC = () => {
   const { t } = useTranslation()
   const { defaultPaintingProvider } = useSettings()
   const { pinned } = useMinapps()
-  const { openedKeepAliveMinapps, currentMinappId, minappShow } = useRuntime()
-  const { openMinappKeepAlive } = useMinappPopup()
+  const { openedKeepAliveMinapps } = useRuntime()
 
   const appMenuItems = [
     {
@@ -76,25 +73,6 @@ const LaunchpadPage: FC = () => {
     return Array.from(allApps.values())
   }, [openedKeepAliveMinapps, pinned])
 
-  const renderMinappIcon = (app) => {
-    const isActive = minappShow && currentMinappId === app.id
-    const isOpened = openedKeepAliveMinapps.some((item) => item.id === app.id)
-
-    return (
-      <AppIcon key={app.id} onClick={() => openMinappKeepAlive(app)}>
-        <IconContainer>
-          <MinAppIcon size={56} app={app} style={{ borderRadius: 14 }} />
-          {isOpened && (
-            <StyledIndicator>
-              <IndicatorLight color="#22c55e" size={6} animation={!isActive} />
-            </StyledIndicator>
-          )}
-        </IconContainer>
-        <AppName>{app.name}</AppName>
-      </AppIcon>
-    )
-  }
-
   return (
     <Container>
       <Content>
@@ -115,7 +93,13 @@ const LaunchpadPage: FC = () => {
         {sortedMinapps.length > 0 && (
           <Section>
             <SectionTitle>{t('launchpad.minapps')}</SectionTitle>
-            <Grid>{sortedMinapps.map(renderMinappIcon)}</Grid>
+            <Grid>
+              {sortedMinapps.map((app) => (
+                <AppWrapper key={app.id}>
+                  <App app={app} size={56} />
+                </AppWrapper>
+              ))}
+            </Grid>
           </Section>
         )}
       </Content>
@@ -219,13 +203,18 @@ const AppName = styled.div`
   white-space: nowrap;
 `
 
-const StyledIndicator = styled.div`
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  padding: 2px;
-  background: var(--color-background);
-  border-radius: 50%;
+const AppWrapper = styled.div`
+  padding: 8px 4px;
+  border-radius: 8px;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
 `
 
 export default LaunchpadPage

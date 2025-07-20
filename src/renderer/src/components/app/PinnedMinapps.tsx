@@ -110,6 +110,7 @@ export const SidebarPinnedApps: FC = () => {
   const { minappShow, openedKeepAliveMinapps, currentMinappId } = useRuntime()
   const { theme } = useTheme()
   const { openMinappKeepAlive } = useMinappPopup()
+  const { isTopNavbar } = useNavbarPosition()
 
   return (
     <DraggableList list={pinned} onUpdate={updatePinnedMinapps} listStyle={{ marginBottom: 5 }}>
@@ -117,7 +118,7 @@ export const SidebarPinnedApps: FC = () => {
         const menuItems: MenuProps['items'] = [
           {
             key: 'togglePin',
-            label: t('minapp.sidebar.remove.title'),
+            label: isTopNavbar ? t('minapp.remove_from_launchpad') : t('minapp.remove_from_sidebar'),
             onClick: () => {
               const newPinned = pinned.filter((item) => item.id !== app.id)
               updatePinnedMinapps(newPinned)
