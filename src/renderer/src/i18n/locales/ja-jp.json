@@ -1,22 +1,5 @@
 {
   "translation": {
-    "title": {
-      "home": "ホーム",
-      "agents": "エージェント",
-      "paintings": "ペインティング",
-      "translate": "翻訳",
-      "files": "ファイル",
-      "knowledge": "ナレッジベース",
-      "apps": "アプリ",
-      "mcp-servers": "MCP サーバー",
-      "settings": "設定",
-      "launchpad": "ランチパッド",
-      "memories": "メモリ"
-    },
-    "launchpad": {
-      "apps": "アプリ",
-      "minapps": "アプリ"
-    },
     "agents": {
       "add.button": "アシスタントに追加",
       "add.knowledge_base": "ナレッジベース",
@@ -672,6 +655,10 @@
       "urdu": "ウルドゥー語",
       "vietnamese": "ベトナム語"
     },
+    "launchpad": {
+      "apps": "アプリ",
+      "minapps": "アプリ"
+    },
     "lmstudio": {
       "keep_alive_time.description": "モデルがメモリに保持される時間（デフォルト：5分）",
       "keep_alive_time.placeholder": "分",
@@ -902,6 +889,8 @@
       }
     },
     "minapp": {
+      "add_to_launchpad": "スタート画面に追加",
+      "add_to_sidebar": "サイドバーに追加",
       "popup": {
         "close": "ミニアプリを閉じる",
         "devtools": "開発者ツール",
@@ -914,8 +903,6 @@
         "refresh": "更新",
         "rightclick_copyurl": "右クリックでURLをコピー"
       },
-      "add_to_launchpad": "スタート画面に追加",
-      "add_to_sidebar": "サイドバーに追加",
       "remove_from_launchpad": "スタート画面から削除",
       "remove_from_sidebar": "サイドバーから削除",
       "sidebar": {
@@ -1825,6 +1812,10 @@
       "display.custom.css": "カスタムCSS",
       "display.custom.css.cherrycss": "cherrycss.comから取得",
       "display.custom.css.placeholder": "/* ここにカスタムCSSを入力 */",
+      "display.navbar.position": "ナビゲーションバー位置",
+      "display.navbar.position.left": "左",
+      "display.navbar.position.top": "上",
+      "display.navbar.title": "ナビゲーションバー設定",
       "display.sidebar.chat.hiddenMessage": "アシスタントは基本的な機能であり、非表示はサポートされていません",
       "display.sidebar.disabled": "アイコンを非表示",
       "display.sidebar.empty": "非表示にする機能を左側からここにドラッグ",
@@ -1838,10 +1829,6 @@
       "display.title": "表示設定",
       "display.topic.title": "トピック設定",
       "display.zoom.title": "ズーム設定",
-      "display.navbar.title": "ナビゲーションバー設定",
-      "display.navbar.position": "ナビゲーションバー位置",
-      "display.navbar.position.left": "左",
-      "display.navbar.position.top": "上",
       "font_size.title": "メッセージのフォントサイズ",
       "general": "一般設定",
       "general.auto_check_update.title": "自動更新",
@@ -2527,6 +2514,19 @@
         "reset": "リセット",
         "title": "ページズーム"
       }
+    },
+    "title": {
+      "agents": "エージェント",
+      "apps": "アプリ",
+      "files": "ファイル",
+      "home": "ホーム",
+      "knowledge": "ナレッジベース",
+      "launchpad": "ランチパッド",
+      "mcp-servers": "MCP サーバー",
+      "memories": "メモリ",
+      "paintings": "ペインティング",
+      "settings": "設定",
+      "translate": "翻訳"
     },
     "trace": {
       "backList": "リストに戻る",

@@ -1,22 +1,5 @@
 {
   "translation": {
-    "title": {
-      "home": "首页",
-      "agents": "智能体",
-      "paintings": "绘画",
-      "translate": "翻译",
-      "files": "文件",
-      "knowledge": "知识库",
-      "apps": "小程序",
-      "mcp-servers": "MCP 服务器",
-      "settings": "设置",
-      "launchpad": "启动台",
-      "memories": "记忆"
-    },
-    "launchpad": {
-      "apps": "应用",
-      "minapps": "小程序"
-    },
     "agents": {
       "add.button": "添加到助手",
       "add.knowledge_base": "知识库",
@@ -672,6 +655,10 @@
       "urdu": "乌尔都文",
       "vietnamese": "越南文"
     },
+    "launchpad": {
+      "apps": "应用",
+      "minapps": "小程序"
+    },
     "lmstudio": {
       "keep_alive_time.description": "对话后模型在内存中保持的时间（默认：5 分钟）",
       "keep_alive_time.placeholder": "分钟",
@@ -902,6 +889,8 @@
       }
     },
     "minapp": {
+      "add_to_launchpad": "添加到启动台",
+      "add_to_sidebar": "添加到侧边栏",
       "popup": {
         "close": "关闭小程序",
         "devtools": "开发者工具",
@@ -914,8 +903,6 @@
         "refresh": "刷新",
         "rightclick_copyurl": "右键复制 URL"
       },
-      "add_to_launchpad": "添加到启动台",
-      "add_to_sidebar": "添加到侧边栏",
       "remove_from_launchpad": "从启动台移除",
       "remove_from_sidebar": "从侧边栏移除",
       "sidebar": {
@@ -1825,6 +1812,10 @@
       "display.custom.css": "自定义 CSS",
       "display.custom.css.cherrycss": "从 cherrycss.com 获取",
       "display.custom.css.placeholder": "/* 这里写自定义 CSS */",
+      "display.navbar.position": "导航栏位置",
+      "display.navbar.position.left": "左侧",
+      "display.navbar.position.top": "顶部",
+      "display.navbar.title": "导航栏设置",
       "display.sidebar.chat.hiddenMessage": "助手是基础功能，不支持隐藏",
       "display.sidebar.disabled": "隐藏的图标",
       "display.sidebar.empty": "把要隐藏的功能从左侧拖拽到这里",
@@ -1838,10 +1829,6 @@
       "display.title": "显示设置",
       "display.topic.title": "话题设置",
       "display.zoom.title": "缩放设置",
-      "display.navbar.title": "导航栏设置",
-      "display.navbar.position": "导航栏位置",
-      "display.navbar.position.left": "左侧",
-      "display.navbar.position.top": "顶部",
       "font_size.title": "消息字体大小",
       "general": "常规设置",
       "general.auto_check_update.title": "自动更新",
@@ -2527,6 +2514,19 @@
         "reset": "重置",
         "title": "缩放"
       }
+    },
+    "title": {
+      "agents": "智能体",
+      "apps": "小程序",
+      "files": "文件",
+      "home": "首页",
+      "knowledge": "知识库",
+      "launchpad": "启动台",
+      "mcp-servers": "MCP 服务器",
+      "memories": "记忆",
+      "paintings": "绘画",
+      "settings": "设置",
+      "translate": "翻译"
     },
     "trace": {
       "backList": "返回列表",

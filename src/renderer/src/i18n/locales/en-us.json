@@ -1,22 +1,5 @@
 {
   "translation": {
-    "title": {
-      "home": "Home",
-      "agents": "Agents",
-      "paintings": "Paintings",
-      "translate": "Translate",
-      "files": "Files",
-      "knowledge": "Knowledge Base",
-      "apps": "Apps",
-      "mcp-servers": "MCP Servers",
-      "settings": "Settings",
-      "launchpad": "Launchpad",
-      "memories": "Memories"
-    },
-    "launchpad": {
-      "apps": "Apps",
-      "minapps": "Minapps"
-    },
     "agents": {
       "add.button": "Add to Assistant",
       "add.knowledge_base": "Knowledge Base",
@@ -672,6 +655,10 @@
       "urdu": "Urdu",
       "vietnamese": "Vietnamese"
     },
+    "launchpad": {
+      "apps": "Apps",
+      "minapps": "Minapps"
+    },
     "lmstudio": {
       "keep_alive_time.description": "The time in minutes to keep the connection alive, default is 5 minutes.",
       "keep_alive_time.placeholder": "Minutes",
@@ -902,6 +889,8 @@
       }
     },
     "minapp": {
+      "add_to_launchpad": "Add to Launchpad",
+      "add_to_sidebar": "Add to Sidebar",
       "popup": {
         "close": "Close MinApp",
         "devtools": "Developer Tools",
@@ -914,8 +903,6 @@
         "refresh": "Refresh",
         "rightclick_copyurl": "Right-click to copy URL"
       },
-      "add_to_launchpad": "Add to Launchpad",
-      "add_to_sidebar": "Add to Sidebar",
       "remove_from_launchpad": "Remove from Launchpad",
       "remove_from_sidebar": "Remove from Sidebar",
       "sidebar": {
@@ -1825,6 +1812,10 @@
       "display.custom.css": "Custom CSS",
       "display.custom.css.cherrycss": "Get from cherrycss.com",
       "display.custom.css.placeholder": "/* Put custom CSS here */",
+      "display.navbar.position": "Navbar Position",
+      "display.navbar.position.left": "Left",
+      "display.navbar.position.top": "Top",
+      "display.navbar.title": "Navbar Settings",
       "display.sidebar.chat.hiddenMessage": "Assistants are basic functions, not supported for hiding",
       "display.sidebar.disabled": "Hide icons",
       "display.sidebar.empty": "Drag the hidden feature from the left side here",
@@ -1838,10 +1829,6 @@
       "display.title": "Display Settings",
       "display.topic.title": "Topic Settings",
       "display.zoom.title": "Zoom Settings",
-      "display.navbar.title": "Navbar Settings",
-      "display.navbar.position": "Navbar Position",
-      "display.navbar.position.left": "Left",
-      "display.navbar.position.top": "Top",
       "font_size.title": "Message font size",
       "general": "General Settings",
       "general.auto_check_update.title": "Auto Update",
@@ -2527,6 +2514,19 @@
         "reset": "Reset",
         "title": "Page Zoom"
       }
+    },
+    "title": {
+      "agents": "Agents",
+      "apps": "Apps",
+      "files": "Files",
+      "home": "Home",
+      "knowledge": "Knowledge Base",
+      "launchpad": "Launchpad",
+      "mcp-servers": "MCP Servers",
+      "memories": "Memories",
+      "paintings": "Paintings",
+      "settings": "Settings",
+      "translate": "Translate"
     },
     "trace": {
       "backList": "Back To List",

@@ -1,22 +1,5 @@
 {
   "translation": {
-    "title": {
-      "home": "主頁",
-      "agents": "智能體",
-      "paintings": "繪畫",
-      "translate": "翻譯",
-      "files": "文件",
-      "knowledge": "知識庫",
-      "apps": "小程序",
-      "mcp-servers": "MCP 伺服器",
-      "settings": "設定",
-      "launchpad": "啟動台",
-      "memories": "記憶"
-    },
-    "launchpad": {
-      "apps": "應用",
-      "minapps": "小程序"
-    },
     "agents": {
       "add.button": "新增到助手",
       "add.knowledge_base": "知識庫",
@@ -672,6 +655,10 @@
       "urdu": "烏爾都文",
       "vietnamese": "越南文"
     },
+    "launchpad": {
+      "apps": "應用",
+      "minapps": "小程序"
+    },
     "lmstudio": {
       "keep_alive_time.description": "對話後模型在記憶體中保持的時間（預設為 5 分鐘）",
       "keep_alive_time.placeholder": "分鐘",
@@ -902,6 +889,8 @@
       }
     },
     "minapp": {
+      "add_to_launchpad": "添加到启动台",
+      "add_to_sidebar": "添加到侧边栏",
       "popup": {
         "close": "關閉小工具",
         "devtools": "開發者工具",
@@ -914,8 +903,6 @@
         "refresh": "重新整理",
         "rightclick_copyurl": "右鍵複製 URL"
       },
-      "add_to_launchpad": "添加到启动台",
-      "add_to_sidebar": "添加到侧边栏",
       "remove_from_launchpad": "从启动台移除",
       "remove_from_sidebar": "从侧边栏移除",
       "sidebar": {
@@ -1825,6 +1812,10 @@
       "display.custom.css": "自訂 CSS",
       "display.custom.css.cherrycss": "從 cherrycss.com 取得",
       "display.custom.css.placeholder": "/* 這裡寫自訂 CSS */",
+      "display.navbar.position": "導航欄位置",
+      "display.navbar.position.left": "左側",
+      "display.navbar.position.top": "頂部",
+      "display.navbar.title": "導航欄設定",
       "display.sidebar.chat.hiddenMessage": "助手是基礎功能，不支援隱藏",
       "display.sidebar.disabled": "隱藏的圖示",
       "display.sidebar.empty": "把要隱藏的功能從左側拖拽到這裡",
@@ -1838,10 +1829,6 @@
       "display.title": "顯示設定",
       "display.topic.title": "話題設定",
       "display.zoom.title": "縮放設定",
-      "display.navbar.title": "導航欄設定",
-      "display.navbar.position": "導航欄位置",
-      "display.navbar.position.left": "左側",
-      "display.navbar.position.top": "頂部",
       "font_size.title": "訊息字型大小",
       "general": "一般設定",
       "general.auto_check_update.title": "自動更新",
@@ -2527,6 +2514,19 @@
         "reset": "重置",
         "title": "縮放"
       }
+    },
+    "title": {
+      "agents": "智能體",
+      "apps": "小程序",
+      "files": "文件",
+      "home": "主頁",
+      "knowledge": "知識庫",
+      "launchpad": "啟動台",
+      "mcp-servers": "MCP 伺服器",
+      "memories": "記憶",
+      "paintings": "繪畫",
+      "settings": "設定",
+      "translate": "翻譯"
     },
     "trace": {
       "backList": "返回清單",
