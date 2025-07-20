@@ -455,7 +455,7 @@ const Topics: FC<Props> = ({ assistant: _assistant, activeTopic, setActiveTopic,
       style={{ padding: '13px 0 10px 10px' }}
       itemContainerStyle={{ paddingBottom: '8px' }}
       header={
-        <AddTopicButton onClick={() => {}}>
+        <AddTopicButton onClick={() => EventEmitter.emit(EVENT_NAMES.ADD_NEW_TOPIC)}>
           <PlusOutlined />
           {t('chat.add.topic.title')}
         </AddTopicButton>

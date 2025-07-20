@@ -251,6 +251,10 @@ const MessageGroup = ({ messages, topic, registerMessageElement }: Props) => {
 }
 
 const GroupContainer = styled.div`
+  max-width: calc(100vw - var(--assistants-width) - 20px);
+  [navbar-position='left'] & {
+    max-width: calc(100vw - var(--sidebar-width) - var(--assistants-width) - 20px);
+  }
   &.horizontal,
   &.grid {
     padding: 4px 10px;

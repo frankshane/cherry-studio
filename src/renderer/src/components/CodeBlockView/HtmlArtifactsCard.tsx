@@ -203,6 +203,7 @@ const Container = styled.div<{ $isStreaming: boolean }>`
   border-radius: 8px;
   overflow: hidden;
   margin: 10px 0;
+  margin-top: 0;
 `
 
 const GeneratingContainer = styled.div`
