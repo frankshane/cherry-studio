@@ -24,7 +24,7 @@ interface Props {
 
 const logger = loggerService.withContext('App')
 
-const App: FC<Props> = ({ app, onClick, size = 60, isLast }) => {
+const MinApp: FC<Props> = ({ app, onClick, size = 60, isLast }) => {
   const { openMinappKeepAlive } = useMinappPopup()
   const { t } = useTranslation()
   const { minapps, pinned, disabled, updateMinapps, updateDisabledMinapps, updatePinnedMinapps } = useMinapps()
@@ -154,4 +154,4 @@ const AppTitle = styled.div`
   white-space: nowrap;
 `
 
-export default App
+export default MinApp

@@ -3,7 +3,7 @@ import { useMinapps } from '@renderer/hooks/useMinapps'
 import { useRuntime } from '@renderer/hooks/useRuntime'
 import { useSettings } from '@renderer/hooks/useSettings'
 import { FileSearch, Folder, Languages, LayoutGrid, Palette, Sparkle } from 'lucide-react'
-import { FC, useEffect, useMemo, useState } from 'react'
+import { FC, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
@@ -14,11 +14,6 @@ const LaunchpadPage: FC = () => {
   const { defaultPaintingProvider } = useSettings()
   const { pinned } = useMinapps()
   const { openedKeepAliveMinapps } = useRuntime()
-  const [keepAliveMinapps, setKeepAliveMinapps] = useState(openedKeepAliveMinapps)
-
-  useEffect(() => {
-    setTimeout(() => setKeepAliveMinapps(openedKeepAliveMinapps), 300)
-  }, [openedKeepAliveMinapps])
 
   const appMenuItems = [
     {
@@ -61,22 +56,18 @@ const LaunchpadPage: FC = () => {
 
   // 合并并排序小程序列表
   const sortedMinapps = useMemo(() => {
-    const allApps = new Map()
+    // 先添加固定的小程序，保持原有顺序
+    const result = [...pinned]
 
-    // 先添加已打开的小程序
-    keepAliveMinapps.forEach((app) => {
-      allApps.set(app.id, app)
-    })
-
-    // 再添加固定的小程序（如果还没有添加）
-    pinned.forEach((app) => {
-      if (!allApps.has(app.id)) {
-        allApps.set(app.id, app)
+    // 再添加其他已打开但未固定的小程序
+    openedKeepAliveMinapps.forEach((app) => {
+      if (!result.some((pinnedApp) => pinnedApp.id === app.id)) {
+        result.push(app)
       }
     })
 
-    return Array.from(allApps.values())
-  }, [keepAliveMinapps, pinned])
+    return result
+  }, [openedKeepAliveMinapps, pinned])
 
   return (
     <Container>
@@ -160,7 +151,7 @@ const AppIcon = styled.div`
   cursor: pointer;
   gap: 4px;
   padding: 8px 4px;
-  border-radius: 8px;
+  border-radius: 16px;
   transition: transform 0.2s ease;
 
   &:hover {
@@ -184,7 +175,7 @@ const IconContainer = styled.div`
 const IconWrapper = styled.div<{ bgColor: string }>`
   width: 56px;
   height: 56px;
-  border-radius: 14px;
+  border-radius: 16px;
   background: ${(props) => props.bgColor};
   display: flex;
   justify-content: center;
