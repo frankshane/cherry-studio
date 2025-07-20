@@ -149,6 +149,7 @@
     },
     "chat": {
       "add.assistant.title": "Добавить ассистента",
+      "add.topic.title": "Новый топик",
       "artifacts.button.download": "Скачать",
       "artifacts.button.openExternal": "Открыть во внешнем браузере",
       "artifacts.button.preview": "Предпросмотр",

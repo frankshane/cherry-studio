@@ -149,6 +149,7 @@
     },
     "chat": {
       "add.assistant.title": "新增助手",
+      "add.topic.title": "新增話題",
       "artifacts.button.download": "下載",
       "artifacts.button.openExternal": "外部瀏覽器開啟",
       "artifacts.button.preview": "預覽",

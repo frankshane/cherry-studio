@@ -149,6 +149,7 @@
     },
     "chat": {
       "add.assistant.title": "アシスタントを追加",
+      "add.topic.title": "新しいトピック",
       "artifacts.button.download": "ダウンロード",
       "artifacts.button.openExternal": "外部ブラウザで開く",
       "artifacts.button.preview": "プレビュー",

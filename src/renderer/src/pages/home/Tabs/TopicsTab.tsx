@@ -5,6 +5,7 @@ import {
   EditOutlined,
   FolderOutlined,
   MenuOutlined,
+  PlusOutlined,
   PushpinOutlined,
   QuestionCircleOutlined,
   UploadOutlined
@@ -452,7 +453,13 @@ const Topics: FC<Props> = ({ assistant: _assistant, activeTopic, setActiveTopic,
       list={sortedTopics}
       onUpdate={updateTopics}
       style={{ padding: '13px 0 10px 10px' }}
-      itemContainerStyle={{ paddingBottom: '8px' }}>
+      itemContainerStyle={{ paddingBottom: '8px' }}
+      header={
+        <AddTopicButton onClick={() => {}}>
+          <PlusOutlined />
+          {t('chat.add.topic.title')}
+        </AddTopicButton>
+      }>
       {(topic) => {
         const isActive = topic.id === activeTopic?.id
         const topicName = topic.name.replace('`', '')
@@ -638,6 +645,31 @@ const PendingIndicator = styled.div.attrs({
   top: 15px;
   border-radius: 50%;
   background-color: var(--color-primary);
+`
+
+const AddTopicButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: calc(100% - 10px);
+  padding: 7px 12px;
+  margin-bottom: 8px;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--list-item-border-radius);
+  background: transparent;
+  color: var(--color-text-2);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  .anticon {
+    font-size: 12px;
+  }
 `
 
 const TopicPromptText = styled.div`
