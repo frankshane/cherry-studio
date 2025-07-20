@@ -3,7 +3,7 @@ import { useMinapps } from '@renderer/hooks/useMinapps'
 import { useRuntime } from '@renderer/hooks/useRuntime'
 import { useSettings } from '@renderer/hooks/useSettings'
 import { FileSearch, Folder, Languages, LayoutGrid, Palette, Sparkle } from 'lucide-react'
-import { FC, useMemo } from 'react'
+import { FC, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
@@ -14,6 +14,11 @@ const LaunchpadPage: FC = () => {
   const { defaultPaintingProvider } = useSettings()
   const { pinned } = useMinapps()
   const { openedKeepAliveMinapps } = useRuntime()
+  const [keepAliveMinapps, setKeepAliveMinapps] = useState(openedKeepAliveMinapps)
+
+  useEffect(() => {
+    setTimeout(() => setKeepAliveMinapps(openedKeepAliveMinapps), 300)
+  }, [openedKeepAliveMinapps])
 
   const appMenuItems = [
     {
@@ -59,7 +64,7 @@ const LaunchpadPage: FC = () => {
     const allApps = new Map()
 
     // 先添加已打开的小程序
-    openedKeepAliveMinapps.forEach((app) => {
+    keepAliveMinapps.forEach((app) => {
       allApps.set(app.id, app)
     })
 
@@ -71,7 +76,7 @@ const LaunchpadPage: FC = () => {
     })
 
     return Array.from(allApps.values())
-  }, [openedKeepAliveMinapps, pinned])
+  }, [keepAliveMinapps, pinned])
 
   return (
     <Container>

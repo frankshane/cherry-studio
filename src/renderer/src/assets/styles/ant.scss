@@ -79,6 +79,7 @@
   background-color: var(--ant-color-bg-elevated);
   overflow: hidden;
   border-radius: var(--ant-border-radius-lg);
+  user-select: none;
   .ant-dropdown-menu {
     max-height: 50vh;
     overflow-y: auto;

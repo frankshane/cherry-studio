@@ -27,6 +27,8 @@ import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { TopNavbarOpenedMinappTabs } from '../app/PinnedMinapps'
+
 interface TabsContainerProps {
   children: React.ReactNode
 }
@@ -159,6 +161,7 @@ const TabsContainer: React.FC<TabsContainerProps> = ({ children }) => {
           <PlusOutlined />
         </AddTabButton>
         <RightButtonsContainer>
+          <TopNavbarOpenedMinappTabs />
           <ThemeButton onClick={toggleTheme}>{getThemeIcon()}</ThemeButton>
           <SettingsButton onClick={handleSettingsClick}>
             <Settings size={16} />
