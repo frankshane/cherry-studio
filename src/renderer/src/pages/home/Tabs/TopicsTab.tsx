@@ -647,24 +647,24 @@ const PendingIndicator = styled.div.attrs({
   background-color: var(--color-primary);
 `
 
-const AddTopicButton = styled.button`
+const AddTopicButton = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
   width: calc(100% - 10px);
   padding: 7px 12px;
   margin-bottom: 8px;
-  border: 1px dashed var(--color-border);
-  border-radius: var(--list-item-border-radius);
   background: transparent;
   color: var(--color-text-2);
   font-size: 13px;
+  border-radius: var(--list-item-border-radius);
   cursor: pointer;
   transition: all 0.2s;
+  margin-top: -5px;
 
   &:hover {
-    border-color: var(--color-primary);
-    color: var(--color-primary);
+    background-color: var(--color-list-item-hover);
+    color: var(--color-text-1);
   }
 
   .anticon {
