@@ -157,7 +157,7 @@ const Container = styled.div`
     background-color: var(--color-background);
   }
   [navbar-position='top'] & {
-    min-height: calc(100vh - var(--navbar-height) - var(--navbar-height));
+    min-height: calc(100vh - var(--navbar-height) - var(--navbar-height) - 12px);
   }
   overflow: hidden;
   .collapsed {

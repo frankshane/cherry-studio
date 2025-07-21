@@ -108,7 +108,7 @@ const Chat: FC<Props> = (props) => {
   }
 
   const mainHeight = isTopNavbar
-    ? 'calc(100vh - var(--navbar-height) - var(--navbar-height))'
+    ? 'calc(100vh - var(--navbar-height) - var(--navbar-height) - 12px)'
     : 'calc(100vh - var(--navbar-height))'
 
   return (
