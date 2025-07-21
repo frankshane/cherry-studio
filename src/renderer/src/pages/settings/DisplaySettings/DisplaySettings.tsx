@@ -1,6 +1,7 @@
 import { SyncOutlined } from '@ant-design/icons'
 import CodeEditor from '@renderer/components/CodeEditor'
 import { HStack } from '@renderer/components/Layout'
+import TextBadge from '@renderer/components/TextBadge'
 import { isMac, THEME_COLOR_PRESETS } from '@renderer/config/constant'
 import { useTheme } from '@renderer/context/ThemeProvider'
 import { useNavbarPosition, useSettings } from '@renderer/hooks/useSettings'
@@ -218,7 +219,9 @@ const DisplaySettings: FC = () => {
         )}
       </SettingGroup>
       <SettingGroup theme={theme}>
-        <SettingTitle>{t('settings.display.navbar.title')}</SettingTitle>
+        <SettingTitle style={{ justifyContent: 'flex-start', gap: 5 }}>
+          {t('settings.display.navbar.title')} <TextBadge text="New" />
+        </SettingTitle>
         <SettingDivider />
         <SettingRow>
           <SettingRowTitle>{t('settings.display.navbar.position')}</SettingRowTitle>
