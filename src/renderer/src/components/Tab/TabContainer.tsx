@@ -78,6 +78,7 @@ const TabsContainer: React.FC<TabsContainerProps> = ({ children }) => {
 
   const shouldCreateTab = (path: string) => {
     if (path === '/') return false
+    if (path === '/settings') return false
     return !tabs.some((tab) => tab.id === getTabId(path))
   }
 
@@ -111,6 +112,7 @@ const TabsContainer: React.FC<TabsContainerProps> = ({ children }) => {
     }
 
     dispatch(removeTab(tabId))
+    dispatch(removeTab('launchpad'))
   }
 
   const handleAddTab = () => {
@@ -234,17 +236,17 @@ const TabIcon = styled.span`
 const TabTitle = styled.span`
   color: var(--color-text);
   font-size: 13px;
-  margin-right: 8px;
   display: flex;
   align-items: center;
+  margin-right: 4px;
 `
 
 const CloseButton = styled.span`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
 `
 
 const AddTabButton = styled.div`
@@ -269,7 +271,7 @@ const AddTabButton = styled.div`
 const RightButtonsContainer = styled.div`
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   margin-left: auto;
 `
 

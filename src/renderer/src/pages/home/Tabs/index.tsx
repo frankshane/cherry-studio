@@ -180,6 +180,9 @@ const CustomTabs = styled.div`
   padding: 6px 0;
   border-bottom: 1px solid var(--color-border);
   background: transparent;
+  [navbar-position='top'] & {
+    padding-top: 2px;
+  }
 `
 
 const TabItem = styled.button<{ active: boolean }>`
