@@ -58,6 +58,8 @@ const getTabIcon = (tabId: string): React.ReactNode | undefined => {
   }
 }
 
+let lastSettingsPath = '/settings/provider'
+
 const TabsContainer: React.FC<TabsContainerProps> = ({ children }) => {
   const { t } = useTranslation()
   const location = useLocation()
@@ -84,14 +86,14 @@ const TabsContainer: React.FC<TabsContainerProps> = ({ children }) => {
     const currentTab = tabs.find((tab) => tab.id === tabId)
 
     if (!currentTab && shouldCreateTab(location.pathname)) {
-      dispatch(
-        addTab({
-          id: tabId,
-          path: location.pathname
-        })
-      )
+      dispatch(addTab({ id: tabId, path: location.pathname }))
     } else if (currentTab) {
       dispatch(setActiveTab(currentTab.id))
+    }
+
+    // 当访问设置页面时，记录路径
+    if (location.pathname.startsWith('/settings/')) {
+      lastSettingsPath = location.pathname
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, location.pathname])
@@ -116,7 +118,7 @@ const TabsContainer: React.FC<TabsContainerProps> = ({ children }) => {
   }
 
   const handleSettingsClick = () => {
-    navigate('/settings/provider')
+    navigate(lastSettingsPath)
   }
 
   const getThemeIcon = () => {
@@ -136,7 +138,7 @@ const TabsContainer: React.FC<TabsContainerProps> = ({ children }) => {
     <Container>
       <TabsBar $isFullscreen={isFullscreen}>
         {tabs
-          .filter((tab) => tab.id !== 'launchpad')
+          .filter((tab) => !['launchpad', 'settings'].includes(tab.id))
           .map((tab) => {
             return (
               <Tab key={tab.id} active={tab.id === activeTabId} onClick={() => navigate(tab.path)}>
@@ -163,7 +165,7 @@ const TabsContainer: React.FC<TabsContainerProps> = ({ children }) => {
         <RightButtonsContainer>
           <TopNavbarOpenedMinappTabs />
           <ThemeButton onClick={toggleTheme}>{getThemeIcon()}</ThemeButton>
-          <SettingsButton onClick={handleSettingsClick}>
+          <SettingsButton onClick={handleSettingsClick} $active={activeTabId === 'settings'}>
             <Settings size={16} />
           </SettingsButton>
         </RightButtonsContainer>
@@ -287,7 +289,7 @@ const ThemeButton = styled.div`
   }
 `
 
-const SettingsButton = styled.div`
+const SettingsButton = styled.div<{ $active: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -296,10 +298,10 @@ const SettingsButton = styled.div`
   cursor: pointer;
   color: var(--color-text);
   -webkit-app-region: none;
-
+  border-radius: 8px;
+  background: ${(props) => (props.$active ? 'var(--color-list-item)' : 'transparent')};
   &:hover {
     background: var(--color-list-item);
-    border-radius: 8px;
   }
 `
 
