@@ -18,37 +18,37 @@ const LaunchpadPage: FC = () => {
   const appMenuItems = [
     {
       icon: <LayoutGrid size={32} className="icon" />,
-      text: t('minapp.title'),
+      text: t('title.apps'),
       path: '/apps',
       bgColor: 'linear-gradient(135deg, #8B5CF6, #A855F7)' // 小程序：紫色，代表多功能和灵活性
     },
     {
       icon: <FileSearch size={32} className="icon" />,
-      text: t('knowledge.title'),
+      text: t('title.knowledge'),
       path: '/knowledge',
       bgColor: 'linear-gradient(135deg, #10B981, #34D399)' // 知识库：翠绿色，代表生长和知识
     },
     {
       icon: <Palette size={32} className="icon" />,
-      text: t('paintings.title'),
+      text: t('title.paintings'),
       path: `/paintings/${defaultPaintingProvider}`,
       bgColor: 'linear-gradient(135deg, #EC4899, #F472B6)' // 绘画：活力粉色，代表创造力和艺术
     },
     {
       icon: <Sparkle size={32} className="icon" />,
-      text: t('agents.title'),
+      text: t('title.agents'),
       path: '/agents',
       bgColor: 'linear-gradient(135deg, #6366F1, #4F46E5)' // AI助手：靛蓝渐变，代表智能和科技
     },
     {
       icon: <Languages size={32} className="icon" />,
-      text: t('translate.title'),
+      text: t('title.translate'),
       path: '/translate',
       bgColor: 'linear-gradient(135deg, #06B6D4, #0EA5E9)' // 翻译：明亮的青蓝色，代表沟通和流畅
     },
     {
       icon: <Folder size={32} className="icon" />,
-      text: t('files.title'),
+      text: t('title.files'),
       path: '/files',
       bgColor: 'linear-gradient(135deg, #F59E0B, #FBBF24)' // 文件：金色，代表资源和重要性
     }
