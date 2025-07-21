@@ -69,7 +69,7 @@ export const TopNavbarOpenedMinappTabs: FC = () => {
                     theme={theme}
                     onClick={() => handleOnClick(app)}
                     className={`${isActive ? 'opened-active' : ''}`}>
-                    <MinAppIcon size={22} app={app} style={{ borderRadius: 20, border: 'none', padding: 0 }} />
+                    <MinAppIcon size={23} app={app} style={{ border: 'none', padding: 0 }} />
                   </TopNavIcon>
                 </Dropdown>
               </StyledLink>
@@ -327,7 +327,7 @@ const TopNavContainer = styled.div`
   align-items: center;
   padding: 4px;
   gap: 6px;
-  background-color: rgba(128, 128, 128, 0.1);
+  background-color: var(--color-list-item);
   border-radius: 20px;
   margin: 0 5px;
 `
@@ -335,19 +335,18 @@ const TopNavContainer = styled.div`
 const TopNavMenus = styled.div`
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   padding: 0 2px;
   height: 100%;
 `
 
 const TopNavIcon = styled(Icon)`
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
+  width: 23px;
+  height: 23px;
 
   .icon {
-    width: 24px;
-    height: 24px;
+    width: 23px;
+    height: 23px;
   }
 
   &:hover {

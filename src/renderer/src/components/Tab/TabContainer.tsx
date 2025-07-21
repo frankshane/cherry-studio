@@ -22,7 +22,7 @@ import {
   SunMoon,
   X
 } from 'lucide-react'
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
@@ -59,6 +59,7 @@ const getTabIcon = (tabId: string): React.ReactNode | undefined => {
 }
 
 let lastSettingsPath = '/settings/provider'
+const specialTabs = ['launchpad', 'settings']
 
 const TabsContainer: React.FC<TabsContainerProps> = ({ children }) => {
   const { t } = useTranslation()
@@ -82,6 +83,14 @@ const TabsContainer: React.FC<TabsContainerProps> = ({ children }) => {
     return !tabs.some((tab) => tab.id === getTabId(path))
   }
 
+  const removeSpecialTabs = useCallback(() => {
+    specialTabs.forEach((tabId) => {
+      if (activeTabId !== tabId) {
+        dispatch(removeTab(tabId))
+      }
+    })
+  }, [activeTabId, dispatch])
+
   useEffect(() => {
     const tabId = getTabId(location.pathname)
     const currentTab = tabs.find((tab) => tab.id === tabId)
@@ -99,6 +108,10 @@ const TabsContainer: React.FC<TabsContainerProps> = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, location.pathname])
 
+  useEffect(() => {
+    removeSpecialTabs()
+  }, [removeSpecialTabs])
+
   const closeTab = (tabId: string) => {
     const tabToClose = tabs.find((tab) => tab.id === tabId)
     if (!tabToClose) return
@@ -112,7 +125,6 @@ const TabsContainer: React.FC<TabsContainerProps> = ({ children }) => {
     }
 
     dispatch(removeTab(tabId))
-    dispatch(removeTab('launchpad'))
   }
 
   const handleAddTab = () => {
@@ -140,7 +152,7 @@ const TabsContainer: React.FC<TabsContainerProps> = ({ children }) => {
     <Container>
       <TabsBar $isFullscreen={isFullscreen}>
         {tabs
-          .filter((tab) => !['launchpad', 'settings'].includes(tab.id))
+          .filter((tab) => !specialTabs.includes(tab.id))
           .map((tab) => {
             return (
               <Tab key={tab.id} active={tab.id === activeTabId} onClick={() => navigate(tab.path)}>
@@ -259,7 +271,6 @@ const AddTabButton = styled.div`
   color: var(--color-text-2);
   -webkit-app-region: none;
   border-radius: var(--list-item-border-radius);
-  transition: all 0.2s;
   &.active {
     background: var(--color-list-item);
   }
