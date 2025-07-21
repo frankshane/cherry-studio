@@ -42,27 +42,18 @@ const HeaderNavbar: FC<Props> = ({ activeAssistant, setActiveAssistant, activeTo
   // Function to toggle assistants with cooldown
   const handleToggleShowAssistants = useCallback(() => {
     if (showAssistants) {
-      // When hiding sidebar, set cooldown
       toggleShowAssistants()
       setSidebarHideCooldown(true)
-      // setTimeout(() => {
-      //   setSidebarHideCooldown(false)
-      // }, 10000) // 10 seconds cooldown
     } else {
-      // When showing sidebar, no cooldown needed
       toggleShowAssistants()
     }
   }, [showAssistants, toggleShowAssistants])
+
   const handleToggleShowTopics = useCallback(() => {
     if (showTopics) {
-      // When hiding sidebar, set cooldown
       toggleShowTopics()
       setSidebarHideCooldown(true)
-      // setTimeout(() => {
-      //   setSidebarHideCooldown(false)
-      // }, 10000) // 10 seconds cooldown
     } else {
-      // When showing sidebar, no cooldown needed
       toggleShowTopics()
     }
   }, [showTopics, toggleShowTopics])
