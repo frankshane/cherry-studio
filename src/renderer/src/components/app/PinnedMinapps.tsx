@@ -40,7 +40,8 @@ export const TopNavbarOpenedMinappTabs: FC = () => {
   if (!isShowOpened) return null
 
   return (
-    <TopNavContainer>
+    <TopNavContainer
+      style={{ backgroundColor: keepAliveMinapps.length > 1 ? 'var(--color-list-item)' : 'transparent' }}>
       <TopNavMenus>
         {keepAliveMinapps.map((app) => {
           const menuItems: MenuProps['items'] = [
@@ -69,7 +70,7 @@ export const TopNavbarOpenedMinappTabs: FC = () => {
                     theme={theme}
                     onClick={() => handleOnClick(app)}
                     className={`${isActive ? 'opened-active' : ''}`}>
-                    <MinAppIcon size={23} app={app} style={{ border: 'none', padding: 0 }} />
+                    <MinAppIcon size={22} app={app} style={{ border: 'none', padding: 0 }} />
                   </TopNavIcon>
                 </Dropdown>
               </StyledLink>
@@ -325,7 +326,7 @@ const TabsWrapper = styled.div`
 const TopNavContainer = styled.div`
   display: flex;
   align-items: center;
-  padding: 4px;
+  padding: 4px 2px;
   gap: 6px;
   background-color: var(--color-list-item);
   border-radius: 20px;
@@ -341,12 +342,12 @@ const TopNavMenus = styled.div`
 `
 
 const TopNavIcon = styled(Icon)`
-  width: 23px;
-  height: 23px;
+  width: 22px;
+  height: 22px;
 
   .icon {
-    width: 23px;
-    height: 23px;
+    width: 22px;
+    height: 22px;
   }
 
   &:hover {

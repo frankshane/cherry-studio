@@ -2,6 +2,7 @@ import App from '@renderer/components/MinApp/MinApp'
 import { useMinapps } from '@renderer/hooks/useMinapps'
 import { useRuntime } from '@renderer/hooks/useRuntime'
 import { useSettings } from '@renderer/hooks/useSettings'
+import tabsService from '@renderer/services/TabsService'
 import { FileSearch, Folder, Languages, LayoutGrid, Palette, Sparkle } from 'lucide-react'
 import { FC, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -91,7 +92,7 @@ const LaunchpadPage: FC = () => {
             <SectionTitle>{t('launchpad.minapps')}</SectionTitle>
             <Grid>
               {sortedMinapps.map((app) => (
-                <AppWrapper key={app.id}>
+                <AppWrapper key={app.id} onClick={() => setTimeout(() => tabsService.closeTab('launchpad'), 350)}>
                   <App app={app} size={56} />
                 </AppWrapper>
               ))}

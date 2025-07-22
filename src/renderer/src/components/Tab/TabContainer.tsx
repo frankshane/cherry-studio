@@ -2,6 +2,7 @@ import { PlusOutlined } from '@ant-design/icons'
 import { isLinux, isMac, isWin } from '@renderer/config/constant'
 import { useTheme } from '@renderer/context/ThemeProvider'
 import { useFullscreen } from '@renderer/hooks/useFullscreen'
+import tabsService from '@renderer/services/TabsService'
 import { useAppDispatch, useAppSelector } from '@renderer/store'
 import type { Tab } from '@renderer/store/tabs'
 import { addTab, removeTab, setActiveTab } from '@renderer/store/tabs'
@@ -113,18 +114,7 @@ const TabsContainer: React.FC<TabsContainerProps> = ({ children }) => {
   }, [removeSpecialTabs])
 
   const closeTab = (tabId: string) => {
-    const tabToClose = tabs.find((tab) => tab.id === tabId)
-    if (!tabToClose) return
-
-    if (tabs.length === 1) return
-
-    if (tabId === activeTabId) {
-      const remainingTabs = tabs.filter((tab) => tab.id !== tabId)
-      const lastTab = remainingTabs[remainingTabs.length - 1]
-      navigate(lastTab.path)
-    }
-
-    dispatch(removeTab(tabId))
+    tabsService.closeTab(tabId)
   }
 
   const handleAddTab = () => {
