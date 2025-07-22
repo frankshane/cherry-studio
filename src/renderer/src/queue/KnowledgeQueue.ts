@@ -140,9 +140,22 @@ class KnowledgeQueue {
             result = await window.api.knowledgeBase.add({ base: baseParams, item: { ...sourceItem, content } })
           }
           break
-        default:
-          result = await window.api.knowledgeBase.add({ base: baseParams, item: sourceItem, userId: userId as string })
+        default: {
+          if (baseParams.framework === 'embedjs') {
+            result = await window.api.knowledgeBase.add({
+              base: baseParams,
+              item: sourceItem,
+              userId: userId as string
+            })
+          } else {
+            result = await window.api.newKnowledgeBase.add({
+              base: baseParams,
+              item: sourceItem,
+              userId: userId as string
+            })
+          }
           break
+        }
       }
 
       if (!result) {

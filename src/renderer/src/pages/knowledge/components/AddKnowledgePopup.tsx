@@ -158,7 +158,7 @@ const PopupContainer: React.FC<Props> = ({ title, resolve }) => {
           finalDimensions = dimensions
         }
 
-        const _newBase = {
+        const _newBase: KnowledgeBase = {
           ...newBase,
           id: nanoid(),
           name: newBase.name,
@@ -169,10 +169,12 @@ const PopupContainer: React.FC<Props> = ({ title, resolve }) => {
           items: [],
           created_at: Date.now(),
           updated_at: Date.now(),
-          version: 1
+          version: 1,
+          framework: 'langchain'
         }
 
-        await window.api.knowledgeBase.create(getKnowledgeBaseParams(_newBase))
+        // await window.api.knowledgeBase.create(getKnowledgeBaseParams(_newBase))
+        await window.api.newKnowledgeBase.create(getKnowledgeBaseParams(_newBase))
 
         addKnowledgeBase(_newBase as any)
         setOpen(false)
