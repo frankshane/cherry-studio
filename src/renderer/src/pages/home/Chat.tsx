@@ -7,12 +7,12 @@ import { useAssistant } from '@renderer/hooks/useAssistant'
 import { useChatContext } from '@renderer/hooks/useChatContext'
 import { useNavbarPosition, useSettings } from '@renderer/hooks/useSettings'
 import { useShortcut } from '@renderer/hooks/useShortcuts'
-import { useShowTopics } from '@renderer/hooks/useStore'
+import { useShowAssistants, useShowTopics } from '@renderer/hooks/useStore'
 import { Assistant, Topic } from '@renderer/types'
 import { classNames } from '@renderer/utils'
 import { Flex } from 'antd'
 import { debounce } from 'lodash'
-import React, { FC, useMemo, useState } from 'react'
+import React, { FC, useState } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import styled from 'styled-components'
 
@@ -32,21 +32,16 @@ interface Props {
 
 const Chat: FC<Props> = (props) => {
   const { assistant } = useAssistant(props.assistant.id)
-  const { topicPosition, messageStyle, showAssistants } = useSettings()
+  const { topicPosition, messageStyle } = useSettings()
   const { showTopics } = useShowTopics()
   const { isMultiSelectMode } = useChatContext(props.activeTopic)
-  const { isTopNavbar, isLeftNavbar } = useNavbarPosition()
+  const { isTopNavbar } = useNavbarPosition()
 
   const mainRef = React.useRef<HTMLDivElement>(null)
   const contentSearchRef = React.useRef<ContentSearchRef>(null)
   const [filterIncludeUser, setFilterIncludeUser] = useState(false)
 
-  const maxWidth = useMemo(() => {
-    const showRightTopics = showTopics && topicPosition === 'right'
-    const minusAssistantsWidth = showAssistants ? '- var(--assistants-width)' : ''
-    const minusRightTopicsWidth = showRightTopics ? '- var(--assistants-width)' : ''
-    return `calc(100vw - ${isLeftNavbar ? 'var(--sidebar-width)' : '0'} ${minusAssistantsWidth} ${minusRightTopicsWidth})`
-  }, [isLeftNavbar, showAssistants, showTopics, topicPosition])
+  const maxWidth = useChatMaxWidth()
 
   useHotkeys('esc', () => {
     contentSearchRef.current?.disable()
@@ -162,6 +157,16 @@ const Chat: FC<Props> = (props) => {
       </HStack>
     </Container>
   )
+}
+
+export const useChatMaxWidth = () => {
+  const { showTopics, topicPosition } = useSettings()
+  const { isLeftNavbar } = useNavbarPosition()
+  const { showAssistants } = useShowAssistants()
+  const showRightTopics = showTopics && topicPosition === 'right'
+  const minusAssistantsWidth = showAssistants ? '- var(--assistants-width)' : ''
+  const minusRightTopicsWidth = showRightTopics ? '- var(--assistants-width)' : ''
+  return `calc(100vw - ${isLeftNavbar ? 'var(--sidebar-width)' : '0'} ${minusAssistantsWidth} ${minusRightTopicsWidth})`
 }
 
 const Container = styled.div`

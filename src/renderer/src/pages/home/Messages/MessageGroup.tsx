@@ -12,6 +12,7 @@ import { Popover } from 'antd'
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 
+import { useChatMaxWidth } from '../Chat'
 import MessageItem from './Message'
 import MessageGroupMenuBar from './MessageGroupMenuBar'
 
@@ -219,11 +220,14 @@ const MessageGroup = ({ messages, topic, registerMessageElement }: Props) => {
     [isGrid, isGrouped, topic, multiModelMessageStyle, messages.length, selectedMessageId, gridPopoverTrigger]
   )
 
+  const maxWidth = useChatMaxWidth()
+
   return (
     <MessageEditingProvider>
       <GroupContainer
         id={messages[0].askId ? `message-group-${messages[0].askId}` : undefined}
-        className={classNames([multiModelMessageStyle, { 'multi-select-mode': isMultiSelectMode }])}>
+        className={classNames([multiModelMessageStyle, { 'multi-select-mode': isMultiSelectMode }])}
+        style={{ maxWidth }}>
         <GridContainer
           $count={messageLength}
           $gridColumns={gridColumns}
@@ -251,7 +255,6 @@ const MessageGroup = ({ messages, topic, registerMessageElement }: Props) => {
 }
 
 const GroupContainer = styled.div`
-  max-width: calc(100vw - var(--assistants-width) - 20px);
   [navbar-position='left'] & {
     max-width: calc(100vw - var(--sidebar-width) - var(--assistants-width) - 20px);
   }
