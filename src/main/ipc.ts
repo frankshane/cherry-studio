@@ -485,13 +485,13 @@ export function registerIpc(mainWindow: BrowserWindow, app: Electron.App) {
   ipcMain.handle(IpcChannel.KnowledgeBase_Check_Quota, KnowledgeService.checkQuota.bind(KnowledgeService))
 
   // new knowledge base
-  ipcMain.handle(IpcChannel.New_KnowledgeBase_Create, NewKnowledgeService.create.bind(KnowledgeService))
-  ipcMain.handle(IpcChannel.New_KnowledgeBase_Reset, NewKnowledgeService.reset.bind(KnowledgeService))
-  ipcMain.handle(IpcChannel.New_KnowledgeBase_Delete, NewKnowledgeService.delete.bind(KnowledgeService))
-  ipcMain.handle(IpcChannel.New_KnowledgeBase_Add, NewKnowledgeService.add.bind(KnowledgeService))
-  ipcMain.handle(IpcChannel.New_KnowledgeBase_Remove, NewKnowledgeService.remove.bind(KnowledgeService))
-  ipcMain.handle(IpcChannel.New_KnowledgeBase_Search, NewKnowledgeService.search.bind(KnowledgeService))
-  ipcMain.handle(IpcChannel.New_KnowledgeBase_Rerank, NewKnowledgeService.rerank.bind(KnowledgeService))
+  ipcMain.handle(IpcChannel.New_KnowledgeBase_Create, NewKnowledgeService.create.bind(NewKnowledgeService))
+  ipcMain.handle(IpcChannel.New_KnowledgeBase_Reset, NewKnowledgeService.reset.bind(NewKnowledgeService))
+  ipcMain.handle(IpcChannel.New_KnowledgeBase_Delete, NewKnowledgeService.delete.bind(NewKnowledgeService))
+  ipcMain.handle(IpcChannel.New_KnowledgeBase_Add, NewKnowledgeService.add.bind(NewKnowledgeService))
+  ipcMain.handle(IpcChannel.New_KnowledgeBase_Remove, NewKnowledgeService.remove.bind(NewKnowledgeService))
+  ipcMain.handle(IpcChannel.New_KnowledgeBase_Search, NewKnowledgeService.search.bind(NewKnowledgeService))
+  ipcMain.handle(IpcChannel.New_KnowledgeBase_Rerank, NewKnowledgeService.rerank.bind(NewKnowledgeService))
 
   // memory
   ipcMain.handle(IpcChannel.Memory_Add, async (_, messages, config) => {

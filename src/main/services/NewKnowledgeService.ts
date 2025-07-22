@@ -19,7 +19,7 @@ import path from 'node:path'
 import { LibSQLVectorStore } from '@langchain/community/vectorstores/libsql'
 import { createClient } from '@libsql/client'
 import Embeddings from '@main/knowledge/langchain/embeddings/Embeddings'
-import { addFileLoader } from '@main/knowledge/langchain/loader'
+import { addFileLoader, addSitemapLoader, addWebLoader } from '@main/knowledge/langchain/loader'
 import OcrProvider from '@main/knowledge/ocr/OcrProvider'
 import PreprocessProvider from '@main/knowledge/preprocess/PreprocessProvider'
 import Reranker from '@main/knowledge/reranker/Reranker'
@@ -288,50 +288,34 @@ class NewKnowledgeService {
     vectorStore: LibSQLVectorStore,
     options: KnowledgeBaseAddItemOptionsNonNullableAttribute
   ): LoaderTask {
-    const { base, item, forceReload } = options
-    const content = item.content as string
+    const { item } = options
+    const url = item.content as string
 
-    // const loaderTask: LoaderTask = {
-    //   loaderTasks: [
-    //     {
-    //       state: LoaderTaskItemState.PENDING,
-    //       task: () => {
-    //         const loaderReturn = vectorStore.addLoader(
-    //           new WebLoader({
-    //             urlOrContent: content,
-    //             chunkSize: base.chunkSize,
-    //             chunkOverlap: base.chunkOverlap
-    //           }),
-    //           forceReload
-    //         ) as Promise<LoaderReturn>
-
-    //         return loaderReturn
-    //           .then((result) => {
-    //             const { entriesAdded, uniqueId, loaderType } = result
-    //             loaderTask.loaderDoneReturn = {
-    //               entriesAdded: entriesAdded,
-    //               uniqueId: uniqueId,
-    //               uniqueIds: [uniqueId],
-    //               loaderType: loaderType
-    //             }
-    //             return result
-    //           })
-    //           .catch((err) => {
-    //             logger.error(err)
-    //             return {
-    //               ...NewKnowledgeService.ERROR_LOADER_RETURN,
-    //               message: `Failed to add url loader: ${err.message}`,
-    //               messageSource: 'embedding'
-    //             }
-    //           })
-    //       },
-    //       evaluateTaskWorkload: { workload: 2 * MB }
-    //     }
-    //   ],
-    //   loaderDoneReturn: null
-    // }
     const loaderTask: LoaderTask = {
-      loaderTasks: [],
+      loaderTasks: [
+        {
+          state: LoaderTaskItemState.PENDING,
+          task: async () => {
+            // 使用处理后的网页进行加载
+            return addWebLoader(vectorStore, url, 'normal')
+              .then((result) => {
+                loaderTask.loaderDoneReturn = result
+                return result
+              })
+              .catch((e) => {
+                logger.error(`Error in addWebLoader for ${url}: ${e}`)
+                const errorResult: LoaderReturn = {
+                  ...NewKnowledgeService.ERROR_LOADER_RETURN,
+                  message: e.message,
+                  messageSource: 'embedding'
+                }
+                loaderTask.loaderDoneReturn = errorResult
+                return errorResult
+              })
+          },
+          evaluateTaskWorkload: { workload: 2 * MB }
+        }
+      ],
       loaderDoneReturn: null
     }
     return loaderTask
@@ -341,44 +325,34 @@ class NewKnowledgeService {
     vectorStore: LibSQLVectorStore,
     options: KnowledgeBaseAddItemOptionsNonNullableAttribute
   ): LoaderTask {
-    const { base, item, forceReload } = options
-    const content = item.content as string
+    const { item } = options
+    const url = item.content as string
 
-    // const loaderTask: LoaderTask = {
-    //   loaderTasks: [
-    //     {
-    //       state: LoaderTaskItemState.PENDING,
-    //       task: () =>
-    //         ragApplication
-    //           .addLoader(
-    //             new SitemapLoader({ url: content, chunkSize: base.chunkSize, chunkOverlap: base.chunkOverlap }) as any,
-    //             forceReload
-    //           )
-    //           .then((result) => {
-    //             const { entriesAdded, uniqueId, loaderType } = result
-    //             loaderTask.loaderDoneReturn = {
-    //               entriesAdded: entriesAdded,
-    //               uniqueId: uniqueId,
-    //               uniqueIds: [uniqueId],
-    //               loaderType: loaderType
-    //             }
-    //             return result
-    //           })
-    //           .catch((err) => {
-    //             logger.error(err)
-    //             return {
-    //               ...NewKnowledgeService.ERROR_LOADER_RETURN,
-    //               message: `Failed to add sitemap loader: ${err.message}`,
-    //               messageSource: 'embedding'
-    //             }
-    //           }),
-    //       evaluateTaskWorkload: { workload: 20 * MB }
-    //     }
-    //   ],
-    //   loaderDoneReturn: null
-    // }
     const loaderTask: LoaderTask = {
-      loaderTasks: [],
+      loaderTasks: [
+        {
+          state: LoaderTaskItemState.PENDING,
+          task: async () => {
+            // 使用处理后的网页进行加载
+            return addSitemapLoader(vectorStore, url)
+              .then((result) => {
+                loaderTask.loaderDoneReturn = result
+                return result
+              })
+              .catch((e) => {
+                logger.error(`Error in addWebLoader for ${url}: ${e}`)
+                const errorResult: LoaderReturn = {
+                  ...NewKnowledgeService.ERROR_LOADER_RETURN,
+                  message: e.message,
+                  messageSource: 'embedding'
+                }
+                loaderTask.loaderDoneReturn = errorResult
+                return errorResult
+              })
+          },
+          evaluateTaskWorkload: { workload: 2 * MB }
+        }
+      ],
       loaderDoneReturn: null
     }
     return loaderTask

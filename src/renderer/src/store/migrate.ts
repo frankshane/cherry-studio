@@ -1835,6 +1835,19 @@ const migrateConfig = {
       logger.error('migrate 121 error', error)
       return state
     }
+  },
+  '199': (state: RootState) => {
+    try {
+      state.knowledge.bases.forEach((base) => {
+        if (!base.framework) {
+          base.framework = 'embedjs'
+        }
+      })
+      return state
+    } catch (error) {
+      logger.error('migrate 199 error', error)
+      return state
+    }
   }
 }
 

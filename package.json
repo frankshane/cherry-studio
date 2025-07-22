@@ -71,6 +71,8 @@
     "@libsql/client": "0.14.0",
     "@libsql/win32-x64-msvc": "^0.4.7",
     "@strongtz/win32-arm64-msvc": "^0.4.7",
+    "cheerio": "^1.1.2",
+    "html-to-text": "^9.0.5",
     "jsdom": "26.1.0",
     "node-stream-zip": "^1.15.0",
     "os-proxy-config": "^1.1.2",
@@ -78,6 +80,7 @@
     "pdfjs-dist": "4.10.38",
     "react-json-view": "^1.21.3",
     "selection-hook": "^1.0.7",
+    "sitemapper": "^4.0.2",
     "turndown": "7.2.0"
   },
   "devDependencies": {
@@ -138,6 +141,7 @@
     "@tryfabric/martian": "^1.2.4",
     "@types/diff": "^7",
     "@types/fs-extra": "^11",
+    "@types/html-to-text": "^9",
     "@types/lodash": "^4.17.5",
     "@types/markdown-it": "^14",
     "@types/md5": "^2.3.5",
