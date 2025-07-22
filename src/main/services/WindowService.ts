@@ -343,7 +343,9 @@ export class WindowService {
        * mac: 任何情况都会到这里，因此需要单独处理mac
        */
 
-      event.preventDefault()
+      if (!mainWindow.isFullScreen()) {
+        event.preventDefault()
+      }
 
       mainWindow.hide()
 
