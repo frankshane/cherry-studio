@@ -1,6 +1,6 @@
 import type { Embeddings } from '@langchain/core/embeddings'
 import { OllamaEmbeddings } from '@langchain/ollama'
-import { OpenAIEmbeddings } from '@langchain/openai'
+import { AzureOpenAIEmbeddings, OpenAIEmbeddings } from '@langchain/openai'
 import { ApiClient } from '@types'
 
 export default class EmbeddingsFactory {
@@ -11,6 +11,16 @@ export default class EmbeddingsFactory {
       return new OllamaEmbeddings({
         model,
         baseUrl: baseURL
+      })
+    }
+    if (apiVersion !== undefined) {
+      return new AzureOpenAIEmbeddings({
+        azureOpenAIApiKey: apiKey,
+        azureOpenAIApiVersion: apiVersion,
+        azureOpenAIApiDeploymentName: model,
+        azureOpenAIEndpoint: baseURL,
+        dimensions,
+        batchSize
       })
     }
     return new OpenAIEmbeddings({

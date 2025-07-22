@@ -121,17 +121,21 @@ class NewKnowledgeService {
       url: `file:${path.join(this.storageDir, id)}`
     })
 
-    await client.execute(`
-      CREATE TABLE IF NOT EXISTS Knowledge (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      content TEXT,
-      metadata TEXT,
-      EMBEDDING_COLUMN F32_BLOB(${dimensions})
-      );
-    `)
-    await client.execute(`
-      CREATE INDEX IF NOT EXISTS idx_Knowledge_EMBEDDING_COLUMN ON Knowledge(libsql_vector_idx(EMBEDDING_COLUMN));
-    `)
+    await client.batch(
+      [
+        `CREATE TABLE IF NOT EXISTS vectors
+            (
+                id        INTEGER PRIMARY KEY AUTOINCREMENT,
+                content   TEXT,
+                metadata  TEXT,
+                embedding F32_BLOB(${dimensions})
+                );
+              `,
+        // 创建索引会导致无法删除数据库中的内容
+        `CREATE INDEX IF NOT EXISTS vector_idx ON vectors (libsql_vector_idx(embedding));`
+      ],
+      'write'
+    )
   }
 
   private getVectorStore = async ({
@@ -146,10 +150,11 @@ class NewKnowledgeService {
     const client = createClient({
       url: `file:${path.join(this.storageDir, id)}`
     })
+
     const vectorStore = new LibSQLVectorStore(embeddings, {
       db: client,
-      table: 'Knowledge',
-      column: 'EMBEDDING_COLUMN'
+      table: 'vectors',
+      column: 'embedding'
     })
 
     return vectorStore
@@ -161,8 +166,8 @@ class NewKnowledgeService {
   }
 
   public reset = async (_: Electron.IpcMainInvokeEvent, { base }: { base: KnowledgeBaseParams }): Promise<void> => {
-    const ragApplication = await this.getVectorStore(base)
-    await ragApplication.reset()
+    const vectorStore = await this.getVectorStore(base)
+    await vectorStore.delete({ deleteAll: true })
   }
 
   public delete = async (_: Electron.IpcMainInvokeEvent, id: string): Promise<void> => {
@@ -509,6 +514,7 @@ class NewKnowledgeService {
   ): Promise<void> {
     const vectorStore = await this.getVectorStore(base)
     logger.info(`[ KnowledgeService Remove Item UniqueId: ${uniqueId}]`)
+
     await vectorStore.delete({ ids: uniqueIds })
   }
 

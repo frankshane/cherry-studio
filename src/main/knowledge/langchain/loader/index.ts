@@ -143,6 +143,7 @@ export async function addNoteLoader(
     const docs = await loaderInstance.load()
     logger.info('addNoteLoader', docs)
     const ids = await vectorStore.addDocuments(docs)
+    logger.info('addNoteLoader ids', ids)
     return {
       entriesAdded: docs.length,
       uniqueId: ids && ids.length > 0 ? ids[0] : '',
