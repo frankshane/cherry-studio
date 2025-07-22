@@ -137,7 +137,12 @@ class KnowledgeQueue {
           note = await db.knowledge_notes.get(item.id)
           if (note) {
             content = note.content as string
-            result = await window.api.knowledgeBase.add({ base: baseParams, item: { ...sourceItem, content } })
+            logger.info('{ ...sourceItem, content }', { ...sourceItem, content })
+            if (baseParams.framework === 'embedjs') {
+              result = await window.api.knowledgeBase.add({ base: baseParams, item: { ...sourceItem, content } })
+            } else {
+              result = await window.api.newKnowledgeBase.add({ base: baseParams, item: { ...sourceItem, content } })
+            }
           }
           break
         default: {

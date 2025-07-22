@@ -160,7 +160,7 @@ const PopupContainer: React.FC<Props> = ({ base, resolve }) => {
                       ) : (
                         // item.metadata.source
                         <a href={`http://file/${item.metadata.source}`} target="_blank" rel="noreferrer">
-                          {item.metadata.source.split('/').pop() || item.metadata.source}
+                          {item.metadata.source?.split('/')?.pop() || item.metadata.source}
                         </a>
                       )}
                     </Text>

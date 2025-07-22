@@ -10,6 +10,7 @@ import { FileMetadata } from '@types'
 import { JSONLoader } from 'langchain/document_loaders/fs/json'
 import { TextLoader } from 'langchain/document_loaders/fs/text'
 
+import { NoteLoader } from './NoteLoader'
 import { WebLoader } from './WebLoader'
 
 const logger = loggerService.withContext('KnowledgeService File Loader')
@@ -129,5 +130,32 @@ export async function addSitemapLoader(vectorStore: LibSQLVectorStore, url: stri
     uniqueId: '',
     uniqueIds: [],
     loaderType: 'sitemap'
+  }
+}
+
+export async function addNoteLoader(
+  vectorStore: LibSQLVectorStore,
+  content: string,
+  sourceUrl: string
+): Promise<LoaderReturn> {
+  const loaderInstance = new NoteLoader(content, sourceUrl)
+  try {
+    const docs = await loaderInstance.load()
+    logger.info('addNoteLoader', docs)
+    const ids = await vectorStore.addDocuments(docs)
+    return {
+      entriesAdded: docs.length,
+      uniqueId: ids && ids.length > 0 ? ids[0] : '',
+      uniqueIds: ids || [],
+      loaderType: 'note'
+    }
+  } catch (error) {
+    logger.error(`Error loading or processing note ${sourceUrl} with loader note:`, error)
+  }
+  return {
+    entriesAdded: 0,
+    uniqueId: '',
+    uniqueIds: [],
+    loaderType: 'note'
   }
 }

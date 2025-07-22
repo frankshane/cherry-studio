@@ -19,7 +19,7 @@ import path from 'node:path'
 import { LibSQLVectorStore } from '@langchain/community/vectorstores/libsql'
 import { createClient } from '@libsql/client'
 import Embeddings from '@main/knowledge/langchain/embeddings/Embeddings'
-import { addFileLoader, addSitemapLoader, addWebLoader } from '@main/knowledge/langchain/loader'
+import { addFileLoader, addNoteLoader, addSitemapLoader, addWebLoader } from '@main/knowledge/langchain/loader'
 import OcrProvider from '@main/knowledge/ocr/OcrProvider'
 import PreprocessProvider from '@main/knowledge/preprocess/PreprocessProvider'
 import Reranker from '@main/knowledge/reranker/Reranker'
@@ -362,46 +362,39 @@ class NewKnowledgeService {
     vectorStore: LibSQLVectorStore,
     options: KnowledgeBaseAddItemOptionsNonNullableAttribute
   ): LoaderTask {
-    const { base, item, forceReload } = options
+    const { item } = options
     const content = item.content as string
+    const sourceUrl = (item as any).sourceUrl
+
+    logger.info('noteTask', content, sourceUrl)
 
     const encoder = new TextEncoder()
     const contentBytes = encoder.encode(content)
-    // const loaderTask: LoaderTask = {
-    //   loaderTasks: [
-    //     {
-    //       state: LoaderTaskItemState.PENDING,
-    //       task: () => {
-    //         const loaderReturn = ragApplication.addLoader(
-    //           new TextLoader({ text: content, chunkSize: base.chunkSize, chunkOverlap: base.chunkOverlap }),
-    //           forceReload
-    //         ) as Promise<LoaderReturn>
-
-    //         return loaderReturn
-    //           .then(({ entriesAdded, uniqueId, loaderType }) => {
-    //             loaderTask.loaderDoneReturn = {
-    //               entriesAdded: entriesAdded,
-    //               uniqueId: uniqueId,
-    //               uniqueIds: [uniqueId],
-    //               loaderType: loaderType
-    //             }
-    //           })
-    //           .catch((err) => {
-    //             logger.error(err)
-    //             return {
-    //               ...NewKnowledgeService.ERROR_LOADER_RETURN,
-    //               message: `Failed to add note loader: ${err.message}`,
-    //               messageSource: 'embedding'
-    //             }
-    //           })
-    //       },
-    //       evaluateTaskWorkload: { workload: contentBytes.length }
-    //     }
-    //   ],
-    //   loaderDoneReturn: null
-    // }
     const loaderTask: LoaderTask = {
-      loaderTasks: [],
+      loaderTasks: [
+        {
+          state: LoaderTaskItemState.PENDING,
+          task: async () => {
+            // 使用处理后的笔记进行加载
+            return addNoteLoader(vectorStore, content, sourceUrl)
+              .then((result) => {
+                loaderTask.loaderDoneReturn = result
+                return result
+              })
+              .catch((e) => {
+                logger.error(`Error in addNoteLoader for ${sourceUrl}: ${e}`)
+                const errorResult: LoaderReturn = {
+                  ...NewKnowledgeService.ERROR_LOADER_RETURN,
+                  message: e.message,
+                  messageSource: 'embedding'
+                }
+                loaderTask.loaderDoneReturn = errorResult
+                return errorResult
+              })
+          },
+          evaluateTaskWorkload: { workload: contentBytes.length }
+        }
+      ],
       loaderDoneReturn: null
     }
     return loaderTask
