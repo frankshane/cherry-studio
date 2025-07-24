@@ -8,16 +8,21 @@ import { LibSQLVectorStore } from '@langchain/community/vectorstores/libsql'
 import { loggerService } from '@main/services/LoggerService'
 import { UrlSource } from '@main/utils/knowledge'
 import { LoaderReturn } from '@shared/config/types'
-import { FileMetadata } from '@types'
+import { FileMetadata, KnowledgeBaseParams } from '@types'
 import { JSONLoader } from 'langchain/document_loaders/fs/json'
 import { TextLoader } from 'langchain/document_loaders/fs/text'
 
+import { SplitterFactory } from '../splitter'
 import { NoteLoader } from './NoteLoader'
 import { WebLoader } from './WebLoader'
 
 const logger = loggerService.withContext('KnowledgeService File Loader')
 
-export async function addFileLoader(vectorStore: LibSQLVectorStore, file: FileMetadata): Promise<LoaderReturn> {
+export async function addFileLoader(
+  base: KnowledgeBaseParams,
+  vectorStore: LibSQLVectorStore,
+  file: FileMetadata
+): Promise<LoaderReturn> {
   const fileExt = file.ext.toLowerCase()
   let loaderInstance: TextLoader | PDFLoader | PPTXLoader | DocxLoader | JSONLoader | EPubLoader | undefined
   let specificLoaderType: string = 'unknown'
@@ -64,7 +69,9 @@ export async function addFileLoader(vectorStore: LibSQLVectorStore, file: FileMe
   if (loaderInstance) {
     try {
       const docs = await loaderInstance.load()
-      const ids = await vectorStore.addDocuments(docs)
+      const splitter = SplitterFactory.create({ chunkSize: base.chunkSize, chunkOverlap: base.chunkOverlap })
+      const splitterResults = await splitter.splitDocuments(docs)
+      const ids = await vectorStore.addDocuments(splitterResults)
       return {
         entriesAdded: docs.length,
         uniqueId: ids && ids.length > 0 ? ids[0] : '',
@@ -85,6 +92,7 @@ export async function addFileLoader(vectorStore: LibSQLVectorStore, file: FileMe
 }
 
 export async function addWebLoader(
+  base: KnowledgeBaseParams,
   vectorStore: LibSQLVectorStore,
   url: string,
   source: UrlSource
@@ -105,7 +113,9 @@ export async function addWebLoader(
   if (loaderInstance) {
     try {
       const docs = await loaderInstance.load()
-      const ids = await vectorStore.addDocuments(docs)
+      const splitter = SplitterFactory.create({ chunkSize: base.chunkSize, chunkOverlap: base.chunkOverlap })
+      const splitterResults = await splitter.splitDocuments(docs)
+      const ids = await vectorStore.addDocuments(splitterResults)
       return {
         entriesAdded: docs.length,
         uniqueId: ids && ids.length > 0 ? ids[0] : '',
@@ -125,11 +135,17 @@ export async function addWebLoader(
   }
 }
 
-export async function addSitemapLoader(vectorStore: LibSQLVectorStore, url: string): Promise<LoaderReturn> {
+export async function addSitemapLoader(
+  base: KnowledgeBaseParams,
+  vectorStore: LibSQLVectorStore,
+  url: string
+): Promise<LoaderReturn> {
   const loaderInstance = new SitemapLoader(url)
   try {
     const docs = await loaderInstance.load()
-    const ids = await vectorStore.addDocuments(docs)
+    const splitter = SplitterFactory.create({ chunkSize: base.chunkSize, chunkOverlap: base.chunkOverlap })
+    const splitterResults = await splitter.splitDocuments(docs)
+    const ids = await vectorStore.addDocuments(splitterResults)
     return {
       entriesAdded: docs.length,
       uniqueId: ids && ids.length > 0 ? ids[0] : '',
@@ -148,6 +164,7 @@ export async function addSitemapLoader(vectorStore: LibSQLVectorStore, url: stri
 }
 
 export async function addNoteLoader(
+  base: KnowledgeBaseParams,
   vectorStore: LibSQLVectorStore,
   content: string,
   sourceUrl: string
@@ -155,9 +172,9 @@ export async function addNoteLoader(
   const loaderInstance = new NoteLoader(content, sourceUrl)
   try {
     const docs = await loaderInstance.load()
-    logger.info('addNoteLoader', docs)
-    const ids = await vectorStore.addDocuments(docs)
-    logger.info('addNoteLoader ids', ids)
+    const splitter = SplitterFactory.create({ chunkSize: base.chunkSize, chunkOverlap: base.chunkOverlap })
+    const splitterResults = await splitter.splitDocuments(docs)
+    const ids = await vectorStore.addDocuments(splitterResults)
     return {
       entriesAdded: docs.length,
       uniqueId: ids && ids.length > 0 ? ids[0] : '',

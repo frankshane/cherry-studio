@@ -43,6 +43,8 @@ export interface KnowledgeBase {
     provider: PreprocessProvider | OcrProvider
   }
   framework: 'embedjs' | 'langchain'
+  // default is vector
+  retriever?: 'vector' | 'bm25' | 'hybrid'
 }
 
 export type ProcessingStatus = 'pending' | 'processing' | 'completed' | 'failed'
@@ -79,6 +81,7 @@ export type KnowledgeBaseParams = {
     provider: PreprocessProvider | OcrProvider
   }
   framework: 'embedjs' | 'langchain'
+  retriever?: 'vector' | 'bm25' | 'hybrid'
 }
 
 export type KnowledgeReference = {

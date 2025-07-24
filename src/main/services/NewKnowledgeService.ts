@@ -17,9 +17,11 @@ import * as fs from 'node:fs'
 import path from 'node:path'
 
 import { LibSQLVectorStore } from '@langchain/community/vectorstores/libsql'
+import { Document } from '@langchain/core/documents'
 import { createClient } from '@libsql/client'
 import Embeddings from '@main/knowledge/langchain/embeddings/Embeddings'
 import { addFileLoader, addNoteLoader, addSitemapLoader, addWebLoader } from '@main/knowledge/langchain/loader'
+import { RetrieverFactory } from '@main/knowledge/langchain/retriever'
 import OcrProvider from '@main/knowledge/ocr/OcrProvider'
 import PreprocessProvider from '@main/knowledge/preprocess/PreprocessProvider'
 import Reranker from '@main/knowledge/reranker/Reranker'
@@ -200,7 +202,7 @@ class NewKnowledgeService {
               const fileToProcess: FileMetadata = await this.preprocessing(file, base, item)
 
               // 使用处理后的文件进行加载
-              return addFileLoader(vectorStore, fileToProcess)
+              return addFileLoader(base, vectorStore, fileToProcess)
                 .then((result) => {
                   loaderTask.loaderDoneReturn = result
                   return result
@@ -238,7 +240,7 @@ class NewKnowledgeService {
     vectorStore: LibSQLVectorStore,
     options: KnowledgeBaseAddItemOptionsNonNullableAttribute
   ): LoaderTask {
-    const { item } = options
+    const { base, item } = options
     const directory = item.content as string
     const files = getAllFiles(directory)
     const totalFiles = files.length
@@ -263,7 +265,7 @@ class NewKnowledgeService {
       loaderTasks.push({
         state: LoaderTaskItemState.PENDING,
         task: () =>
-          addFileLoader(vectorStore, file)
+          addFileLoader(base, vectorStore, file)
             .then((result) => {
               loaderDoneReturn.entriesAdded += 1
               processedFiles += 1
@@ -293,7 +295,7 @@ class NewKnowledgeService {
     vectorStore: LibSQLVectorStore,
     options: KnowledgeBaseAddItemOptionsNonNullableAttribute
   ): LoaderTask {
-    const { item } = options
+    const { base, item } = options
     const url = item.content as string
 
     const loaderTask: LoaderTask = {
@@ -302,7 +304,7 @@ class NewKnowledgeService {
           state: LoaderTaskItemState.PENDING,
           task: async () => {
             // 使用处理后的网页进行加载
-            return addWebLoader(vectorStore, url, getUrlSource(url))
+            return addWebLoader(base, vectorStore, url, getUrlSource(url))
               .then((result) => {
                 loaderTask.loaderDoneReturn = result
                 return result
@@ -330,7 +332,7 @@ class NewKnowledgeService {
     vectorStore: LibSQLVectorStore,
     options: KnowledgeBaseAddItemOptionsNonNullableAttribute
   ): LoaderTask {
-    const { item } = options
+    const { base, item } = options
     const url = item.content as string
 
     const loaderTask: LoaderTask = {
@@ -339,7 +341,7 @@ class NewKnowledgeService {
           state: LoaderTaskItemState.PENDING,
           task: async () => {
             // 使用处理后的网页进行加载
-            return addSitemapLoader(vectorStore, url)
+            return addSitemapLoader(base, vectorStore, url)
               .then((result) => {
                 loaderTask.loaderDoneReturn = result
                 return result
@@ -367,7 +369,7 @@ class NewKnowledgeService {
     vectorStore: LibSQLVectorStore,
     options: KnowledgeBaseAddItemOptionsNonNullableAttribute
   ): LoaderTask {
-    const { item } = options
+    const { base, item } = options
     const content = item.content as string
     const sourceUrl = (item as any).sourceUrl
 
@@ -381,7 +383,7 @@ class NewKnowledgeService {
           state: LoaderTaskItemState.PENDING,
           task: async () => {
             // 使用处理后的笔记进行加载
-            return addNoteLoader(vectorStore, content, sourceUrl)
+            return addNoteLoader(base, vectorStore, content, sourceUrl)
               .then((result) => {
                 loaderTask.loaderDoneReturn = result
                 return result
@@ -523,13 +525,30 @@ class NewKnowledgeService {
     _: Electron.IpcMainInvokeEvent,
     { search, base }: { search: string; base: KnowledgeBaseParams }
   ): Promise<KnowledgeSearchResult[]> {
+    logger.info(`search base: ${JSON.stringify(base)}`)
+
     const vectorStore = await this.getVectorStore(base)
-    const results = await vectorStore.similaritySearchWithScore(search, base.documentCount)
-    return results.map(([item, score]) => {
+
+    // 如果是 bm25 或 hybrid 模式，则从数据库获取所有文档
+    let documents: Document[] = []
+    if (base.retriever === 'bm25' || base.retriever === 'hybrid') {
+      documents = await this.getAllDocuments(base)
+    }
+
+    const retrieverFactory = new RetrieverFactory()
+    const retriever = retrieverFactory.createRetriever(base, vectorStore, documents)
+
+    const results = await retriever.invoke(search)
+    logger.info(`Search Results: ${JSON.stringify(results)}`)
+
+    // VectorStoreRetriever 和 EnsembleRetriever 会将分数附加到 metadata.score
+    // BM25Retriever 默认不返回分数，所以我们需要处理这种情况
+    return results.map((item) => {
       return {
         pageContent: item.pageContent,
         metadata: item.metadata,
-        score: score
+        // 如果 metadata 中没有 score，提供一个默认值
+        score: typeof item.metadata.score === 'number' ? item.metadata.score : 0
       }
     })
   }
@@ -604,6 +623,38 @@ class NewKnowledgeService {
     } catch (err) {
       logger.error(`Failed to check quota: ${err}`)
       throw new Error(`Failed to check quota: ${err}`)
+    }
+  }
+
+  private async getAllDocuments({ id }: KnowledgeBaseParams): Promise<Document[]> {
+    logger.info(`Fetching all documents from database for knowledge base: ${id}`)
+    const client = createClient({
+      url: `file:${path.join(this.storageDir, id)}`
+    })
+
+    try {
+      const resultSet = await client.execute('SELECT content, metadata FROM Knowledge')
+
+      const documents: Document[] = []
+      for (const row of resultSet.rows) {
+        if (row.content && row.metadata) {
+          try {
+            const pageContent = row.content as string
+            // metadata 在数据库中存储为 TEXT，需要解析回 JSON 对象
+            const metadata = JSON.parse(row.metadata as string)
+            documents.push(new Document({ pageContent, metadata }))
+          } catch (e) {
+            logger.error(`Failed to parse document row: ${e}`, row)
+          }
+        }
+      }
+
+      logger.info(`Fetched ${documents.length} documents for BM25/Hybrid retriever.`)
+      return documents
+    } catch (e) {
+      logger.error(`Could not fetch documents from database for base ${id}: ${e}`)
+      // 如果表不存在或查询失败，返回空数组
+      return []
     }
   }
 }

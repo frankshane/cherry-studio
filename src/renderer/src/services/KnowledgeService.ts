@@ -64,7 +64,8 @@ export const getKnowledgeBaseParams = (base: KnowledgeBase): KnowledgeBaseParams
     },
     preprocessOrOcrProvider: base.preprocessOrOcrProvider,
     documentCount: base.documentCount,
-    framework: base.framework
+    framework: base.framework,
+    retriever: base.retriever || 'vector'
   }
 }
 
