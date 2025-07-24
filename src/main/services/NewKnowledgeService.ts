@@ -25,6 +25,7 @@ import PreprocessProvider from '@main/knowledge/preprocess/PreprocessProvider'
 import Reranker from '@main/knowledge/reranker/Reranker'
 import { windowService } from '@main/services/WindowService'
 import { getAllFiles } from '@main/utils/file'
+import { getUrlSource } from '@main/utils/knowledge'
 import { TraceMethod } from '@mcp-trace/trace-core'
 import { MB } from '@shared/config/constant'
 import type { LoaderReturn } from '@shared/config/types'
@@ -301,7 +302,7 @@ class NewKnowledgeService {
           state: LoaderTaskItemState.PENDING,
           task: async () => {
             // 使用处理后的网页进行加载
-            return addWebLoader(vectorStore, url, 'normal')
+            return addWebLoader(vectorStore, url, getUrlSource(url))
               .then((result) => {
                 loaderTask.loaderDoneReturn = result
                 return result

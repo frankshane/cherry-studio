@@ -3,8 +3,10 @@ import { EPubLoader } from '@langchain/community/document_loaders/fs/epub'
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
 import { PPTXLoader } from '@langchain/community/document_loaders/fs/pptx'
 import { SitemapLoader } from '@langchain/community/document_loaders/web/sitemap'
+import { YoutubeLoader } from '@langchain/community/document_loaders/web/youtube'
 import { LibSQLVectorStore } from '@langchain/community/vectorstores/libsql'
 import { loggerService } from '@main/services/LoggerService'
+import { UrlSource } from '@main/utils/knowledge'
 import { LoaderReturn } from '@shared/config/types'
 import { FileMetadata } from '@types'
 import { JSONLoader } from 'langchain/document_loaders/fs/json'
@@ -70,7 +72,7 @@ export async function addFileLoader(vectorStore: LibSQLVectorStore, file: FileMe
         loaderType: specificLoaderType
       }
     } catch (error) {
-      logger.error(`Error loading or processing file ${file.path} with loader ${specificLoaderType}:`, error)
+      logger.error(`Error loading or processing file ${file.path} with loader ${specificLoaderType}: ${error}`)
     }
   }
 
@@ -82,11 +84,23 @@ export async function addFileLoader(vectorStore: LibSQLVectorStore, file: FileMe
   }
 }
 
-export async function addWebLoader(vectorStore: LibSQLVectorStore, url: string, source: string): Promise<LoaderReturn> {
-  let loaderInstance: WebLoader | undefined
+export async function addWebLoader(
+  vectorStore: LibSQLVectorStore,
+  url: string,
+  source: UrlSource
+): Promise<LoaderReturn> {
+  let loaderInstance: WebLoader | YoutubeLoader | undefined
   switch (source) {
     case 'normal':
       loaderInstance = new WebLoader(url)
+      break
+    case 'youtube':
+      loaderInstance = YoutubeLoader.createFromUrl(url, {
+        addVideoInfo: true
+      })
+      break
+    default:
+      break
   }
   if (loaderInstance) {
     try {
@@ -99,7 +113,7 @@ export async function addWebLoader(vectorStore: LibSQLVectorStore, url: string, 
         loaderType: source
       }
     } catch (error) {
-      logger.error(`Error loading or processing website ${url} with loader ${source}:`, error)
+      logger.error(`Error loading or processing website ${url} with loader ${source}: ${error}`)
     }
   }
 
@@ -123,7 +137,7 @@ export async function addSitemapLoader(vectorStore: LibSQLVectorStore, url: stri
       loaderType: 'sitemap'
     }
   } catch (error) {
-    logger.error(`Error loading or processing website ${url} with loader sitemap:`, error)
+    logger.error(`Error loading or processing website ${url} with loader sitemap: ${error}`)
   }
   return {
     entriesAdded: 0,
@@ -151,7 +165,7 @@ export async function addNoteLoader(
       loaderType: 'note'
     }
   } catch (error) {
-    logger.error(`Error loading or processing note ${sourceUrl} with loader note:`, error)
+    logger.error(`Error loading or processing note ${sourceUrl} with loader note: ${error}`)
   }
   return {
     entriesAdded: 0,
