@@ -371,7 +371,7 @@ class NewKnowledgeService {
     const content = item.content as string
     const sourceUrl = (item as any).sourceUrl
 
-    logger.info('noteTask', content, sourceUrl)
+    logger.info(`noteTask ${content}, ${sourceUrl}`)
 
     const encoder = new TextEncoder()
     const contentBytes = encoder.encode(content)
@@ -574,7 +574,7 @@ class NewKnowledgeService {
         logger.info(`Starting preprocess processing for scanned PDF: ${file.path}`)
         const { processedFile } = await provider.parseFile(item.id, file)
         fileToProcess = processedFile
-        logger.warn('base', base, 'item', item, 'file', file)
+        logger.warn(`base: ${base}, item: ${item}, file: ${file}`)
         const mainWindow = windowService.getMainWindow()
         mainWindow?.webContents.send('file-preprocess-finished', {
           itemId: item.id
