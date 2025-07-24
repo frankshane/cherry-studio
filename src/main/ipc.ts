@@ -164,7 +164,7 @@ export function registerIpc(mainWindow: BrowserWindow, app: Electron.App) {
   })
 
   ipcMain.handle(IpcChannel.App_SetTestPlan, async (_, isActive: boolean) => {
-    logger.info('set test plan', isActive)
+    logger.info(`set test plan: ${isActive}`)
     if (isActive !== configManager.getTestPlan()) {
       appUpdater.cancelDownload()
       configManager.setTestPlan(isActive)
@@ -172,7 +172,7 @@ export function registerIpc(mainWindow: BrowserWindow, app: Electron.App) {
   })
 
   ipcMain.handle(IpcChannel.App_SetTestChannel, async (_, channel: UpgradeChannel) => {
-    logger.info('set test channel', channel)
+    logger.info(`set test channel: ${channel}`)
     if (channel !== configManager.getTestChannel()) {
       appUpdater.cancelDownload()
       configManager.setTestChannel(channel)
@@ -343,7 +343,7 @@ export function registerIpc(mainWindow: BrowserWindow, app: Electron.App) {
   ipcMain.handle(IpcChannel.App_RelaunchApp, (_, options?: Electron.RelaunchOptions) => {
     // Fix for .AppImage
     if (isLinux && process.env.APPIMAGE) {
-      logger.info('Relaunching app with options:', process.env.APPIMAGE, options)
+      logger.info(`Relaunching app with options: ${process.env.APPIMAGE}`, options)
       // On Linux, we need to use the APPIMAGE environment variable to relaunch
       // https://github.com/electron-userland/electron-builder/issues/1727#issuecomment-769896927
       options = options || {}
@@ -590,7 +590,7 @@ export function registerIpc(mainWindow: BrowserWindow, app: Electron.App) {
       // Process DXT file using the temporary path
       return await dxtService.uploadDxt(event, tempPath)
     } catch (error) {
-      logger.error('DXT upload error:', error)
+      logger.error('DXT upload error:', error as Error)
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to upload DXT file'

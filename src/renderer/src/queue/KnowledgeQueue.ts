@@ -221,7 +221,7 @@ class KnowledgeQueue {
 
       store.dispatch(clearCompletedProcessing({ baseId }))
     } catch (error) {
-      logger.error(`Error processing item ${item.id}: `, error)
+      logger.error(`Error processing item ${item.id}: `, error as Error)
       notificationService.send({
         id: uuid(),
         type: 'error',
