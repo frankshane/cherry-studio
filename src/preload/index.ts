@@ -213,6 +213,8 @@ const api = {
   newKnowledgeBase: {
     create: (base: KnowledgeBaseParams, context?: SpanContext) =>
       tracedInvoke(IpcChannel.New_KnowledgeBase_Create, context, base),
+    reset: (base: KnowledgeBaseParams) => ipcRenderer.invoke(IpcChannel.New_KnowledgeBase_Reset, base),
+    delete: (id: string) => ipcRenderer.invoke(IpcChannel.New_KnowledgeBase_Delete, id),
     add: ({
       base,
       item,
@@ -224,6 +226,8 @@ const api = {
       userId?: string
       forceReload?: boolean
     }) => ipcRenderer.invoke(IpcChannel.New_KnowledgeBase_Add, { base, item, forceReload, userId }),
+    remove: ({ uniqueId, uniqueIds, base }: { uniqueId: string; uniqueIds: string[]; base: KnowledgeBaseParams }) =>
+      ipcRenderer.invoke(IpcChannel.New_KnowledgeBase_Remove, { uniqueId, uniqueIds, base }),
     search: ({ search, base }: { search: string; base: KnowledgeBaseParams }, context?: SpanContext) =>
       tracedInvoke(IpcChannel.New_KnowledgeBase_Search, context, { search, base }),
     rerank: (
@@ -237,7 +241,9 @@ const api = {
         results: KnowledgeSearchResult[]
       },
       context?: SpanContext
-    ) => tracedInvoke(IpcChannel.New_KnowledgeBase_Rerank, context, { search, base, results })
+    ) => tracedInvoke(IpcChannel.New_KnowledgeBase_Rerank, context, { search, base, results }),
+    checkQuota: ({ base, userId }: { base: KnowledgeBaseParams; userId: string }) =>
+      ipcRenderer.invoke(IpcChannel.New_KnowledgeBase_Check_Quota, base, userId)
   },
   memory: {
     add: (messages: string | AssistantMessage[], options?: AddMemoryOptions) =>

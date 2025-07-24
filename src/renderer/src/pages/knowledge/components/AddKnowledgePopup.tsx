@@ -138,6 +138,7 @@ const PopupContainer: React.FC<Props> = ({ title, resolve }) => {
           framework: 'langchain'
         }
 
+        // migrate to langchain framework
         // await window.api.knowledgeBase.create(getKnowledgeBaseParams(_newBase))
         await window.api.newKnowledgeBase.create(getKnowledgeBaseParams(_newBase))
 

@@ -134,6 +134,7 @@ export enum IpcChannel {
   New_KnowledgeBase_Remove = 'new-knowledge-base:remove',
   New_KnowledgeBase_Search = 'new-knowledge-base:search',
   New_KnowledgeBase_Rerank = 'new-knowledge-base:rerank',
+  New_KnowledgeBase_Check_Quota = 'new-knowledge-base:check-quota',
 
   //file
   File_Open = 'file:open',

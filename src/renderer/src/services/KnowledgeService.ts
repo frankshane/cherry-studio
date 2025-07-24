@@ -135,19 +135,11 @@ export const searchKnowledgeBase = async (
         modelName
       })
     }
+    const knowledgeBaseApi = base.framework === 'langchain' ? window.api.newKnowledgeBase : window.api.knowledgeBase
 
-    // 执行搜索
-    // const searchResults = await window.api.knowledgeBase.search(
-    //   {
-    //     search: rewrite || query,
-    //     base: baseParams
-    //   },
-    //   currentSpan?.spanContext()
-    // )
-
-    const searchResults = await window.api.newKnowledgeBase.search(
+    const searchResults: KnowledgeSearchResult[] = await knowledgeBaseApi.search(
       {
-        search: query,
+        search: rewrite || query,
         base: baseParams
       },
       currentSpan?.spanContext()
@@ -159,7 +151,11 @@ export const searchKnowledgeBase = async (
     // 如果有rerank模型，执行重排
     let rerankResults = filteredResults
     if (base.rerankModel && filteredResults.length > 0) {
-      rerankResults = await window.api.knowledgeBase.rerank(
+      // 1. 根据框架选择API对象
+      const knowledgeBaseApi = base.framework === 'langchain' ? window.api.newKnowledgeBase : window.api.knowledgeBase
+
+      // 2. 使用选定的API对象进行调用，代码不再重复
+      rerankResults = await knowledgeBaseApi.rerank(
         {
           search: rewrite || query,
           base: baseParams,
@@ -168,7 +164,6 @@ export const searchKnowledgeBase = async (
         currentSpan?.spanContext()
       )
     }
-
     // 限制文档数量
     const limitedResults = rerankResults.slice(0, documentCount)
 

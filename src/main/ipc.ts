@@ -492,6 +492,7 @@ export function registerIpc(mainWindow: BrowserWindow, app: Electron.App) {
   ipcMain.handle(IpcChannel.New_KnowledgeBase_Remove, NewKnowledgeService.remove.bind(NewKnowledgeService))
   ipcMain.handle(IpcChannel.New_KnowledgeBase_Search, NewKnowledgeService.search.bind(NewKnowledgeService))
   ipcMain.handle(IpcChannel.New_KnowledgeBase_Rerank, NewKnowledgeService.rerank.bind(NewKnowledgeService))
+  ipcMain.handle(IpcChannel.New_KnowledgeBase_Check_Quota, NewKnowledgeService.checkQuota.bind(NewKnowledgeService))
 
   // memory
   ipcMain.handle(IpcChannel.Memory_Add, async (_, messages, config) => {

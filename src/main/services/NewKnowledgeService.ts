@@ -123,16 +123,15 @@ class NewKnowledgeService {
 
     await client.batch(
       [
-        `CREATE TABLE IF NOT EXISTS vectors
+        `CREATE TABLE IF NOT EXISTS Knowledge
             (
                 id        INTEGER PRIMARY KEY AUTOINCREMENT,
                 content   TEXT,
                 metadata  TEXT,
-                embedding F32_BLOB(${dimensions})
+                EMBEDDING_COLUMN F32_BLOB(${dimensions})
                 );
               `,
-        // 创建索引会导致无法删除数据库中的内容
-        `CREATE INDEX IF NOT EXISTS vector_idx ON vectors (libsql_vector_idx(embedding));`
+        `CREATE INDEX IF NOT EXISTS idx_Knowledge_EMBEDDING_COLUMN ON Knowledge (libsql_vector_idx(EMBEDDING_COLUMN));`
       ],
       'write'
     )
@@ -153,8 +152,8 @@ class NewKnowledgeService {
 
     const vectorStore = new LibSQLVectorStore(embeddings, {
       db: client,
-      table: 'vectors',
-      column: 'embedding'
+      table: 'Knowledge',
+      column: 'EMBEDDING_COLUMN'
     })
 
     return vectorStore
@@ -588,6 +587,23 @@ class NewKnowledgeService {
     }
 
     return fileToProcess
+  }
+
+  public checkQuota = async (
+    _: Electron.IpcMainInvokeEvent,
+    base: KnowledgeBaseParams,
+    userId: string
+  ): Promise<number> => {
+    try {
+      if (base.preprocessOrOcrProvider && base.preprocessOrOcrProvider.type === 'preprocess') {
+        const provider = new PreprocessProvider(base.preprocessOrOcrProvider.provider, userId)
+        return await provider.checkQuota()
+      }
+      throw new Error('No preprocess provider configured')
+    } catch (err) {
+      logger.error(`Failed to check quota: ${err}`)
+      throw new Error(`Failed to check quota: ${err}`)
+    }
   }
 }
 
