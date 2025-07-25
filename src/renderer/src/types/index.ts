@@ -6,6 +6,7 @@ import * as z from 'zod/v4'
 
 export * from './file'
 import type { FileMetadata } from './file'
+import { KnowledgeBase, KnowledgeReference } from './knowledge'
 import type { Message } from './newMessage'
 export * from './knowledge'
 export type Assistant = {
