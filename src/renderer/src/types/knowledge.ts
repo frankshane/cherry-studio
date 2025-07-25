@@ -90,6 +90,7 @@ export type KnowledgeReference = {
   sourceUrl: string
   type: KnowledgeItemType
   file?: FileMetadata
+  metadata?: Record<string, any>
 }
 
 export interface KnowledgeSearchResult {

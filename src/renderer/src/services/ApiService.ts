@@ -333,6 +333,25 @@ async function fetchExternalTool(
       }
     }
 
+    logger.info(`KnowledgeReferencesFromSearch: ${JSON.stringify(knowledgeReferencesFromSearch)}`)
+
+    // 处理知识库附带metadata
+    if (knowledgeReferencesFromSearch) {
+      knowledgeReferencesFromSearch.forEach((ref) => {
+        if (ref.metadata?.type === 'youtube' && ref.metadata?.source) {
+          onChunkReceived({ type: ChunkType.VIDEO_CREATED })
+          onChunkReceived({
+            type: ChunkType.VIDEO_COMPLETE,
+            video: {
+              type: 'url',
+              url: ref.metadata.source
+            },
+            metadata: ref.metadata
+          })
+        }
+      })
+    }
+
     // 发送工具执行完成通知
     const wasAnyToolEnabled = shouldWebSearch || shouldKnowledgeSearch || shouldSearchMemory
     if (wasAnyToolEnabled) {

@@ -43,6 +43,9 @@ export interface StreamProcessorCallbacks {
   onError?: (error: any) => void
   // Called when the entire stream processing is signaled as complete (success or failure)
   onComplete?: (status: AssistantMessageStatus, response?: Response) => void
+  onVideoCreated?: () => void
+  onVideoDelta?: (videoData: any) => void
+  onVideoGenerated?: (videoData?: any, metadata?: Record<string, any>) => void
 }
 
 // Function to create a stream processor instance
@@ -134,6 +137,18 @@ export function createStreamProcessor(callbacks: StreamProcessorCallbacks = {}) 
         }
         case ChunkType.ERROR: {
           if (callbacks.onError) callbacks.onError(data.error)
+          break
+        }
+        case ChunkType.VIDEO_CREATED: {
+          if (callbacks.onVideoCreated) callbacks.onVideoCreated()
+          break
+        }
+        case ChunkType.VIDEO_DELTA: {
+          if (callbacks.onVideoDelta) callbacks.onVideoDelta(data.video)
+          break
+        }
+        case ChunkType.VIDEO_COMPLETE: {
+          if (callbacks.onVideoGenerated) callbacks.onVideoGenerated(data.video, data.metadata)
           break
         }
         default: {

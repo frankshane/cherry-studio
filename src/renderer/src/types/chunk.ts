@@ -37,7 +37,11 @@ export enum ChunkType {
   BLOCK_COMPLETE = 'block_complete',
   ERROR = 'error',
   SEARCH_IN_PROGRESS_UNION = 'search_in_progress_union',
-  SEARCH_COMPLETE_UNION = 'search_complete_union'
+  SEARCH_COMPLETE_UNION = 'search_complete_union',
+  VIDEO_CREATED = 'video.created',
+  VIDEO_DELTA = 'video.delta',
+  VIDEO_COMPLETE = 'video.complete',
+  VIDEO_PROGRESS = 'video.progress'
 }
 
 export interface LLMResponseCreatedChunk {
@@ -379,6 +383,39 @@ export interface SearchCompleteUnionChunk {
   type: ChunkType.SEARCH_COMPLETE_UNION
 }
 
+export interface VideoCreatedChunk {
+  /**
+   * The type of the chunk
+   */
+  type: ChunkType.VIDEO_CREATED
+}
+
+export interface VideoDeltaChunk {
+  /**
+   * A chunk of Base64 encoded video data
+   */
+  video: { type: 'url'; url: string }
+
+  /**
+   * The type of the chunk
+   */
+  type: ChunkType.VIDEO_DELTA
+}
+
+export interface VideoCompleteChunk {
+  /**
+   * The type of the chunk
+   */
+  type: ChunkType.VIDEO_COMPLETE
+
+  /**
+   * The video content of the chunk
+   */
+  video?: { type: 'url'; url: string }
+
+  metadata?: Record<string, any>
+}
+
 export type Chunk =
   | BlockCreatedChunk // 消息块创建，无意义
   | BlockInProgressChunk // 消息块进行中，无意义
@@ -413,3 +450,6 @@ export type Chunk =
   | ErrorChunk // 错误
   | SearchInProgressUnionChunk // 搜索(知识库/互联网)进行中
   | SearchCompleteUnionChunk // 搜索(知识库/互联网)完成
+  | VideoCreatedChunk // 视频内容创建
+  | VideoDeltaChunk // 视频内容生成中
+  | VideoCompleteChunk // 视频内容生成完成

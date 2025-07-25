@@ -17,6 +17,7 @@ import PlaceholderBlock from './PlaceholderBlock'
 import ThinkingBlock from './ThinkingBlock'
 import ToolBlock from './ToolBlock'
 import TranslationBlock from './TranslationBlock'
+import VideoBlock from './VideoBlock'
 
 const logger = loggerService.withContext('MessageBlockRenderer')
 
@@ -145,6 +146,9 @@ const MessageBlockRenderer: React.FC<Props> = ({ blocks, message }) => {
             break
           case MessageBlockType.TRANSLATION:
             blockComponent = <TranslationBlock key={block.id} block={block} />
+            break
+          case MessageBlockType.VIDEO:
+            blockComponent = <VideoBlock key={block.id} block={block} />
             break
           default:
             logger.warn('Unsupported block type in MessageBlockRenderer:', (block as any).type, block)

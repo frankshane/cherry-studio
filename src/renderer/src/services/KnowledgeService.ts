@@ -260,6 +260,7 @@ export const processKnowledgeSearch = async (
             id: index + 1,
             content: item.pageContent,
             sourceUrl: await getKnowledgeSourceUrl(item),
+            metadata: item.metadata,
             type: 'file'
           }) as KnowledgeReference
       )
@@ -270,7 +271,6 @@ export const processKnowledgeSearch = async (
   // 汇总所有知识库的结果
   const resultsPerBase = await Promise.all(baseSearchPromises)
   const allReferencesRaw = resultsPerBase.flat().filter((ref): ref is KnowledgeReference => !!ref)
-  logger.debug(`KnowledgeSearch Results: ${allReferencesRaw}`)
   endSpan({
     topicId,
     outputs: resultsPerBase,

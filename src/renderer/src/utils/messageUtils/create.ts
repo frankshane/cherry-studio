@@ -12,7 +12,8 @@ import type {
   Message,
   ThinkingMessageBlock,
   ToolMessageBlock,
-  TranslationMessageBlock
+  TranslationMessageBlock,
+  VideoMessageBlock
 } from '@renderer/types/newMessage'
 import {
   AssistantMessageStatus,
@@ -273,6 +274,22 @@ export function createCitationBlock(
     response,
     knowledge,
     memories
+  }
+}
+
+export function createVideoBlock(
+  messageId: string,
+  overrides: Partial<Omit<VideoMessageBlock, 'id' | 'messageId' | 'type'>> = {}
+): VideoMessageBlock {
+  if (overrides.file && overrides.file.type !== FileTypes.VIDEO) {
+    logger.warn(`Attempted to create ImageBlock with non-video file type: ${overrides.file.type}`)
+  }
+  const { file, url, ...baseOverrides } = overrides
+  const baseBlock = createBaseMessageBlock(messageId, MessageBlockType.VIDEO, baseOverrides)
+  return {
+    ...baseBlock,
+    url: url,
+    file: file
   }
 }
 
