@@ -4,7 +4,6 @@ import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
 import { PPTXLoader } from '@langchain/community/document_loaders/fs/pptx'
 import { CheerioWebBaseLoader } from '@langchain/community/document_loaders/web/cheerio'
 import { SitemapLoader } from '@langchain/community/document_loaders/web/sitemap'
-import { YoutubeLoader } from '@langchain/community/document_loaders/web/youtube'
 import { LibSQLVectorStore } from '@langchain/community/vectorstores/libsql'
 import { loggerService } from '@main/services/LoggerService'
 import { UrlSource } from '@main/utils/knowledge'
@@ -15,6 +14,7 @@ import { TextLoader } from 'langchain/document_loaders/fs/text'
 
 import { SplitterFactory } from '../splitter'
 import { NoteLoader } from './NoteLoader'
+import { YoutubeLoader } from './YoutubeLoader'
 
 const logger = loggerService.withContext('KnowledgeService File Loader')
 
@@ -104,7 +104,8 @@ export async function addWebLoader(
       break
     case 'youtube':
       loaderInstance = YoutubeLoader.createFromUrl(url, {
-        addVideoInfo: true
+        addVideoInfo: true,
+        transcriptFormat: 'srt'
       })
       break
     default:
@@ -113,7 +114,11 @@ export async function addWebLoader(
   if (loaderInstance) {
     try {
       const docs = await loaderInstance.load()
-      const splitter = SplitterFactory.create({ chunkSize: base.chunkSize, chunkOverlap: base.chunkOverlap })
+      const splitter = SplitterFactory.create({
+        chunkSize: base.chunkSize,
+        chunkOverlap: base.chunkOverlap,
+        type: source === 'youtube' ? 'youtube' : 'recursive'
+      })
       const splitterResults = await splitter.splitDocuments(docs)
       const ids = await vectorStore.addDocuments(splitterResults)
       return {
