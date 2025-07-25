@@ -2,6 +2,7 @@ import { DocxLoader } from '@langchain/community/document_loaders/fs/docx'
 import { EPubLoader } from '@langchain/community/document_loaders/fs/epub'
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
 import { PPTXLoader } from '@langchain/community/document_loaders/fs/pptx'
+import { CheerioWebBaseLoader } from '@langchain/community/document_loaders/web/cheerio'
 import { SitemapLoader } from '@langchain/community/document_loaders/web/sitemap'
 import { YoutubeLoader } from '@langchain/community/document_loaders/web/youtube'
 import { LibSQLVectorStore } from '@langchain/community/vectorstores/libsql'
@@ -14,7 +15,6 @@ import { TextLoader } from 'langchain/document_loaders/fs/text'
 
 import { SplitterFactory } from '../splitter'
 import { NoteLoader } from './NoteLoader'
-import { WebLoader } from './WebLoader'
 
 const logger = loggerService.withContext('KnowledgeService File Loader')
 
@@ -97,10 +97,10 @@ export async function addWebLoader(
   url: string,
   source: UrlSource
 ): Promise<LoaderReturn> {
-  let loaderInstance: WebLoader | YoutubeLoader | undefined
+  let loaderInstance: CheerioWebBaseLoader | YoutubeLoader | undefined
   switch (source) {
     case 'normal':
-      loaderInstance = new WebLoader(url)
+      loaderInstance = new CheerioWebBaseLoader(url)
       break
     case 'youtube':
       loaderInstance = YoutubeLoader.createFromUrl(url, {
