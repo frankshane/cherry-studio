@@ -69,7 +69,7 @@ export type AssistantSettings = {
   customParameters?: AssistantSettingCustomParameters[]
   reasoning_effort?: ReasoningEffortOptions
   qwenThinkMode?: boolean
-  toolUseMode?: 'function' | 'prompt'
+  toolUseMode: 'function' | 'prompt'
 }
 
 export type Agent = Omit<Assistant, 'model'> & {
