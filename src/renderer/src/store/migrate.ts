@@ -1845,6 +1845,32 @@ const migrateConfig = {
       return state
     }
   },
+
+  '123': (state: RootState) => {
+    try {
+      state.llm.providers.forEach((provider) => {
+        provider.models.forEach((model) => {
+          if (model.type && Array.isArray(model.type)) {
+            model.capabilities = model.type.map((t) => ({
+              type: t,
+              isUserSelected: true
+            }))
+            delete model.type
+          }
+        })
+      })
+
+      const lanyunProvider = state.llm.providers.find((provider) => provider.id === 'lanyun')
+      if (lanyunProvider && lanyunProvider.models.length === 0) {
+        updateProvider(state, 'lanyun', { models: SYSTEM_MODELS.lanyun })
+      }
+
+      return state
+    } catch (error) {
+      logger.error('migrate 123 error', error as Error)
+      return state
+    }
+  },
   '199': (state: RootState) => {
     try {
       state.knowledge.bases.forEach((base) => {
@@ -1854,10 +1880,10 @@ const migrateConfig = {
       })
       return state
     } catch (error) {
-      logger.error('migrate 199 error', error)
+      logger.error('migrate 199 error', error as Error)
       return state
     }
-  }
+  },
 }
 
 const migrate = createMigrate(migrateConfig as any)
