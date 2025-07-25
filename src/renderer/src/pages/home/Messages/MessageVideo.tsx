@@ -1,8 +1,7 @@
 import { loggerService } from '@renderer/services/LoggerService'
 import { VideoMessageBlock } from '@renderer/types/newMessage'
 import { FC } from 'react'
-import { useTranslation } from 'react-i18next'
-import LiteYouTubeEmbed from 'react-lite-youtube-embed'
+import YouTube, { YouTubeProps } from 'react-youtube'
 import styled from 'styled-components'
 
 const logger = loggerService.withContext('MessageVideo')
@@ -11,27 +10,29 @@ interface Props {
 }
 
 const MessageVideo: FC<Props> = ({ block }) => {
-  const { t } = useTranslation()
-
   logger.debug(`MessageVideo: ${JSON.stringify(block)}`)
 
   if (!block.url) {
     return null
   }
 
+  const onPlayerReady: YouTubeProps['onReady'] = (event) => {
+    event.target.pauseVideo()
+  }
+
+  const opts: YouTubeProps['opts'] = {
+    height: '100%',
+    width: '100%',
+    playerVars: {
+      autoplay: 1,
+      start: Math.floor(block.metadata?.startTime)
+    }
+  }
+
   return (
     <Container>
       {block.metadata?.type === 'youtube' && (
-        <LiteYouTubeEmbed
-          id={block.url}
-          title={block.metadata?.title ?? 'YouTube video player'}
-          params={`start=${Math.floor(block.metadata?.startTime)}`}
-          playerClass=""
-          style={{
-            height: '100%',
-            width: '100%'
-          }}
-        />
+        <YouTube style={{ height: '100%', width: '100%' }} videoId={block.url} opts={opts} onReady={onPlayerReady} />
       )}
     </Container>
   )
@@ -40,12 +41,8 @@ const MessageVideo: FC<Props> = ({ block }) => {
 export default MessageVideo
 
 const Container = styled.div`
-  max-width: 560px; /* 视频的标准宽度 */
+  max-width: 560px;
   width: 100%;
   aspect-ratio: 16 / 9;
   height: auto;
-
-  .lty-playbtn {
-    display: none;
-  }
 `

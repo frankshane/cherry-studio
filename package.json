@@ -82,7 +82,7 @@
     "os-proxy-config": "^1.1.2",
     "pdf-parse": "^1.1.1",
     "pdfjs-dist": "4.10.38",
-    "react-lite-youtube-embed": "^2.5.1",
+    "react-youtube": "^10.1.0",
     "selection-hook": "^1.0.8",
     "turndown": "7.2.0",
     "youtubei.js": "^15.0.1"
