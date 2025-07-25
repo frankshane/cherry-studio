@@ -5,6 +5,7 @@ import { PPTXLoader } from '@langchain/community/document_loaders/fs/pptx'
 import { CheerioWebBaseLoader } from '@langchain/community/document_loaders/web/cheerio'
 import { SitemapLoader } from '@langchain/community/document_loaders/web/sitemap'
 import { LibSQLVectorStore } from '@langchain/community/vectorstores/libsql'
+import type { Document } from '@langchain/core/documents' // <-- 引入 Document 类型
 import { loggerService } from '@main/services/LoggerService'
 import { UrlSource } from '@main/utils/knowledge'
 import { LoaderReturn } from '@shared/config/types'
@@ -17,6 +18,24 @@ import { NoteLoader } from './NoteLoader'
 import { YoutubeLoader } from './YoutubeLoader'
 
 const logger = loggerService.withContext('KnowledgeService File Loader')
+
+/**
+ * 为文档数组中的每个文档的 metadata 添加类型信息。
+ * @param docs - 要格式化的 Document 数组。
+ * @param type - 要添加到 metadata 中的类型字符串。
+ * @returns 带有更新后 metadata 的新 Document 数组。
+ */
+function formatDocument(docs: Document[], type: string): Document[] {
+  return docs.map((doc) => {
+    return {
+      ...doc,
+      metadata: {
+        ...doc.metadata,
+        type: type
+      }
+    }
+  })
+}
 
 export async function addFileLoader(
   base: KnowledgeBaseParams,
@@ -45,7 +64,9 @@ export async function addFileLoader(
       specificLoaderType = 'docx'
       break
     case '.doc':
-      loaderInstance = new DocxLoader(file.path, { type: 'doc' })
+      // .doc support might be limited and relies on external tools.
+      // Assuming DocxLoader handles it or a specific setup exists.
+      loaderInstance = new DocxLoader(file.path)
       specificLoaderType = 'doc'
       break
     case '.json':
@@ -68,7 +89,9 @@ export async function addFileLoader(
 
   if (loaderInstance) {
     try {
-      const docs = await loaderInstance.load()
+      let docs = await loaderInstance.load()
+
+      docs = formatDocument(docs, specificLoaderType)
       const splitter = SplitterFactory.create({ chunkSize: base.chunkSize, chunkOverlap: base.chunkOverlap })
       const splitterResults = await splitter.splitDocuments(docs)
       const ids = await vectorStore.addDocuments(splitterResults)
@@ -113,7 +136,9 @@ export async function addWebLoader(
   }
   if (loaderInstance) {
     try {
-      const docs = await loaderInstance.load()
+      let docs = await loaderInstance.load()
+
+      docs = formatDocument(docs, source)
       const splitter = SplitterFactory.create({
         chunkSize: base.chunkSize,
         chunkOverlap: base.chunkOverlap,
@@ -147,7 +172,9 @@ export async function addSitemapLoader(
 ): Promise<LoaderReturn> {
   const loaderInstance = new SitemapLoader(url)
   try {
-    const docs = await loaderInstance.load()
+    let docs = await loaderInstance.load()
+
+    docs = formatDocument(docs, 'sitemap')
     const splitter = SplitterFactory.create({ chunkSize: base.chunkSize, chunkOverlap: base.chunkOverlap })
     const splitterResults = await splitter.splitDocuments(docs)
     const ids = await vectorStore.addDocuments(splitterResults)
@@ -176,7 +203,9 @@ export async function addNoteLoader(
 ): Promise<LoaderReturn> {
   const loaderInstance = new NoteLoader(content, sourceUrl)
   try {
-    const docs = await loaderInstance.load()
+    let docs = await loaderInstance.load()
+
+    docs = formatDocument(docs, 'note')
     const splitter = SplitterFactory.create({ chunkSize: base.chunkSize, chunkOverlap: base.chunkOverlap })
     const splitterResults = await splitter.splitDocuments(docs)
     const ids = await vectorStore.addDocuments(splitterResults)

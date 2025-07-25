@@ -1883,7 +1883,7 @@ const migrateConfig = {
       logger.error('migrate 199 error', error as Error)
       return state
     }
-  },
+  }
 }
 
 const migrate = createMigrate(migrateConfig as any)

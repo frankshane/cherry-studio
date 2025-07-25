@@ -41,6 +41,7 @@ const PopupContainer: React.FC<Props> = ({ base, resolve }) => {
     setLoading(true)
     try {
       const searchResults = await searchKnowledgeBase(value, base)
+      logger.debug(`KnowledgeSearchPopup Search Results: ${searchResults}`)
       setResults(searchResults)
     } catch (error) {
       logger.error(`Failed to search knowledge base ${base.name}:`, error as Error)
