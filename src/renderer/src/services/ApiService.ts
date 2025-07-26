@@ -347,6 +347,15 @@ async function fetchExternalTool(
             },
             metadata: ref.metadata
           })
+        } else if (ref.metadata?.type === 'video' && ref.metadata?.source) {
+          onChunkReceived({
+            type: ChunkType.VIDEO_SEARCHED,
+            video: {
+              type: 'path',
+              content: ref.metadata.source
+            },
+            metadata: ref.metadata
+          })
         }
       })
     }

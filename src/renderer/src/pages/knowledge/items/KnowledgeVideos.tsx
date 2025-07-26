@@ -42,7 +42,7 @@ const getDisplayTime = (item: KnowledgeItem) => {
 const KnowledgeVideos: FC<KnowledgeContentProps> = ({ selectedBase }) => {
   const { t } = useTranslation()
 
-  const { base, videoItems, refreshItem, removeItem, getProcessingStatus, updateItem, addVideo } = useKnowledge(
+  const { base, videoItems, refreshItem, removeItem, getProcessingStatus, addVideo } = useKnowledge(
     selectedBase.id || ''
   )
   const [windowHeight, setWindowHeight] = useState(window.innerHeight)
