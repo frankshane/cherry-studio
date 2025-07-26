@@ -20,7 +20,13 @@ import { LibSQLVectorStore } from '@langchain/community/vectorstores/libsql'
 import { Document } from '@langchain/core/documents'
 import { createClient } from '@libsql/client'
 import Embeddings from '@main/knowledge/langchain/embeddings/Embeddings'
-import { addFileLoader, addNoteLoader, addSitemapLoader, addWebLoader } from '@main/knowledge/langchain/loader'
+import {
+  addFileLoader,
+  addNoteLoader,
+  addSitemapLoader,
+  addVideoLoader,
+  addWebLoader
+} from '@main/knowledge/langchain/loader'
 import { RetrieverFactory } from '@main/knowledge/langchain/retriever'
 import OcrProvider from '@main/knowledge/ocr/OcrProvider'
 import PreprocessProvider from '@main/knowledge/preprocess/PreprocessProvider'
@@ -32,7 +38,7 @@ import { TraceMethod } from '@mcp-trace/trace-core'
 import { MB } from '@shared/config/constant'
 import type { LoaderReturn } from '@shared/config/types'
 import { IpcChannel } from '@shared/IpcChannel'
-import { FileMetadata, FileTypes, KnowledgeBaseParams, KnowledgeItem, KnowledgeSearchResult } from '@types'
+import { FileMetadata, KnowledgeBaseParams, KnowledgeItem, KnowledgeSearchResult } from '@types'
 import { app } from 'electron'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -414,20 +420,19 @@ class NewKnowledgeService {
   ): LoaderTask {
     const { base, item } = options
     const files = item.content as FileMetadata[]
-    const srtFile = files.find((f) => f.type === FileTypes.TEXT)
 
     const loaderTask: LoaderTask = {
       loaderTasks: [
         {
           state: LoaderTaskItemState.PENDING,
           task: async () => {
-            return addFileLoader(base, vectorStore, srtFile!)
+            return addVideoLoader(base, vectorStore, files)
               .then((result) => {
                 loaderTask.loaderDoneReturn = result
                 return result
               })
               .catch((e) => {
-                logger.error(`Preprocessing failed for ${srtFile!.name}: ${e}`)
+                logger.error(`Preprocessing failed for ${files[0].name}: ${e}`)
                 const errorResult: LoaderReturn = {
                   ...NewKnowledgeService.ERROR_LOADER_RETURN,
                   message: e.message,
@@ -437,7 +442,7 @@ class NewKnowledgeService {
                 return errorResult
               })
           },
-          evaluateTaskWorkload: { workload: srtFile!.size }
+          evaluateTaskWorkload: { workload: files[0].size }
         }
       ],
       loaderDoneReturn: null

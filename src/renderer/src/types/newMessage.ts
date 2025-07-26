@@ -134,7 +134,7 @@ export interface FileMessageBlock extends BaseMessageBlock {
 export interface VideoMessageBlock extends BaseMessageBlock {
   type: MessageBlockType.VIDEO
   url?: string // For generated video or direct links
-  file?: FileMetadata // For user uploaded video files
+  filePath?: string // For user uploaded video files
 }
 
 // 错误块

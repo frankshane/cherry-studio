@@ -5,11 +5,11 @@ import { PPTXLoader } from '@langchain/community/document_loaders/fs/pptx'
 import { CheerioWebBaseLoader } from '@langchain/community/document_loaders/web/cheerio'
 import { SitemapLoader } from '@langchain/community/document_loaders/web/sitemap'
 import { LibSQLVectorStore } from '@langchain/community/vectorstores/libsql'
-import type { Document } from '@langchain/core/documents' // <-- 引入 Document 类型
+import { Document } from '@langchain/core/documents' // <-- 引入 Document 类型
 import { loggerService } from '@main/services/LoggerService'
 import { UrlSource } from '@main/utils/knowledge'
 import { LoaderReturn } from '@shared/config/types'
-import { FileMetadata, KnowledgeBaseParams } from '@types'
+import { FileMetadata, FileTypes, KnowledgeBaseParams } from '@types'
 import { JSONLoader } from 'langchain/document_loaders/fs/json'
 import { TextLoader } from 'langchain/document_loaders/fs/text'
 
@@ -81,10 +81,6 @@ export async function addFileLoader(
       loaderInstance = new TextLoader(file.path)
       specificLoaderType = 'markdown'
       break
-    case '.srt':
-      loaderInstance = new TextLoader(file.path)
-      specificLoaderType = 'srt'
-      break
     default:
       loaderInstance = new TextLoader(file.path)
       specificLoaderType = fileExt.replace('.', '') || 'unknown'
@@ -98,8 +94,7 @@ export async function addFileLoader(
       docs = formatDocument(docs, specificLoaderType)
       const splitter = SplitterFactory.create({
         chunkSize: base.chunkSize,
-        chunkOverlap: base.chunkOverlap,
-        type: specificLoaderType === 'srt' ? 'srt' : 'recursive'
+        chunkOverlap: base.chunkOverlap
       })
       const splitterResults = await splitter.splitDocuments(docs)
       const ids = await vectorStore.addDocuments(splitterResults)
@@ -232,5 +227,61 @@ export async function addNoteLoader(
     uniqueId: '',
     uniqueIds: [],
     loaderType: 'note'
+  }
+}
+
+export async function addVideoLoader(
+  base: KnowledgeBaseParams,
+  vectorStore: LibSQLVectorStore,
+  files: FileMetadata[]
+): Promise<LoaderReturn> {
+  const srtFile = files.find((f) => f.type === FileTypes.TEXT)
+  const videoFile = files.find((f) => f.type === FileTypes.VIDEO)
+  if (!srtFile || !videoFile) {
+    return {
+      entriesAdded: 0,
+      uniqueId: '',
+      uniqueIds: [],
+      loaderType: 'unknown'
+    }
+  }
+
+  const loaderInstance = new TextLoader(srtFile.path)
+  try {
+    const originalDocs: Document[] = await loaderInstance.load()
+    const docsWithVideoMeta = originalDocs.map((doc) => {
+      return new Document({
+        ...doc,
+        metadata: {
+          ...doc.metadata,
+          video: {
+            path: videoFile.path,
+            name: videoFile.origin_name
+          }
+        }
+      })
+    })
+    const docs = formatDocument(docsWithVideoMeta, 'video')
+    const splitter = SplitterFactory.create({
+      chunkSize: base.chunkSize,
+      chunkOverlap: base.chunkOverlap,
+      type: 'srt'
+    })
+    const splitterResults = await splitter.splitDocuments(docs)
+    const ids = await vectorStore.addDocuments(splitterResults)
+    return {
+      entriesAdded: docs.length,
+      uniqueId: ids && ids.length > 0 ? ids[0] : '',
+      uniqueIds: ids || [],
+      loaderType: 'video'
+    }
+  } catch (error) {
+    logger.error(`Error loading or processing file ${srtFile.path} with loader video: ${error}`)
+  }
+  return {
+    entriesAdded: 0,
+    uniqueId: '',
+    uniqueIds: [],
+    loaderType: 'unknown'
   }
 }

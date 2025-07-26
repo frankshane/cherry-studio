@@ -339,12 +339,11 @@ async function fetchExternalTool(
     if (knowledgeReferencesFromSearch) {
       knowledgeReferencesFromSearch.forEach((ref) => {
         if (ref.metadata?.type === 'youtube' && ref.metadata?.source) {
-          onChunkReceived({ type: ChunkType.VIDEO_CREATED })
           onChunkReceived({
-            type: ChunkType.VIDEO_COMPLETE,
+            type: ChunkType.VIDEO_SEARCHED,
             video: {
               type: 'url',
-              url: ref.metadata.source
+              content: ref.metadata.source
             },
             metadata: ref.metadata
           })
