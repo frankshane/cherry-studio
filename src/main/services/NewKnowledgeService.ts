@@ -32,7 +32,7 @@ import { TraceMethod } from '@mcp-trace/trace-core'
 import { MB } from '@shared/config/constant'
 import type { LoaderReturn } from '@shared/config/types'
 import { IpcChannel } from '@shared/IpcChannel'
-import { FileMetadata, KnowledgeBaseParams, KnowledgeItem, KnowledgeSearchResult } from '@types'
+import { FileMetadata, FileTypes, KnowledgeBaseParams, KnowledgeItem, KnowledgeSearchResult } from '@types'
 import { app } from 'electron'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -124,6 +124,7 @@ class NewKnowledgeService {
       url: `file:${path.join(this.storageDir, id)}`
     })
 
+    // 创建时dimensions undefined会导致知识库创建错误
     await client.batch(
       [
         `CREATE TABLE IF NOT EXISTS Knowledge
@@ -407,6 +408,43 @@ class NewKnowledgeService {
     return loaderTask
   }
 
+  private videoTask(
+    vectorStore: LibSQLVectorStore,
+    options: KnowledgeBaseAddItemOptionsNonNullableAttribute
+  ): LoaderTask {
+    const { base, item } = options
+    const files = item.content as FileMetadata[]
+    const srtFile = files.find((f) => f.type === FileTypes.TEXT)
+
+    const loaderTask: LoaderTask = {
+      loaderTasks: [
+        {
+          state: LoaderTaskItemState.PENDING,
+          task: async () => {
+            return addFileLoader(base, vectorStore, srtFile!)
+              .then((result) => {
+                loaderTask.loaderDoneReturn = result
+                return result
+              })
+              .catch((e) => {
+                logger.error(`Preprocessing failed for ${srtFile!.name}: ${e}`)
+                const errorResult: LoaderReturn = {
+                  ...NewKnowledgeService.ERROR_LOADER_RETURN,
+                  message: e.message,
+                  messageSource: 'preprocess'
+                }
+                loaderTask.loaderDoneReturn = errorResult
+                return errorResult
+              })
+          },
+          evaluateTaskWorkload: { workload: srtFile!.size }
+        }
+      ],
+      loaderDoneReturn: null
+    }
+    return loaderTask
+  }
+
   private processingQueueHandle() {
     const getSubtasksUntilMaximumLoad = (): QueueTaskItem[] => {
       const queueTaskList: QueueTaskItem[] = []
@@ -480,6 +518,8 @@ class NewKnowledgeService {
                 return this.sitemapTask(vectorStore, optionsNonNullableAttribute)
               case 'note':
                 return this.noteTask(vectorStore, optionsNonNullableAttribute)
+              case 'video':
+                return this.videoTask(vectorStore, optionsNonNullableAttribute)
               default:
                 return null
             }

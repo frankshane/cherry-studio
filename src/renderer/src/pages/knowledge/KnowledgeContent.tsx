@@ -7,7 +7,7 @@ import { NavbarIcon } from '@renderer/pages/home/ChatNavbar'
 import { getProviderName } from '@renderer/services/ProviderService'
 import { KnowledgeBase } from '@renderer/types'
 import { Button, Empty, Tabs, Tag, Tooltip } from 'antd'
-import { Book, Folder, Globe, Link, Notebook, Search, Settings } from 'lucide-react'
+import { Book, Folder, Globe, Link, Notebook, Search, Settings, Video } from 'lucide-react'
 import { FC, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
@@ -20,6 +20,7 @@ import KnowledgeFiles from './items/KnowledgeFiles'
 import KnowledgeNotes from './items/KnowledgeNotes'
 import KnowledgeSitemaps from './items/KnowledgeSitemaps'
 import KnowledgeUrls from './items/KnowledgeUrls'
+import KnowledgeVideos from './items/KnowledgeVideos'
 
 const logger = loggerService.withContext('KnowledgeContent')
 interface KnowledgeContentProps {
@@ -98,6 +99,13 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
       icon: activeKey === 'sitemaps' ? <Globe size={16} color="var(--color-primary)" /> : <Globe size={16} />,
       items: sitemapItems,
       content: <KnowledgeSitemaps selectedBase={selectedBase} />
+    },
+    {
+      key: 'videos',
+      title: t('knowledge.videos'),
+      icon: activeKey === 'videos' ? <Video size={16} color="var(--color-primary)" /> : <Video size={16} />,
+      items: sitemapItems,
+      content: <KnowledgeVideos selectedBase={selectedBase} />
     }
   ]
 

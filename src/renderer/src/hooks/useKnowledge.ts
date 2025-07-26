@@ -1,6 +1,7 @@
 import { db } from '@renderer/databases'
 import KnowledgeQueue from '@renderer/queue/KnowledgeQueue'
 import { getKnowledgeBaseParams } from '@renderer/services/KnowledgeService'
+import { loggerService } from '@renderer/services/LoggerService'
 import { RootState, useAppDispatch } from '@renderer/store'
 import {
   addBase,
@@ -15,7 +16,7 @@ import {
   updateItemProcessingStatus,
   updateNotes
 } from '@renderer/store/knowledge'
-import { addFilesThunk, addItemThunk, addNoteThunk } from '@renderer/store/thunk/knowledgeThunk'
+import { addFilesThunk, addItemThunk, addNoteThunk, addVedioThunk } from '@renderer/store/thunk/knowledgeThunk'
 import { FileMetadata, KnowledgeBase, KnowledgeItem, ProcessingStatus } from '@renderer/types'
 import { runAsyncFunction } from '@renderer/utils'
 import dayjs from 'dayjs'
@@ -25,6 +26,8 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { useAgents } from './useAgents'
 import { useAssistants } from './useAssistant'
+
+const logger = loggerService.withContext('useKnowledge')
 
 export const useKnowledge = (baseId: string) => {
   const dispatch = useAppDispatch()
@@ -69,6 +72,13 @@ export const useKnowledge = (baseId: string) => {
     dispatch(addItemThunk(baseId, 'directory', path))
     setTimeout(() => KnowledgeQueue.checkAllBases(), 0)
   }
+
+  // add video support
+  const addVideo = (files: FileMetadata[]) => {
+    dispatch(addVedioThunk(baseId, 'video', files))
+    setTimeout(() => KnowledgeQueue.checkAllBases(), 0)
+  }
+
   // 更新笔记内容
   const updateNoteContent = async (noteId: string, content: string) => {
     const note = await db.knowledge_notes.get(noteId)
@@ -111,8 +121,15 @@ export const useKnowledge = (baseId: string) => {
     await apiEndpoint.remove(removalParams)
 
     if (item.type === 'file' && typeof item.content === 'object') {
+      const file = item.content as FileMetadata
       // name: eg. text.pdf
-      await window.api.file.delete(item.content.name)
+      await window.api.file.delete(file.name)
+    } else if (item.type === 'video') {
+      // video item has srt and video files
+      const files = item.content as FileMetadata[]
+      const deletePromises = files.map((file) => window.api.file.delete(file.name))
+
+      await Promise.allSettled(deletePromises)
     }
   }
   // 刷新项目
@@ -248,6 +265,7 @@ export const useKnowledge = (baseId: string) => {
   const urlItems = base?.items.filter((item) => item.type === 'url') || []
   const sitemapItems = base?.items.filter((item) => item.type === 'sitemap') || []
   const [noteItems, setNoteItems] = useState<KnowledgeItem[]>([])
+  const videoItems = base?.items.filter((item) => item.type === 'video') || []
 
   useEffect(() => {
     const notes = base?.items.filter((item) => item.type === 'note') || []
@@ -268,6 +286,7 @@ export const useKnowledge = (baseId: string) => {
     urlItems,
     sitemapItems,
     noteItems,
+    videoItems,
     renameKnowledgeBase,
     updateKnowledgeBase,
     migrateBase,
@@ -275,6 +294,7 @@ export const useKnowledge = (baseId: string) => {
     addUrl,
     addSitemap,
     addNote,
+    addVideo,
     updateNoteContent,
     getNoteContent,
     updateItem,

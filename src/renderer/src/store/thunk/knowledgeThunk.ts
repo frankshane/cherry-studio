@@ -71,3 +71,9 @@ export const addItemThunk =
     const newItem = createKnowledgeItem(type, content)
     dispatch(addItem({ baseId, item: newItem }))
   }
+
+export const addVedioThunk =
+  (baseId: string, type: KnowledgeItem['type'], files: FileMetadata[]) => (dispatch: AppDispatch) => {
+    const newItem = createKnowledgeItem(type, files)
+    dispatch(addItem({ baseId, item: newItem }))
+  }

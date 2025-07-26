@@ -1,11 +1,11 @@
 import { RecursiveCharacterTextSplitter, TextSplitter } from '@langchain/textsplitters'
 
-import { YoutubeTranscriptSplitter } from './YoutubeTranscriptSplitter'
+import { SrtSplitter } from './SrtSplitter'
 
 export type SplitterConfig = {
   chunkSize?: number
   chunkOverlap?: number
-  type?: 'recursive' | 'youtube'
+  type?: 'recursive' | 'srt'
 }
 export class SplitterFactory {
   /**
@@ -15,8 +15,8 @@ export class SplitterFactory {
    */
   public static create(config: SplitterConfig): TextSplitter {
     switch (config.type) {
-      case 'youtube':
-        return new YoutubeTranscriptSplitter({
+      case 'srt':
+        return new SrtSplitter({
           chunkSize: config.chunkSize,
           chunkOverlap: config.chunkOverlap
         })

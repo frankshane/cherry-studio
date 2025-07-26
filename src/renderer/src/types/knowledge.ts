@@ -2,7 +2,7 @@ import { ApiClient, Model } from '@types'
 
 import { FileMetadata } from './file'
 
-export type KnowledgeItemType = 'file' | 'url' | 'note' | 'sitemap' | 'directory' | 'memory'
+export type KnowledgeItemType = 'file' | 'url' | 'note' | 'sitemap' | 'directory' | 'memory' | 'video'
 
 export type KnowledgeItem = {
   id: string
@@ -10,7 +10,7 @@ export type KnowledgeItem = {
   uniqueId?: string
   uniqueIds?: string[]
   type: KnowledgeItemType
-  content: string | FileMetadata
+  content: string | FileMetadata | FileMetadata[]
   remark?: string
   created_at: number
   updated_at: number

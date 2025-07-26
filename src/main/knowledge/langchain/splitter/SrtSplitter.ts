@@ -20,7 +20,7 @@ function srtTimeToSeconds(time: string): number {
   return hours * 3600 + minutes * 60 + seconds + milliseconds / 1000
 }
 
-export class YoutubeTranscriptSplitter extends TextSplitter {
+export class SrtSplitter extends TextSplitter {
   constructor(fields?: Partial<TextSplitterParams>) {
     // 传入 chunkSize 和 chunkOverlap
     super(fields)

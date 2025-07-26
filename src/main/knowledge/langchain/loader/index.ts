@@ -81,6 +81,10 @@ export async function addFileLoader(
       loaderInstance = new TextLoader(file.path)
       specificLoaderType = 'markdown'
       break
+    case '.srt':
+      loaderInstance = new TextLoader(file.path)
+      specificLoaderType = 'srt'
+      break
     default:
       loaderInstance = new TextLoader(file.path)
       specificLoaderType = fileExt.replace('.', '') || 'unknown'
@@ -92,7 +96,11 @@ export async function addFileLoader(
       let docs = await loaderInstance.load()
 
       docs = formatDocument(docs, specificLoaderType)
-      const splitter = SplitterFactory.create({ chunkSize: base.chunkSize, chunkOverlap: base.chunkOverlap })
+      const splitter = SplitterFactory.create({
+        chunkSize: base.chunkSize,
+        chunkOverlap: base.chunkOverlap,
+        type: specificLoaderType === 'srt' ? 'srt' : 'recursive'
+      })
       const splitterResults = await splitter.splitDocuments(docs)
       const ids = await vectorStore.addDocuments(splitterResults)
       return {
@@ -143,7 +151,7 @@ export async function addWebLoader(
       const splitter = SplitterFactory.create({
         chunkSize: base.chunkSize,
         chunkOverlap: base.chunkOverlap,
-        type: source === 'youtube' ? 'youtube' : 'recursive'
+        type: source === 'youtube' ? 'srt' : 'recursive'
       })
       const splitterResults = await splitter.splitDocuments(docs)
       const ids = await vectorStore.addDocuments(splitterResults)
