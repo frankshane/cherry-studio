@@ -859,6 +859,12 @@
     "quota": "Cota restante de {{name}}: {{quota}}",
     "quota_infinity": "Cota restante de {{name}}: ilimitada",
     "rename": "Renomear",
+    "retriever_bm25": "[to be translated]:全文搜索",
+    "retriever_bm25_desc": "[to be translated]:根据关键字的相关性和频率查找文档。",
+    "retriever_hybrid": "[to be translated]:混合搜索 (推荐)",
+    "retriever_hybrid_desc": "[to be translated]:结合关键词搜索和语义搜索，以实现最佳检索准确性。",
+    "retriever_vector": "[to be translated]:向量搜索",
+    "retriever_vector_desc": "[to be translated]:根据语义相似性和含义查找文档。",
     "search": "Pesquisar repositório de conhecimento",
     "search_placeholder": "Digite o conteúdo da consulta",
     "settings": {

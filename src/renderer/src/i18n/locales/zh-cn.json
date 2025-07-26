@@ -859,6 +859,12 @@
     "quota": "{{name}} 剩余额度：{{quota}}",
     "quota_infinity": "{{name}} 剩余额度：无限制",
     "rename": "重命名",
+    "retriever_bm25": "全文搜索",
+    "retriever_bm25_desc": "根据关键字的相关性和频率查找文档。",
+    "retriever_hybrid": "混合搜索 (推荐)",
+    "retriever_hybrid_desc": "结合关键词搜索和语义搜索，以实现最佳检索准确性。",
+    "retriever_vector": "向量搜索",
+    "retriever_vector_desc": "根据语义相似性和含义查找文档。",
     "search": "搜索知识库",
     "search_placeholder": "输入查询内容",
     "settings": {

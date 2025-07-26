@@ -6,7 +6,7 @@ import { isEmbeddingModel, isRerankModel } from '@renderer/config/models'
 import { useProviders } from '@renderer/hooks/useProvider'
 import { getModelUniqId } from '@renderer/services/ModelService'
 import { KnowledgeBase, PreprocessProvider } from '@renderer/types'
-import { Input, Select, Slider } from 'antd'
+import { Input, Segmented, Select, Slider } from 'antd'
 import { useTranslation } from 'react-i18next'
 
 import { SettingsItem, SettingsPanel } from './styles'
@@ -105,6 +105,40 @@ const GeneralSettingsPanel: React.FC<GeneralSettingsPanelProps> = ({
           allowClear
         />
       </SettingsItem>
+
+      {newBase.framework !== 'embedjs' && (
+        <SettingsItem>
+          <div className="settings-label">
+            {t('knowledge.retriever')}
+            <InfoTooltip title={t('knowledge.retriever_tooltip')} placement="right" />
+          </div>
+          <Segmented
+            style={{ width: '100%' }}
+            value={newBase.retriever || 'vector'}
+            onChange={(value) => setNewBase({ ...newBase, retriever: value as 'vector' | 'bm25' | 'hybrid' })}
+            options={[
+              { label: t('knowledge.retriever_hybrid'), value: 'hybrid' },
+              { label: t('knowledge.retriever_vector'), value: 'vector' },
+              { label: t('knowledge.retriever_bm25'), value: 'bm25' }
+            ]}
+          />
+          {newBase.retriever === 'hybrid' && (
+            <div style={{ marginTop: 8, fontSize: 12, color: 'var(--color-text-3)' }}>
+              {t('knowledge.retriever_hybrid_desc')}
+            </div>
+          )}
+          {newBase.retriever === 'vector' && (
+            <div style={{ marginTop: 8, fontSize: 12, color: 'var(--color-text-3)' }}>
+              {t('knowledge.retriever_vector_desc')}
+            </div>
+          )}
+          {newBase.retriever === 'bm25' && (
+            <div style={{ marginTop: 8, fontSize: 12, color: 'var(--color-text-3)' }}>
+              {t('knowledge.retriever_bm25_desc')}
+            </div>
+          )}
+        </SettingsItem>
+      )}
 
       <SettingsItem>
         <div className="settings-label">

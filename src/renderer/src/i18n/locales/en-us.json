@@ -859,6 +859,12 @@
     "quota": "{{name}} Left Quota: {{quota}}",
     "quota_infinity": "{{name}} Quota: Unlimited",
     "rename": "Rename",
+    "retriever_bm25": "full-text search",
+    "retriever_bm25_desc": "Search for documents based on keyword relevance and frequency.",
+    "retriever_hybrid": "Hybrid Search (Recommended)",
+    "retriever_hybrid_desc": "Combine keyword search and semantic search to achieve optimal retrieval accuracy.",
+    "retriever_vector": "vector search",
+    "retriever_vector_desc": "Retrieve documents based on semantic similarity and meaning.",
     "search": "Search knowledge base",
     "search_placeholder": "Enter text to search",
     "settings": {

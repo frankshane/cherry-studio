@@ -2,7 +2,6 @@ import { VoyageEmbeddings } from '@langchain/community/embeddings/voyage'
 import type { Embeddings } from '@langchain/core/embeddings'
 import { OllamaEmbeddings } from '@langchain/ollama'
 import { AzureOpenAIEmbeddings, OpenAIEmbeddings } from '@langchain/openai'
-import { VOYAGE_SUPPORTED_DIM_MODELS } from '@main/knowledge/embedjs/embeddings/utils'
 import { ApiClient } from '@types'
 
 export default class EmbeddingsFactory {
@@ -18,7 +17,7 @@ export default class EmbeddingsFactory {
       return new VoyageEmbeddings({
         modelName: model,
         apiKey,
-        outputDimension: VOYAGE_SUPPORTED_DIM_MODELS.includes(model) ? dimensions : undefined,
+        outputDimension: dimensions,
         batchSize: 8
       })
     }

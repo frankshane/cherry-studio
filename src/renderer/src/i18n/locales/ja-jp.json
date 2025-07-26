@@ -859,6 +859,12 @@
     "quota": "{{name}} 残りクォータ: {{quota}}",
     "quota_infinity": "{{name}} クォータ: 無制限",
     "rename": "名前を変更",
+    "retriever_bm25": "全文検索",
+    "retriever_bm25_desc": "キーワードの関連性と頻度に基づいてドキュメントを検索します。",
+    "retriever_hybrid": "ハイブリッド検索（おすすめ）",
+    "retriever_hybrid_desc": "キーワード検索と意味検索を組み合わせて、最高の検索精度を実現します。",
+    "retriever_vector": "ベクトル検索",
+    "retriever_vector_desc": "意味的な類似性と意味に基づいて文書を検索します。",
     "search": "ナレッジベースを検索",
     "search_placeholder": "検索するテキストを入力",
     "settings": {
