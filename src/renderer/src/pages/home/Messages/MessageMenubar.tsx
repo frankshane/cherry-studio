@@ -7,13 +7,14 @@ import { translateLanguageOptions } from '@renderer/config/translate'
 import { useMessageEditing } from '@renderer/context/MessageEditingContext'
 import { useChatContext } from '@renderer/hooks/useChatContext'
 import { useMessageOperations, useTopicLoading } from '@renderer/hooks/useMessageOperations'
-import { useMessageStyle } from '@renderer/hooks/useSettings'
+import { useEnableDeveloperMode, useMessageStyle } from '@renderer/hooks/useSettings'
 import { EVENT_NAMES, EventEmitter } from '@renderer/services/EventService'
 import { getMessageTitle } from '@renderer/services/MessagesService'
 import { translateText } from '@renderer/services/TranslateService'
 import store, { RootState } from '@renderer/store'
 import { messageBlocksSelectors } from '@renderer/store/messageBlock'
 import { selectMessagesForTopic } from '@renderer/store/newMessage'
+import { TraceIcon } from '@renderer/trace/pages/Component'
 import type { Assistant, Language, Model, Topic } from '@renderer/types'
 import { type Message, MessageBlockType } from '@renderer/types/newMessage'
 import { captureScrollableDivAsBlob, captureScrollableDivAsDataURL, classNames } from '@renderer/utils'
@@ -87,6 +88,7 @@ const MessageMenubar: FC<Props> = (props) => {
   } = useMessageOperations(topic)
 
   const { isBubbleStyle } = useMessageStyle()
+  const { enableDeveloperMode } = useEnableDeveloperMode()
 
   const loading = useTopicLoading(topic)
 
@@ -178,6 +180,17 @@ const MessageMenubar: FC<Props> = (props) => {
     [isTranslating, message, getTranslationUpdater, mainTextContent]
   )
 
+  const handleTraceUserMessage = useCallback(async () => {
+    if (message.traceId) {
+      window.api.trace.openWindow(
+        message.topicId,
+        message.traceId,
+        true,
+        message.role === 'user' ? undefined : message.model?.name
+      )
+    }
+  }, [message])
+
   const isEditable = useMemo(() => {
     return findMainTextBlocks(message).length > 0 // 使用 MCP Server 后会有大于一段 MatinTextBlock
   }, [message])
@@ -195,13 +208,13 @@ const MessageMenubar: FC<Props> = (props) => {
           ]
         : []),
       {
-        label: t('chat.message.new.branch'),
+        label: t('chat.message.new.branch.label'),
         key: 'new-branch',
         icon: <Split size={15} />,
         onClick: onNewBranch
       },
       {
-        label: t('chat.multiple.select'),
+        label: t('chat.multiple.select.label'),
         key: 'multi-select',
         icon: <ListChecks size={15} />,
         onClick: () => {
@@ -209,7 +222,7 @@ const MessageMenubar: FC<Props> = (props) => {
         }
       },
       {
-        label: t('chat.save'),
+        label: t('chat.save.label'),
         key: 'save',
         icon: <Save size={15} color="var(--color-icon)" style={{ marginTop: 3 }} />,
         children: [
@@ -263,7 +276,7 @@ const MessageMenubar: FC<Props> = (props) => {
             }
           },
           exportMenuOptions.markdown && {
-            label: t('chat.topics.export.md'),
+            label: t('chat.topics.export.md.label'),
             key: 'markdown',
             onClick: () => exportMessageAsMarkdown(message)
           },
@@ -570,7 +583,7 @@ const MessageMenubar: FC<Props> = (props) => {
           okButtonProps={{ danger: true }}
           icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
           onOpenChange={(open) => open && setShowDeleteTooltip(false)}
-          onConfirm={() => deleteMessage(message.id)}>
+          onConfirm={() => deleteMessage(message.id, message.traceId, message.model?.name)}>
           <ActionButton
             className="message-action-button"
             onClick={(e) => e.stopPropagation()}
@@ -584,6 +597,13 @@ const MessageMenubar: FC<Props> = (props) => {
             </Tooltip>
           </ActionButton>
         </Popconfirm>
+        {enableDeveloperMode && message.traceId && (
+          <Tooltip title={t('trace.label')} mouseEnterDelay={0.8}>
+            <ActionButton className="message-action-button" onClick={() => handleTraceUserMessage()}>
+              <TraceIcon size={16} className={'lucide lucide-trash'} />
+            </ActionButton>
+          </Tooltip>
+        )}
         {!isUserMessage && (
           <Dropdown
             menu={{ items: dropdownItems, onClick: (e) => e.domEvent.stopPropagation() }}

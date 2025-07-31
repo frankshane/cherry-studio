@@ -5,16 +5,17 @@ import './bootstrap'
 
 import '@main/config'
 
+import { loggerService } from '@logger'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { replaceDevtoolsFont } from '@main/utils/windowUtil'
 import { app } from 'electron'
 import installExtension, { REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } from 'electron-devtools-installer'
-import Logger from 'electron-log'
 
-import { isDev, isWin, isLinux } from './constant'
+import { isDev, isLinux, isWin } from './constant'
 import { registerIpc } from './ipc'
 import { configManager } from './services/ConfigManager'
 import mcpService from './services/MCPService'
+import { nodeTraceService } from './services/NodeTraceService'
 import {
   CHERRY_STUDIO_PROTOCOL,
   handleProtocolUrl,
@@ -25,8 +26,10 @@ import selectionService, { initSelectionService } from './services/SelectionServ
 import { registerShortcuts } from './services/ShortcutService'
 import { TrayService } from './services/TrayService'
 import { windowService } from './services/WindowService'
+import process from 'node:process'
+import { apiServerService } from './services/ApiServerService'
 
-Logger.initialize()
+const logger = loggerService.withContext('MainEntry')
 
 /**
  * Disable hardware acceleration if setting is enabled
@@ -68,9 +71,9 @@ app.on('web-contents-created', (_, webContents) => {
 
   webContents.on('unresponsive', async () => {
     // Interrupt execution and collect call stack from unresponsive renderer
-    Logger.error('Renderer unresponsive start')
+    logger.error('Renderer unresponsive start')
     const callStack = await webContents.mainFrame.collectJavaScriptCallStack()
-    Logger.error('Renderer unresponsive js call stack\n', callStack)
+    logger.error(`Renderer unresponsive js call stack\n ${callStack}`)
   })
 })
 
@@ -78,12 +81,12 @@ app.on('web-contents-created', (_, webContents) => {
 if (!isDev) {
   // handle uncaught exception
   process.on('uncaughtException', (error) => {
-    Logger.error('Uncaught Exception:', error)
+    logger.error('Uncaught Exception:', error)
   })
 
   // handle unhandled rejection
   process.on('unhandledRejection', (reason, promise) => {
-    Logger.error('Unhandled Rejection at:', promise, 'reason:', reason)
+    logger.error(`Unhandled Rejection at: ${promise} reason: ${reason}`)
   })
 }
 
@@ -109,6 +112,8 @@ if (!app.requestSingleInstanceLock()) {
     const mainWindow = windowService.createMainWindow()
     new TrayService()
 
+    nodeTraceService.init()
+
     app.on('activate', function () {
       const mainWindow = windowService.getMainWindow()
       if (!mainWindow || mainWindow.isDestroyed()) {
@@ -129,12 +134,23 @@ if (!app.requestSingleInstanceLock()) {
 
     if (isDev) {
       installExtension([REDUX_DEVTOOLS, REACT_DEVELOPER_TOOLS])
-        .then((name) => console.log(`Added Extension:  ${name}`))
-        .catch((err) => console.log('An error occurred: ', err))
+        .then((name) => logger.info(`Added Extension:  ${name}`))
+        .catch((err) => logger.error('An error occurred: ', err))
     }
 
     //start selection assistant service
     initSelectionService()
+
+    // Start API server if enabled
+    try {
+      const config = await apiServerService.getCurrentConfig()
+      logger.info('API server config:', config)
+      if (config.enabled) {
+        await apiServerService.start()
+      }
+    } catch (error: any) {
+      logger.error('Failed to check/start API server:', error)
+    }
   })
 
   registerProtocolClient(app)
@@ -177,12 +193,15 @@ if (!app.requestSingleInstanceLock()) {
   })
 
   app.on('will-quit', async () => {
-    // event.preventDefault()
+    // 简单的资源清理，不阻塞退出流程
     try {
       await mcpService.cleanup()
+      await apiServerService.stop()
     } catch (error) {
-      Logger.error('Error cleaning up MCP service:', error)
+      logger.warn('Error cleaning up MCP service:', error as Error)
     }
+    // finish the logger
+    logger.finish()
   })
 
   // In this file you can include the rest of your app"s specific main process

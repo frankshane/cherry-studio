@@ -7,6 +7,7 @@ import {
   DroppableProvided,
   DropResult
 } from '@hello-pangea/dnd'
+import { getSidebarIconLabel } from '@renderer/i18n/label'
 import { useAppDispatch } from '@renderer/store'
 import { setSidebarIcons } from '@renderer/store/settings'
 import { message } from 'antd'
@@ -146,7 +147,7 @@ const SidebarIconsManager: FC<SidebarIconsManagerProps> = ({
                       <IconItem ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
                         <IconContent>
                           {renderIcon(icon)}
-                          <span>{t(`${icon}.title`)}</span>
+                          <span>{getSidebarIconLabel(icon)}</span>
                         </IconContent>
                         {icon !== 'assistants' && (
                           <CloseButton onClick={() => onMoveIcon(icon, 'visible')}>
@@ -176,7 +177,7 @@ const SidebarIconsManager: FC<SidebarIconsManagerProps> = ({
                         <IconItem ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
                           <IconContent>
                             {renderIcon(icon)}
-                            <span>{t(`${icon}.title`)}</span>
+                            <span>{getSidebarIconLabel(icon)}</span>
                           </IconContent>
                           <CloseButton onClick={() => onMoveIcon(icon, 'disabled')}>
                             <CloseOutlined />

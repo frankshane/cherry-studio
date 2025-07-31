@@ -25,6 +25,8 @@ import runtime from './runtime'
 import selectionStore from './selectionStore'
 import settings from './settings'
 import shortcuts from './shortcuts'
+import tabs from './tabs'
+import translate from './translate'
 import websearch from './websearch'
 
 const rootReducer = combineReducers({
@@ -45,19 +47,21 @@ const rootReducer = combineReducers({
   memory,
   copilot,
   selectionStore,
+  tabs,
   // messages: messagesReducer,
   preprocess,
   messages: newMessagesReducer,
   messageBlocks: messageBlocksReducer,
-  inputTools: inputToolsReducer
+  inputTools: inputToolsReducer,
+  translate
 })
 
 const persistedReducer = persistReducer(
   {
     key: 'cherry-studio',
     storage,
-    version: 122,
-    blacklist: ['runtime', 'messages', 'messageBlocks'],
+    version: 125,
+    blacklist: ['runtime', 'messages', 'messageBlocks', 'tabs'],
     migrate
   },
   rootReducer
