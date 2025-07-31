@@ -541,7 +541,6 @@ const TopicListItem = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  position: relative;
   cursor: pointer;
   width: calc(var(--assistants-width) - 20px);
 
