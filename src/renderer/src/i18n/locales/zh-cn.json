@@ -1471,23 +1471,23 @@
     "show_sidebar": "显示侧边栏"
   },
   "notes": {
-    "title": "笔记",
-    "empty": "暂无笔记",
-    "new_folder": "新建文件夹",
-    "new_note": "新建笔记",
-    "untitled_note": "无标题笔记",
-    "untitled_folder": "新文件夹",
-    "rename": "重命名",
-    "delete": "删除",
-    "star": "收藏",
-    "unstar": "取消收藏",
-    "expand": "展开",
     "collapse": "收起",
+    "content_placeholder": "请输入笔记内容...",
+    "delete": "删除",
     "delete_confirm": "确定要删除这个{{type}}吗？",
     "delete_folder_confirm": "确定要删除文件夹 \"{{name}}\" 及其所有内容吗？",
     "delete_note_confirm": "确定要删除笔记 \"{{name}}\" 吗？",
+    "empty": "暂无笔记",
+    "expand": "展开",
     "folder": "文件夹",
-    "content_placeholder": "请输入笔记内容..."
+    "new_folder": "新建文件夹",
+    "new_note": "新建笔记",
+    "rename": "重命名",
+    "star": "收藏",
+    "title": "笔记",
+    "unstar": "取消收藏",
+    "untitled_folder": "新文件夹",
+    "untitled_note": "无标题笔记"
   },
   "notification": {
     "assistant": "助手响应",
@@ -3458,6 +3458,7 @@
     "launchpad": "启动台",
     "mcp-servers": "MCP 服务器",
     "memories": "记忆",
+    "notes": "笔记",
     "paintings": "绘画",
     "settings": "设置",
     "translate": "翻译"

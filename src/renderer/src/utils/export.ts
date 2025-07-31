@@ -1,8 +1,8 @@
 import { loggerService } from '@logger'
 import { Client } from '@notionhq/client'
 import i18n from '@renderer/i18n'
-import { NotesService } from '@renderer/pages/notes/utils/NotesService'
 import { getProviderLabel } from '@renderer/i18n/label'
+import { NotesService } from '@renderer/pages/notes/utils/NotesService'
 import { getMessageTitle } from '@renderer/services/MessagesService'
 import store from '@renderer/store'
 import { setExportState } from '@renderer/store/runtime'
@@ -671,7 +671,7 @@ export const exportMarkdownToObsidian = async (attributes: any) => {
     window.open(obsidianUrl)
     window.message.success(i18n.t('chat.topics.export.obsidian_export_success'))
   } catch (error) {
-    logger.error('导出到Obsidian失败:', error as Error)
+    logger.error('导出到Obsidian失败:', error as Error as Error)
     window.message.error(i18n.t('chat.topics.export.obsidian_export_failed'))
   }
 }
@@ -828,7 +828,7 @@ export const exportMarkdownToSiyuan = async (title: string, content: string) => 
       key: 'siyuan-success'
     })
   } catch (error) {
-    logger.error('导出到思源笔记失败:', error as Error)
+    logger.error('导出到思源笔记失败:', error as Error as Error)
     window.message.error({
       content: i18n.t('message.error.siyuan.export') + (error instanceof Error ? `: ${error.message}` : ''),
       key: 'siyuan-error'
@@ -910,7 +910,7 @@ export const exportMessageToNotes = async (title: string, content: string): Prom
 
     return note
   } catch (error) {
-    console.error('导出到笔记失败:', error)
+    logger.error('导出到笔记失败:', error as Error)
     window.message.error({
       content: i18n.t('message.error.notes.export'),
       key: 'notes-export-error'
@@ -936,7 +936,7 @@ export const exportTopicToNotes = async (topic: Topic): Promise<NotesTreeNode | 
 
     return note
   } catch (error) {
-    console.error('导出到笔记失败:', error)
+    logger.error('导出到笔记失败:', error as Error)
     window.message.error({
       content: i18n.t('message.error.notes.export'),
       key: 'notes-export-error'

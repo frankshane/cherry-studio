@@ -1,3 +1,4 @@
+import { loggerService } from '@logger'
 import db from '@renderer/databases'
 import FileManager from '@renderer/services/FileManager'
 import { FileMetadata, FileTypes } from '@renderer/types'
@@ -6,6 +7,8 @@ import { v4 as uuidv4 } from 'uuid'
 
 const NOTES_FOLDER_PREFIX = 'notes'
 const MARKDOWN_EXT = '.md'
+
+const logger = loggerService.withContext('NotesService')
 
 export class NotesService {
   private static readonly NOTES_STORAGE_KEY = 'notes-tree-structure'
@@ -22,7 +25,7 @@ export class NotesService {
 
       return tree
     } catch (error) {
-      console.error('Failed to get notes tree:', error)
+      logger.error('Failed to get notes tree:', error as Error)
       return []
     }
   }
@@ -46,7 +49,7 @@ export class NotesService {
         await this.saveNotesTree(tree)
       }
     } catch (error) {
-      console.error('Failed to sync file names:', error)
+      logger.error('Failed to sync file names:', error as Error)
     }
   }
 
@@ -96,7 +99,7 @@ export class NotesService {
     try {
       localStorage.setItem(this.NOTES_STORAGE_KEY, JSON.stringify(tree))
     } catch (error) {
-      console.error('Failed to save notes tree:', error)
+      logger.error('Failed to save notes tree:', error as Error)
     }
   }
 
@@ -172,7 +175,7 @@ export class NotesService {
 
       return note
     } catch (error) {
-      console.error('Failed to create note:', error)
+      logger.error('Failed to create note:', error as Error)
       throw error
     }
   }
@@ -193,7 +196,7 @@ export class NotesService {
 
       return await window.api.file.read(fileMetadata.id + fileMetadata.ext)
     } catch (error) {
-      console.error('Failed to read note:', error)
+      logger.error('Failed to read note:', error as Error)
       throw error
     }
   }
@@ -225,7 +228,7 @@ export class NotesService {
         await this.saveNotesTree(tree)
       }
     } catch (error) {
-      console.error('Failed to update note:', error)
+      logger.error('Failed to update note:', error as Error)
       throw error
     }
   }
@@ -246,7 +249,7 @@ export class NotesService {
       this.removeNodeFromTree(tree, nodeId)
       await this.saveNotesTree(tree)
     } catch (error) {
-      console.error('Failed to delete node:', error)
+      logger.error('Failed to delete node:', error as Error)
       throw error
     }
   }
@@ -284,7 +287,7 @@ export class NotesService {
           })
         }
       } catch (error) {
-        console.error('Failed to update file metadata:', error)
+        logger.error('Failed to update file metadata:', error as Error)
         throw error
       }
     }
@@ -414,7 +417,7 @@ export class NotesService {
       try {
         await FileManager.deleteFile(node.fileId, true)
       } catch (error) {
-        console.error(`Failed to delete file with id ${node.fileId}:`, error)
+        logger.error(`Failed to delete file with id ${node.fileId}:`, error as Error)
       }
     } else if (node.type === 'folder' && node.children) {
       for (const child of node.children) {
