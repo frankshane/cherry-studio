@@ -2,6 +2,7 @@ import '@renderer/databases'
 
 import { loggerService } from '@logger'
 import store, { persistor } from '@renderer/store'
+import React from 'react'
 import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 

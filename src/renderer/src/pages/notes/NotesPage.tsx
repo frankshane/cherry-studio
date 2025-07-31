@@ -1,5 +1,6 @@
 import 'vditor/dist/index.css'
 
+import { loggerService } from '@logger'
 import Scrollbar from '@renderer/components/Scrollbar'
 import { useTheme } from '@renderer/context/ThemeProvider'
 import { useSettings } from '@renderer/hooks/useSettings'
@@ -15,6 +16,8 @@ import Vditor from 'vditor'
 
 import NotesSidebar from './NotesSidebar'
 import { NotesService } from './utils/NotesService'
+
+const logger = loggerService.withContext('NotesPage')
 
 const NotesPage: FC = () => {
   const editorRef = useRef<HTMLDivElement>(null)
@@ -51,7 +54,7 @@ const NotesPage: FC = () => {
           await NotesService.updateNote(activeNode, content)
         }
       } catch (error) {
-        console.error('Failed to save note:', error)
+        logger.error('Failed to save note:', error as Error)
       }
     },
     [activeNodeId, findNodeById, notesTree]
@@ -63,7 +66,7 @@ const NotesPage: FC = () => {
         const tree = await NotesService.getNotesTree()
         setNotesTree(tree)
       } catch (error) {
-        console.error('Failed to load notes tree:', error)
+        logger.error('Failed to load notes tree:', error as Error)
       }
     }
 
@@ -120,7 +123,7 @@ const NotesPage: FC = () => {
                   editor.setValue(content)
                 }
               } catch (error) {
-                console.error('Failed to load note content after editor init:', error)
+                logger.error('Failed to load note content after editor init:', error as Error)
               }
             }
           },
@@ -163,7 +166,7 @@ const NotesPage: FC = () => {
       const updatedTree = await NotesService.getNotesTree()
       setNotesTree(updatedTree)
     } catch (error) {
-      console.error('Failed to create folder:', error)
+      logger.error('Failed to create folder:', error as Error)
     } finally {
       setIsLoading(false)
     }
@@ -186,7 +189,7 @@ const NotesPage: FC = () => {
       // 自动选择新创建的笔记
       setActiveNodeId(newNote.id)
     } catch (error) {
-      console.error('Failed to create note:', error)
+      logger.error('Failed to create note:', error as Error)
     } finally {
       setIsLoading(false)
     }
@@ -217,7 +220,7 @@ const NotesPage: FC = () => {
           vditor.setValue(content)
         }
       } catch (error) {
-        console.error('Failed to load note:', error)
+        logger.error('Failed to load note:', error as Error)
       } finally {
         setIsLoading(false)
       }
@@ -244,7 +247,7 @@ const NotesPage: FC = () => {
         }
       }
     } catch (error) {
-      console.error('Failed to delete node:', error)
+      logger.error('Failed to delete node:', error as Error)
     } finally {
       setIsLoading(false)
     }
@@ -258,7 +261,7 @@ const NotesPage: FC = () => {
       const updatedTree = await NotesService.getNotesTree()
       setNotesTree(updatedTree)
     } catch (error) {
-      console.error('Failed to rename node:', error)
+      logger.error('Failed to rename node:', error as Error)
     } finally {
       setIsLoading(false)
     }
@@ -271,7 +274,7 @@ const NotesPage: FC = () => {
       const updatedTree = await NotesService.getNotesTree()
       setNotesTree(updatedTree)
     } catch (error) {
-      console.error('Failed to toggle starred:', error)
+      logger.error('Failed to toggle starred:', error as Error)
     }
   }
 
@@ -282,7 +285,7 @@ const NotesPage: FC = () => {
       const updatedTree = await NotesService.getNotesTree()
       setNotesTree(updatedTree)
     } catch (error) {
-      console.error('Failed to toggle expanded:', error)
+      logger.error('Failed to toggle expanded:', error as Error)
     }
   }
 
@@ -294,7 +297,7 @@ const NotesPage: FC = () => {
       const updatedTree = await NotesService.getNotesTree()
       setNotesTree(updatedTree)
     } catch (error) {
-      console.error('Failed to move node:', error)
+      logger.error('Failed to move node:', error as Error)
     } finally {
       setIsLoading(false)
     }
