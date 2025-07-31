@@ -1,5 +1,10 @@
 import 'vditor/dist/index.css'
 
+import { Empty } from 'antd'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import styled from 'styled-components'
+import Vditor from 'vditor'
 import { loggerService } from '@logger'
 import Scrollbar from '@renderer/components/Scrollbar'
 import { useTheme } from '@renderer/context/ThemeProvider'
