@@ -828,7 +828,7 @@ export const exportMarkdownToSiyuan = async (title: string, content: string) => 
       key: 'siyuan-success'
     })
   } catch (error) {
-    logger.error('导出到思源笔记失败:', error as Error as Error)
+    logger.error('导出到思源笔记失败:', error as Error)
     window.message.error({
       content: i18n.t('message.error.siyuan.export') + (error instanceof Error ? `: ${error.message}` : ''),
       key: 'siyuan-error'
