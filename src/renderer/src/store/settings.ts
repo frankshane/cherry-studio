@@ -58,6 +58,7 @@ export interface SettingsState {
   targetLanguage: TranslateLanguageVarious
   proxyMode: 'system' | 'custom' | 'none'
   proxyUrl?: string
+  proxyBypassRules?: string
   userName: string
   userId: string
   showPrompt: boolean
@@ -232,6 +233,7 @@ export const initialState: SettingsState = {
   targetLanguage: 'en-us',
   proxyMode: 'system',
   proxyUrl: undefined,
+  proxyBypassRules: undefined,
   userName: '',
   userId: uuid(),
   showPrompt: true,
@@ -393,7 +395,7 @@ export const initialState: SettingsState = {
   // Developer mode
   enableDeveloperMode: false,
   // UI
-  navbarPosition: 'left',
+  navbarPosition: 'top',
   // API Server
   apiServer: {
     enabled: false,
@@ -438,6 +440,9 @@ const settingsSlice = createSlice({
     },
     setProxyUrl: (state, action: PayloadAction<string | undefined>) => {
       state.proxyUrl = action.payload
+    },
+    setProxyBypassRules: (state, action: PayloadAction<string | undefined>) => {
+      state.proxyBypassRules = action.payload
     },
     setUserName: (state, action: PayloadAction<string>) => {
       state.userName = action.payload
@@ -848,6 +853,7 @@ export const {
   setTargetLanguage,
   setProxyMode,
   setProxyUrl,
+  setProxyBypassRules,
   setUserName,
   setShowPrompt,
   setShowTokens,
