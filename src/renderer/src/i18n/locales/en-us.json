@@ -1734,6 +1734,7 @@
     "title": "Data Restore"
   },
   "richEditor": {
+    "placeholder": "Write '/' for commands",
     "toolbar": {
       "blockquote": "Quote",
       "bold": "Bold",
@@ -1748,12 +1749,14 @@
       "heading5": "Heading 5",
       "heading6": "Heading 6",
       "italic": "Italic",
+      "link": "Link",
       "orderedList": "Ordered List",
       "paragraph": "Paragraph",
       "redo": "Redo",
       "strike": "Strikethrough",
       "underline": "Underline",
-      "undo": "Undo"
+      "undo": "Undo",
+      "unlink": "Unlink"
     }
   },
   "selection": {

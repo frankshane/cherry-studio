@@ -1,6 +1,6 @@
 import DragHandle from '@tiptap/extension-drag-handle-react'
 import { EditorContent } from '@tiptap/react'
-import React, { useEffect, useImperativeHandle } from 'react'
+import React, { useImperativeHandle } from 'react'
 
 import { MdiDragHandle } from '../Icons/SVGIcon'
 import { EditorContent as StyledEditorContent, RichEditorWrapper } from './styles'
@@ -32,13 +32,6 @@ const RichEditor = ({
     editable,
     disabled: !editable
   })
-
-  // Update editor content when markdown changes externally
-  useEffect(() => {
-    if (editor && html && html !== editor.getHTML()) {
-      editor.commands.setContent(html)
-    }
-  }, [editor, html])
 
   const handleCommand = (command: FormattingCommand) => {
     if (!editor) return
@@ -94,6 +87,33 @@ const RichEditor = ({
         break
       case 'blockquote':
         editor.chain().focus().toggleBlockquote().run()
+        break
+      case 'link': {
+        const { selection } = editor.state
+        const { $from } = selection
+
+        // 获取当前段落的文本内容
+        const paragraphText = $from.parent.textContent
+
+        // 如果当前已经是链接，则取消链接
+        if (editor.isActive('link')) {
+          editor.chain().focus().unsetLink().run()
+        } else {
+          // 如果段落有文本，将段落文本设置为链接
+          if (paragraphText.trim()) {
+            const url = paragraphText.trim().startsWith('http')
+              ? paragraphText.trim()
+              : `https://${paragraphText.trim()}`
+            // 选择整个段落然后设置链接
+            editor.chain().focus().selectParentNode().setLink({ href: url }).run()
+          } else {
+            editor.chain().focus().toggleLink().run()
+          }
+        }
+        break
+      }
+      case 'unlink':
+        editor.chain().focus().unsetLink().run()
         break
       case 'undo':
         editor.chain().focus().undo().run()

@@ -1734,6 +1734,7 @@
     "title": "数据恢复"
   },
   "richEditor": {
+    "placeholder": "输入'/'调用命令",
     "toolbar": {
       "blockquote": "引用",
       "bold": "粗体",
@@ -1748,12 +1749,14 @@
       "heading5": "五级标题",
       "heading6": "六级标题",
       "italic": "斜体",
+      "link": "链接",
       "orderedList": "有序列表",
       "paragraph": "正文",
       "redo": "重做",
       "strike": "删除线",
       "underline": "下划线",
-      "undo": "撤销"
+      "undo": "撤销",
+      "unlink": "取消链接"
     }
   },
   "selection": {

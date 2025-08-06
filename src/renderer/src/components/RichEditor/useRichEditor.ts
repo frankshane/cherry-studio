@@ -13,11 +13,15 @@ import {
 import type { Editor } from '@tiptap/core'
 import Emoji, { gitHubEmojis } from '@tiptap/extension-emoji'
 import Math, { migrateMathStrings } from '@tiptap/extension-mathematics'
+import Mention from '@tiptap/extension-mention'
 import Typography from '@tiptap/extension-typography'
 import Underline from '@tiptap/extension-underline'
 import { useEditor, useEditorState } from '@tiptap/react'
 import { StarterKit } from '@tiptap/starter-kit'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+
+import { commandSuggestion } from './command'
+import { Placeholder } from './placeholder'
 
 const logger = loggerService.withContext('useRichEditor')
 
@@ -122,17 +126,23 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
         emojis: gitHubEmojis,
         enableEmoticons: true
       }),
-      // Mention.configure({
-      //   HTMLAttributes: {
-      //     class: 'mention'
-      //   },
-      //   suggestion: commandSuggestion
-      // }),
+      Placeholder.configure({
+        placeholder,
+        showOnlyWhenEditable: true,
+        showOnlyCurrent: true,
+        includeChildren: false
+      }),
+      Mention.configure({
+        HTMLAttributes: {
+          class: 'mention'
+        },
+        suggestion: commandSuggestion
+      }),
       Underline,
       Typography
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [placeholder]
   )
 
   // Derived values
@@ -156,11 +166,6 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     extensions,
     content: html || '',
     editable: editable && !disabled,
-    editorProps: {
-      attributes: {
-        'data-placeholder': placeholder
-      }
-    },
     onUpdate: ({ editor }) => {
       const content = editor.getText()
       const htmlContent = editor.getHTML()
@@ -223,6 +228,9 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
           isOrderedList: false,
           isCodeBlock: false,
           isBlockquote: false,
+          isLink: false,
+          canLink: false,
+          canUnlink: false,
           canUndo: false,
           canRedo: false
         }
@@ -251,6 +259,9 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
         isOrderedList: editor.isActive('orderedList') ?? false,
         isCodeBlock: editor.isActive('codeBlock') ?? false,
         isBlockquote: editor.isActive('blockquote') ?? false,
+        isLink: editor.isActive('link') ?? false,
+        canLink: editor.can().chain().setLink({ href: '' }).run() ?? false,
+        canUnlink: editor.can().chain().unsetLink().run() ?? false,
         canUndo: editor.can().chain().undo().run() ?? false,
         canRedo: editor.can().chain().redo().run() ?? false
       }

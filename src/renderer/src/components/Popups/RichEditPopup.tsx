@@ -144,7 +144,7 @@ const PopupContainer: React.FC<Props> = ({ content, modalProps, resolve, childre
         <RichEditor
           ref={editorRef}
           initialContent={content}
-          placeholder={t('knowledge.note_placeholder', 'Enter your note here...')}
+          placeholder={t('richEditor.placeholder')}
           onContentChange={handleContentChange}
           onMarkdownChange={handleMarkdownChange}
           minHeight={300}

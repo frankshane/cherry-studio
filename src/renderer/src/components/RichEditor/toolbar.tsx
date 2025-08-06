@@ -7,6 +7,8 @@ import {
   Heading2,
   Heading3,
   Italic,
+  Link,
+  Link2Off,
   List,
   ListOrdered,
   Quote,
@@ -48,6 +50,9 @@ const DEFAULT_TOOLBAR_ITEMS: ToolbarItemInternal[] = [
   { id: 'blockquote', command: 'blockquote' as FormattingCommand, icon: Quote },
   { id: 'codeBlock', command: 'codeBlock' as FormattingCommand, icon: FileCode },
   { id: 'divider-5', type: 'divider' },
+  { id: 'link', command: 'link' as FormattingCommand, icon: Link },
+  { id: 'unlink', command: 'unlink' as FormattingCommand, icon: Link2Off },
+  { id: 'divider-6', type: 'divider' },
   { id: 'undo', command: 'undo' as FormattingCommand, icon: Undo },
   { id: 'redo', command: 'redo' as FormattingCommand, icon: Redo }
 ]
@@ -72,6 +77,8 @@ const getTooltipText = (t: any, command: FormattingCommand): string => {
     orderedList: t('richEditor.toolbar.orderedList'),
     codeBlock: t('richEditor.toolbar.codeBlock'),
     blockquote: t('richEditor.toolbar.blockquote'),
+    link: t('richEditor.toolbar.link'),
+    unlink: t('richEditor.toolbar.unlink'),
     undo: t('richEditor.toolbar.undo'),
     redo: t('richEditor.toolbar.redo')
   }
@@ -159,6 +166,8 @@ function getFormattingState(state: FormattingState, command: FormattingCommand):
       return state?.isCodeBlock || false
     case 'blockquote':
       return state?.isBlockquote || false
+    case 'link':
+      return state?.isLink || false
     default:
       return false
   }
@@ -182,6 +191,10 @@ function getDisabledState(state: FormattingState, command: FormattingCommand): b
       return !state?.canRedo
     case 'clearMarks':
       return !state?.canClearMarks
+    case 'link':
+      return !state?.canLink
+    case 'unlink':
+      return !state?.canUnlink
     default:
       return false
   }
