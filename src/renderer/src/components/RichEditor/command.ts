@@ -205,8 +205,6 @@ export const commandSuggestion: Omit<SuggestionOptions<Command, MentionNodeAttrs
 
     // Find the original command by id
     const command = COMMANDS.find((cmd) => cmd.id === props.id)
-    console.log('found command:', command)
-
     if (command) {
       command.handler(editor)
     }
