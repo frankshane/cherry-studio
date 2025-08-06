@@ -1734,6 +1734,102 @@
     "title": "資料復原"
   },
   "richEditor": {
+    "commands": {
+      "blockquote": {
+        "description": "插入引用文字",
+        "title": "引用"
+      },
+      "bulletList": {
+        "description": "建立簡單的項目符號清單",
+        "title": "無序清單"
+      },
+      "calloutInfo": {
+        "description": "添加資訊提示框",
+        "title": "資訊提示框"
+      },
+      "calloutWarning": {
+        "description": "添加警告提示框",
+        "title": "警告提示框"
+      },
+      "codeBlock": {
+        "description": "插入程式碼片段",
+        "title": "程式碼區塊"
+      },
+      "columns": {
+        "description": "建立分欄版面",
+        "title": "分欄"
+      },
+      "date": {
+        "description": "插入當前日期",
+        "title": "日期"
+      },
+      "divider": {
+        "description": "添加水平分隔線",
+        "title": "分隔線"
+      },
+      "hardBreak": {
+        "description": "插入換行符",
+        "title": "換行符"
+      },
+      "heading1": {
+        "description": "大段落標題",
+        "title": "一級標題"
+      },
+      "heading2": {
+        "description": "中段落標題",
+        "title": "二級標題"
+      },
+      "heading3": {
+        "description": "小段落標題",
+        "title": "三級標題"
+      },
+      "heading4": {
+        "description": "較小的段落標題",
+        "title": "四級標題"
+      },
+      "heading5": {
+        "description": "更小的段落標題",
+        "title": "五級標題"
+      },
+      "heading6": {
+        "description": "最小的段落標題",
+        "title": "六級標題"
+      },
+      "image": {
+        "description": "插入圖片",
+        "title": "圖片"
+      },
+      "inlineCode": {
+        "description": "添加行內程式碼",
+        "title": "行內程式碼"
+      },
+      "link": {
+        "description": "添加連結",
+        "title": "連結"
+      },
+      "math": {
+        "description": "插入數學公式",
+        "title": "數學公式"
+      },
+      "noCommandsFound": "未找到命令",
+      "orderedList": {
+        "description": "建立帶編號的清單",
+        "title": "有序清單"
+      },
+      "paragraph": {
+        "description": "開始編寫普通文字",
+        "title": "內文"
+      },
+      "table": {
+        "description": "插入表格",
+        "title": "表格"
+      },
+      "taskList": {
+        "description": "建立待辦事項清單",
+        "title": "任務清單"
+      }
+    },
+    "placeholder": "輸入'/'調用命令",
     "toolbar": {
       "blockquote": "引用",
       "bold": "粗體",
@@ -1748,12 +1844,14 @@
       "heading5": "五級標題",
       "heading6": "六級標題",
       "italic": "斜體",
+      "link": "連結",
       "orderedList": "有序清單",
       "paragraph": "內文",
       "redo": "重做",
       "strike": "刪除線",
       "underline": "底線",
-      "undo": "復原"
+      "undo": "復原",
+      "unlink": "取消連結"
     }
   },
   "selection": {

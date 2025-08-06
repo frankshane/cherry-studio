@@ -40,6 +40,11 @@ export const Placeholder = Extension.create<PlaceholderOptions>({
               const hasAnchor = anchor >= pos && anchor <= pos + node.nodeSize
               const isEmpty = !node.isLeaf && !node.childCount
 
+              // Skip codeBlock nodes as they have their own content management
+              if (node.type.name === 'codeBlock') {
+                return false
+              }
+
               // Only show placeholder on current node (where cursor is) or all nodes based on showOnlyCurrent
               if ((hasAnchor || !this.options.showOnlyCurrent) && isEmpty) {
                 const classes = ['placeholder']

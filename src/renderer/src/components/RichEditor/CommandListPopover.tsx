@@ -1,7 +1,9 @@
+import Scrollbar from '@renderer/components/Scrollbar'
 import { useTheme } from '@renderer/context/ThemeProvider'
 import type { SuggestionProps } from '@tiptap/suggestion'
 import { List, Typography } from 'antd'
 import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { Command } from './command'
 
@@ -24,11 +26,32 @@ const CommandListPopover = ({
   const { items, command } = props
   const [internalSelectedIndex, setInternalSelectedIndex] = useState(0)
   const listRef = useRef<HTMLDivElement>(null)
+  const { t } = useTranslation()
+
+  // Helper function to get translated text with fallback
+  const getTranslatedCommand = useCallback(
+    (item: Command, field: 'title' | 'description') => {
+      const key = `richEditor.commands.${item.id}.${field}`
+      const translated = t(key)
+      return translated === key ? item[field] : translated
+    },
+    [t]
+  )
 
   // Reset selected index when items change
   useEffect(() => {
     setInternalSelectedIndex(0)
   }, [items])
+
+  // Auto scroll to selected item
+  useEffect(() => {
+    if (listRef.current) {
+      const selectedElement = listRef.current.querySelector(`[data-index="${internalSelectedIndex}"]`)
+      if (selectedElement) {
+        selectedElement.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      }
+    }
+  }, [internalSelectedIndex])
 
   const selectItem = useCallback(
     (index: number) => {
@@ -122,47 +145,68 @@ const CommandListPopover = ({
     zIndex: 1000,
     background: colors.background,
     border: `1px solid ${colors.border}`,
-    borderRadius: '8px',
+    borderRadius: '6px',
     boxShadow: colors.boxShadow,
-    maxHeight: '300px',
-    minWidth: '200px',
-    overflow: 'hidden'
+    maxHeight: '280px',
+    minWidth: '240px',
+    maxWidth: '320px',
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column'
   }
 
   return (
     <div ref={listRef} style={style}>
-      <List
-        size="small"
-        dataSource={dataSource}
-        renderItem={(item, index) => (
-          <List.Item
-            key={item.id}
-            style={{
-              padding: '8px 12px',
-              cursor: 'pointer',
-              backgroundColor: index === internalSelectedIndex ? colors.selectedBackground : 'transparent',
-              border: 'none',
-              transition: 'background-color 0.2s ease'
-            }}
-            onClick={() => selectItem(index)}
-            onMouseEnter={() => handleItemMouseEnter(index)}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
-              <span style={{ fontSize: '16px', width: '20px', flexShrink: 0 }}>{item.icon}</span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <Text strong style={{ fontSize: '14px', display: 'block' }}>
-                  {item.title}
-                </Text>
-                <Text type="secondary" style={{ fontSize: '12px' }}>
-                  {item.description}
-                </Text>
+      <Scrollbar style={{ flex: 1, minHeight: 0 }}>
+        <List
+          size="small"
+          dataSource={dataSource}
+          split={false}
+          renderItem={(item, index) => (
+            <List.Item
+              key={item.id}
+              data-index={index}
+              style={{
+                padding: '10px 16px',
+                cursor: 'pointer',
+                backgroundColor: index === internalSelectedIndex ? colors.selectedBackground : 'transparent',
+                border: 'none',
+                transition: 'all 0.15s ease',
+                borderRadius: '4px',
+                margin: '2px'
+              }}
+              onClick={() => selectItem(index)}
+              onMouseEnter={() => handleItemMouseEnter(index)}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
+                <div
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    flexShrink: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                  <item.icon size={16} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <Text strong style={{ fontSize: '14px', display: 'block', lineHeight: '20px' }}>
+                    {getTranslatedCommand(item, 'title')}
+                  </Text>
+                  <Text type="secondary" style={{ fontSize: '12px', lineHeight: '16px' }}>
+                    {getTranslatedCommand(item, 'description')}
+                  </Text>
+                </div>
               </div>
-            </div>
-          </List.Item>
+            </List.Item>
+          )}
+        />
+        {items.length === 0 && (
+          <div style={{ padding: '12px', color: '#999', textAlign: 'center', fontSize: '14px' }}>
+            {t('richEditor.commands.noCommandsFound')}
+          </div>
         )}
-      />
-      {items.length === 0 && (
-        <div style={{ padding: '8px', color: '#999', textAlign: 'center' }}>No commands found</div>
-      )}
+      </Scrollbar>
     </div>
   )
 }

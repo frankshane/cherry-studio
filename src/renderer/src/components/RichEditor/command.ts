@@ -4,6 +4,26 @@ import type { Editor } from '@tiptap/core'
 import type { MentionNodeAttrs } from '@tiptap/extension-mention'
 import { posToDOMRect, ReactRenderer } from '@tiptap/react'
 import type { SuggestionOptions } from '@tiptap/suggestion'
+import type { LucideIcon } from 'lucide-react'
+import {
+  Calculator,
+  Calendar,
+  CheckCircle,
+  Code,
+  FileCode,
+  Heading1,
+  Heading2,
+  Heading3,
+  Image,
+  Link,
+  List,
+  ListOrdered,
+  Minus,
+  Quote,
+  Table,
+  Type,
+  X
+} from 'lucide-react'
 
 import CommandListPopover from './CommandListPopover'
 
@@ -14,7 +34,7 @@ export interface Command {
   title: string
   description: string
   category: CommandCategory
-  icon: string
+  icon: LucideIcon
   keywords: string[]
   handler: (editor: Editor) => void
   isAvailable?: (editor: Editor) => boolean
@@ -23,7 +43,10 @@ export interface Command {
 export enum CommandCategory {
   TEXT = 'text',
   LISTS = 'lists',
-  BLOCKS = 'blocks'
+  BLOCKS = 'blocks',
+  MEDIA = 'media',
+  STRUCTURE = 'structure',
+  SPECIAL = 'special'
 }
 
 export interface CommandSuggestion {
@@ -39,7 +62,7 @@ export const COMMANDS: Command[] = [
     title: 'Text',
     description: 'Start writing with plain text',
     category: CommandCategory.TEXT,
-    icon: '📝',
+    icon: Type,
     keywords: ['text', 'paragraph', 'p'],
     handler: (editor: Editor) => {
       editor.chain().focus().setParagraph().run()
@@ -50,7 +73,7 @@ export const COMMANDS: Command[] = [
     title: 'Heading 1',
     description: 'Big section heading',
     category: CommandCategory.TEXT,
-    icon: 'H1',
+    icon: Heading1,
     keywords: ['heading', 'h1', 'title', 'big'],
     handler: (editor: Editor) => {
       editor.chain().focus().toggleHeading({ level: 1 }).run()
@@ -61,7 +84,7 @@ export const COMMANDS: Command[] = [
     title: 'Heading 2',
     description: 'Medium section heading',
     category: CommandCategory.TEXT,
-    icon: 'H2',
+    icon: Heading2,
     keywords: ['heading', 'h2', 'subtitle', 'medium'],
     handler: (editor: Editor) => {
       editor.chain().focus().toggleHeading({ level: 2 }).run()
@@ -72,7 +95,7 @@ export const COMMANDS: Command[] = [
     title: 'Heading 3',
     description: 'Small section heading',
     category: CommandCategory.TEXT,
-    icon: 'H3',
+    icon: Heading3,
     keywords: ['heading', 'h3', 'small'],
     handler: (editor: Editor) => {
       editor.chain().focus().toggleHeading({ level: 3 }).run()
@@ -83,7 +106,7 @@ export const COMMANDS: Command[] = [
     title: 'Bulleted list',
     description: 'Create a simple bulleted list',
     category: CommandCategory.LISTS,
-    icon: '•',
+    icon: List,
     keywords: ['bullet', 'list', 'ul', 'unordered'],
     handler: (editor: Editor) => {
       editor.chain().focus().toggleBulletList().run()
@@ -94,7 +117,7 @@ export const COMMANDS: Command[] = [
     title: 'Numbered list',
     description: 'Create a list with numbering',
     category: CommandCategory.LISTS,
-    icon: '1.',
+    icon: ListOrdered,
     keywords: ['number', 'list', 'ol', 'ordered'],
     handler: (editor: Editor) => {
       editor.chain().focus().toggleOrderedList().run()
@@ -105,7 +128,7 @@ export const COMMANDS: Command[] = [
     title: 'Code',
     description: 'Capture a code snippet',
     category: CommandCategory.BLOCKS,
-    icon: '{}',
+    icon: FileCode,
     keywords: ['code', 'block', 'snippet', 'programming'],
     handler: (editor: Editor) => {
       editor.chain().focus().toggleCodeBlock().run()
@@ -116,10 +139,119 @@ export const COMMANDS: Command[] = [
     title: 'Quote',
     description: 'Capture a quote',
     category: CommandCategory.BLOCKS,
-    icon: '"',
+    icon: Quote,
     keywords: ['quote', 'blockquote', 'citation'],
     handler: (editor: Editor) => {
       editor.chain().focus().toggleBlockquote().run()
+    }
+  },
+  {
+    id: 'divider',
+    title: 'Divider',
+    description: 'Add a horizontal line',
+    category: CommandCategory.STRUCTURE,
+    icon: Minus,
+    keywords: ['divider', 'hr', 'line', 'separator'],
+    handler: (editor: Editor) => {
+      editor.chain().focus().setHorizontalRule().run()
+    }
+  },
+  {
+    id: 'image',
+    title: 'Image',
+    description: 'Insert an image',
+    category: CommandCategory.MEDIA,
+    icon: Image,
+    keywords: ['image', 'img', 'picture', 'photo'],
+    handler: (editor: Editor) => {
+      const url = window.prompt('Enter image URL')
+      if (url) {
+        editor.chain().focus().setImage({ src: url }).run()
+      }
+    }
+  },
+  {
+    id: 'link',
+    title: 'Link',
+    description: 'Add a link',
+    category: CommandCategory.SPECIAL,
+    icon: Link,
+    keywords: ['link', 'url', 'href'],
+    handler: (editor: Editor) => {
+      const url = window.prompt('Enter URL')
+      if (url) {
+        editor.chain().focus().setLink({ href: url }).run()
+      }
+    }
+  },
+  {
+    id: 'table',
+    title: 'Table',
+    description: 'Insert a table',
+    category: CommandCategory.STRUCTURE,
+    icon: Table,
+    keywords: ['table', 'grid', 'rows', 'columns'],
+    handler: (editor: Editor) => {
+      editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+    }
+  },
+  {
+    id: 'taskList',
+    title: 'Task List',
+    description: 'Create a checklist',
+    category: CommandCategory.LISTS,
+    icon: CheckCircle,
+    keywords: ['task', 'todo', 'checklist', 'checkbox'],
+    handler: (editor: Editor) => {
+      editor.chain().focus().toggleTaskList().run()
+    }
+  },
+  {
+    id: 'inlineCode',
+    title: 'Inline Code',
+    description: 'Add inline code',
+    category: CommandCategory.SPECIAL,
+    icon: Code,
+    keywords: ['code', 'inline', 'monospace'],
+    handler: (editor: Editor) => {
+      editor.chain().focus().toggleCode().run()
+    }
+  },
+  {
+    id: 'hardBreak',
+    title: 'Line Break',
+    description: 'Insert a line break',
+    category: CommandCategory.STRUCTURE,
+    icon: X,
+    keywords: ['break', 'br', 'newline'],
+    handler: (editor: Editor) => {
+      editor.chain().focus().setHardBreak().run()
+    }
+  },
+  {
+    id: 'math',
+    title: 'Math Formula',
+    description: 'Insert mathematical formula',
+    category: CommandCategory.SPECIAL,
+    icon: Calculator,
+    keywords: ['math', 'formula', 'equation', 'latex'],
+    handler: (editor: Editor) => {
+      const formula = window.prompt('Enter LaTeX formula')
+      if (formula) {
+        editor.chain().focus().insertContent(`$$${formula}$$`).run()
+      }
+    }
+  },
+  {
+    id: 'date',
+    title: 'Date',
+    description: 'Insert current date',
+    category: CommandCategory.SPECIAL,
+    icon: Calendar,
+    keywords: ['date', 'time', 'today'],
+    handler: (editor: Editor) => {
+      const today = new Date().toLocaleDateString()
+      editor.chain().focus().insertContent(today).run()
     }
   }
 ]
@@ -211,7 +343,7 @@ export const commandSuggestion: Omit<SuggestionOptions<Command, MentionNodeAttrs
   },
 
   render: () => {
-    let component
+    let component: ReactRenderer<any, any>
 
     return {
       onStart: (props) => {
@@ -224,11 +356,12 @@ export const commandSuggestion: Omit<SuggestionOptions<Command, MentionNodeAttrs
           props,
           editor: props.editor
         })
-        component.element.style.position = 'absolute'
+        const element = component.element as HTMLElement
+        element.style.position = 'absolute'
 
-        document.body.appendChild(component.element)
+        document.body.appendChild(element)
 
-        updatePosition(props.editor, component.element)
+        updatePosition(props.editor, element)
       },
 
       onUpdate: (props) => {
@@ -248,7 +381,8 @@ export const commandSuggestion: Omit<SuggestionOptions<Command, MentionNodeAttrs
       },
 
       onExit: () => {
-        component.element.remove()
+        const element = component.element as HTMLElement
+        element.remove()
         component.destroy()
       }
     }

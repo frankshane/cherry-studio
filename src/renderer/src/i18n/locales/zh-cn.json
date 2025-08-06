@@ -1734,6 +1734,101 @@
     "title": "数据恢复"
   },
   "richEditor": {
+    "commands": {
+      "blockquote": {
+        "description": "插入引用文本",
+        "title": "引用"
+      },
+      "bulletList": {
+        "description": "创建简单的项目符号列表",
+        "title": "无序列表"
+      },
+      "calloutInfo": {
+        "description": "添加信息提示框",
+        "title": "信息提示框"
+      },
+      "calloutWarning": {
+        "description": "添加警告提示框",
+        "title": "警告提示框"
+      },
+      "codeBlock": {
+        "description": "插入代码片段",
+        "title": "代码块"
+      },
+      "columns": {
+        "description": "创建分栏布局",
+        "title": "分栏"
+      },
+      "date": {
+        "description": "插入当前日期",
+        "title": "日期"
+      },
+      "divider": {
+        "description": "添加水平分割线",
+        "title": "分割线"
+      },
+      "hardBreak": {
+        "description": "插入换行符",
+        "title": "换行符"
+      },
+      "heading1": {
+        "description": "大段落标题",
+        "title": "一级标题"
+      },
+      "heading2": {
+        "description": "中段落标题",
+        "title": "二级标题"
+      },
+      "heading3": {
+        "description": "小段落标题",
+        "title": "三级标题"
+      },
+      "heading4": {
+        "description": "较小的段落标题",
+        "title": "四级标题"
+      },
+      "heading5": {
+        "description": "更小的段落标题",
+        "title": "五级标题"
+      },
+      "heading6": {
+        "description": "最小的段落标题",
+        "title": "六级标题"
+      },
+      "image": {
+        "description": "插入图片",
+        "title": "图片"
+      },
+      "inlineCode": {
+        "description": "添加行内代码",
+        "title": "行内代码"
+      },
+      "link": {
+        "description": "添加链接",
+        "title": "链接"
+      },
+      "math": {
+        "description": "插入数学公式",
+        "title": "数学公式"
+      },
+      "noCommandsFound": "未找到命令",
+      "orderedList": {
+        "description": "创建带编号的列表",
+        "title": "有序列表"
+      },
+      "paragraph": {
+        "description": "开始编写普通文本",
+        "title": "正文"
+      },
+      "table": {
+        "description": "插入表格",
+        "title": "表格"
+      },
+      "taskList": {
+        "description": "创建待办事项清单",
+        "title": "任务列表"
+      }
+    },
     "placeholder": "输入'/'调用命令",
     "toolbar": {
       "blockquote": "引用",

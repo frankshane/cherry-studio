@@ -6201,21 +6201,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/extension-emoji@npm:^3.0.9":
-  version: 3.0.9
-  resolution: "@tiptap/extension-emoji@npm:3.0.9"
-  dependencies:
-    emoji-regex: "npm:^10.4.0"
-    emojibase-data: "npm:^15"
-    is-emoji-supported: "npm:^0.0.5"
-  peerDependencies:
-    "@tiptap/core": ^3.0.9
-    "@tiptap/pm": ^3.0.9
-    "@tiptap/suggestion": ^3.0.9
-  checksum: 10c0/eb4d51e124936090df3fb8be078d326385e32a59cf0cd59ad8c880072247afc320c303eda963f6572ade123fa1a0b1c963c8d7e642098103317d5a541a32ac3b
-  languageName: node
-  linkType: hard
-
 "@tiptap/extension-floating-menu@npm:^3.0.9":
   version: 3.0.9
   resolution: "@tiptap/extension-floating-menu@npm:3.0.9"
@@ -6261,6 +6246,15 @@ __metadata:
     "@tiptap/core": ^3.0.9
     "@tiptap/pm": ^3.0.9
   checksum: 10c0/602351bd98f2ea3873a75e5bc375bb2eb00a2ec56c7beb7005046a783e3a2442d9c7aa6e4e8f9f96597f09bfe0b366ee96c47e03381bfb3e753d72bb21493a93
+  languageName: node
+  linkType: hard
+
+"@tiptap/extension-image@npm:^3.0.9":
+  version: 3.0.9
+  resolution: "@tiptap/extension-image@npm:3.0.9"
+  peerDependencies:
+    "@tiptap/core": ^3.0.9
+  checksum: 10c0/c1eacd407ef320e8450af3bef8643d51871ea1b4c86b2d60330d44a22f53ad2bf7ae12886573d161d660df07553e97617253676bf8d86bdab8e08699bbf40a02
   languageName: node
   linkType: hard
 
@@ -6369,6 +6363,16 @@ __metadata:
   peerDependencies:
     "@tiptap/core": ^3.0.9
   checksum: 10c0/cfb9572f54027217298fa4853440b7582a16042ca8945483b7c1fcf8a985090ba77825bbe78108cba1b12a768522a53cea67f92753f09a57c7d09a3d880e8fe9
+  languageName: node
+  linkType: hard
+
+"@tiptap/extension-table@npm:^3.0.9":
+  version: 3.0.9
+  resolution: "@tiptap/extension-table@npm:3.0.9"
+  peerDependencies:
+    "@tiptap/core": ^3.0.9
+    "@tiptap/pm": ^3.0.9
+  checksum: 10c0/9ca43c5c361c9dad1ace11ae2e74e6c75ab2be0098a3538cb4fcd52177c06dcba3fd77d4e5329818059e64c15109cfc904276f49b9749ee4146dce9570eac22a
   languageName: node
   linkType: hard
 
@@ -8185,10 +8189,11 @@ __metadata:
     "@tiptap/extension-collaboration": "npm:^3.0.9"
     "@tiptap/extension-drag-handle": "npm:^3.0.9"
     "@tiptap/extension-drag-handle-react": "npm:^3.0.9"
-    "@tiptap/extension-emoji": "npm:^3.0.9"
+    "@tiptap/extension-image": "npm:^3.0.9"
     "@tiptap/extension-mathematics": "npm:^3.0.9"
     "@tiptap/extension-mention": "npm:^3.0.9"
     "@tiptap/extension-node-range": "npm:^3.0.9"
+    "@tiptap/extension-table": "npm:^3.0.9"
     "@tiptap/extension-typography": "npm:^3.0.9"
     "@tiptap/extension-underline": "npm:^3.0.9"
     "@tiptap/pm": "npm:^3.0.9"
@@ -11386,7 +11391,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"emoji-regex@npm:^10.3.0, emoji-regex@npm:^10.4.0":
+"emoji-regex@npm:^10.3.0":
   version: 10.4.0
   resolution: "emoji-regex@npm:10.4.0"
   checksum: 10c0/a3fcedfc58bfcce21a05a5f36a529d81e88d602100145fcca3dc6f795e3c8acc4fc18fe773fbf9b6d6e9371205edb3afa2668ec3473fa2aa7fd47d2a9d46482d
@@ -11404,15 +11409,6 @@ __metadata:
   version: 9.2.2
   resolution: "emoji-regex@npm:9.2.2"
   checksum: 10c0/af014e759a72064cf66e6e694a7fc6b0ed3d8db680427b021a89727689671cefe9d04151b2cad51dbaf85d5ba790d061cd167f1cf32eb7b281f6368b3c181639
-  languageName: node
-  linkType: hard
-
-"emojibase-data@npm:^15":
-  version: 15.3.2
-  resolution: "emojibase-data@npm:15.3.2"
-  peerDependencies:
-    emojibase: "*"
-  checksum: 10c0/5ebde8203f00d65d3cd73b114b979d57124b6554dabd47ec45f1fe688bbe63eaa086f0238ebf033007095e59d8353cb700b2b939531bb4a1d6fbb14dc92a7d13
   languageName: node
   linkType: hard
 
@@ -13949,13 +13945,6 @@ __metadata:
   bin:
     is-docker: cli.js
   checksum: 10c0/e828365958d155f90c409cdbe958f64051d99e8aedc2c8c4cd7c89dcf35329daed42f7b99346f7828df013e27deb8f721cf9408ba878c76eb9e8290235fbcdcc
-  languageName: node
-  linkType: hard
-
-"is-emoji-supported@npm:^0.0.5":
-  version: 0.0.5
-  resolution: "is-emoji-supported@npm:0.0.5"
-  checksum: 10c0/e1f0c018c279941327487fd2664e74281eef141f1c09c6cda691fcb6c1739bf1638b87d2afcf455f45079eae0842b03e17d8f3866f57577653a51e8123aa9a97
   languageName: node
   linkType: hard
 

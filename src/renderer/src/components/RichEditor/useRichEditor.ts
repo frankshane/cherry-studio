@@ -11,17 +11,18 @@ import {
   sanitizeHtml
 } from '@renderer/utils/markdownConverter'
 import type { Editor } from '@tiptap/core'
-import Emoji, { gitHubEmojis } from '@tiptap/extension-emoji'
+import Image from '@tiptap/extension-image'
 import Math, { migrateMathStrings } from '@tiptap/extension-mathematics'
 import Mention from '@tiptap/extension-mention'
+import { TableKit } from '@tiptap/extension-table'
 import Typography from '@tiptap/extension-typography'
-import Underline from '@tiptap/extension-underline'
 import { useEditor, useEditorState } from '@tiptap/react'
 import { StarterKit } from '@tiptap/starter-kit'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { commandSuggestion } from './command'
-import { Placeholder } from './placeholder'
+import { CodeBlockNode } from './extensions/CodeBlock'
+import { Placeholder } from './extensions/placeholder'
 
 const logger = loggerService.withContext('useRichEditor')
 
@@ -102,8 +103,10 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
       StarterKit.configure({
         heading: {
           levels: [1, 2, 3]
-        }
+        },
+        codeBlock: false
       }),
+      CodeBlockNode,
       Math.configure({
         blockOptions: {
           onClick: (node, pos) => {
@@ -122,10 +125,6 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
           }
         }
       }),
-      Emoji.configure({
-        emojis: gitHubEmojis,
-        enableEmoticons: true
-      }),
       Placeholder.configure({
         placeholder,
         showOnlyWhenEditable: true,
@@ -138,8 +137,13 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
         },
         suggestion: commandSuggestion
       }),
-      Underline,
-      Typography
+      Typography,
+      Image.configure({
+        allowBase64: true
+      }),
+      TableKit.configure({
+        table: { resizable: true }
+      })
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [placeholder]
