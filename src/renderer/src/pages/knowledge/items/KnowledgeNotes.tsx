@@ -5,7 +5,7 @@ import { useKnowledge } from '@renderer/hooks/useKnowledge'
 import FileItem from '@renderer/pages/files/FileItem'
 import { getProviderName } from '@renderer/services/ProviderService'
 import { KnowledgeBase, KnowledgeItem } from '@renderer/types'
-import { htmlToPreviewText, isHtmlContent } from '@renderer/utils/richTextUtils'
+import { isMarkdownContent, markdownToPreviewText } from '@renderer/utils/markdownConverter'
 import { Button } from 'antd'
 import dayjs from 'dayjs'
 import { PlusIcon } from 'lucide-react'
@@ -99,10 +99,10 @@ const KnowledgeNotes: FC<KnowledgeContentProps> = ({ selectedBase }) => {
               fileInfo={{
                 name: (
                   <NotePreview onClick={() => handleEditNote(note)}>
-                    {htmlToPreviewText(note.content as string, 50)}
+                    {markdownToPreviewText(note.content as string, 50)}
                   </NotePreview>
                 ),
-                ext: isHtmlContent(note.content as string) ? '.html' : '.txt',
+                ext: isMarkdownContent(note.content as string) ? '.md' : '.txt',
                 extra: getDisplayTime(note),
                 actions: (
                   <FlexAlignCenter>

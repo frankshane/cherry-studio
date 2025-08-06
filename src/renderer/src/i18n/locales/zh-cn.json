@@ -1733,6 +1733,29 @@
     },
     "title": "数据恢复"
   },
+  "richEditor": {
+    "toolbar": {
+      "blockquote": "引用",
+      "bold": "粗体",
+      "bulletList": "无序列表",
+      "clearMarks": "清除格式",
+      "code": "行内代码",
+      "codeBlock": "代码块",
+      "heading1": "一级标题",
+      "heading2": "二级标题",
+      "heading3": "三级标题",
+      "heading4": "四级标题",
+      "heading5": "五级标题",
+      "heading6": "六级标题",
+      "italic": "斜体",
+      "orderedList": "有序列表",
+      "paragraph": "正文",
+      "redo": "重做",
+      "strike": "删除线",
+      "underline": "下划线",
+      "undo": "撤销"
+    }
+  },
   "selection": {
     "action": {
       "builtin": {

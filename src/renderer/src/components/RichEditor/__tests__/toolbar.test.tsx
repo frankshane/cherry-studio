@@ -28,12 +28,30 @@ describe('Toolbar', () => {
   }
 
   const defaultFormattingState: FormattingState = {
-    bold: false,
-    italic: false,
-    underline: false,
-    headingLevel: 0,
-    bulletList: false,
-    orderedList: false
+    isBold: false,
+    canBold: true,
+    isItalic: false,
+    canItalic: true,
+    isUnderline: false,
+    canUnderline: true,
+    isStrike: false,
+    canStrike: true,
+    isCode: false,
+    canCode: true,
+    canClearMarks: true,
+    isParagraph: false,
+    isHeading1: false,
+    isHeading2: false,
+    isHeading3: false,
+    isHeading4: false,
+    isHeading5: false,
+    isHeading6: false,
+    isBulletList: false,
+    isOrderedList: false,
+    isCodeBlock: false,
+    isBlockquote: false,
+    canUndo: false,
+    canRedo: false
   }
 
   const mockOnCommand = vi.fn()
@@ -86,7 +104,7 @@ describe('Toolbar', () => {
     it('should show bold button as active when bold is true', () => {
       const activeFormattingState: FormattingState = {
         ...defaultFormattingState,
-        bold: true
+        isBold: true
       }
 
       render(<Toolbar editor={mockEditor} formattingState={activeFormattingState} onCommand={mockOnCommand} />)
@@ -98,7 +116,7 @@ describe('Toolbar', () => {
     it('should show italic button as active when italic is true', () => {
       const activeFormattingState: FormattingState = {
         ...defaultFormattingState,
-        italic: true
+        isItalic: true
       }
 
       render(<Toolbar editor={mockEditor} formattingState={activeFormattingState} onCommand={mockOnCommand} />)
@@ -110,7 +128,7 @@ describe('Toolbar', () => {
     it('should show heading button as active when headingLevel > 0', () => {
       const activeFormattingState: FormattingState = {
         ...defaultFormattingState,
-        headingLevel: 2
+        isHeading2: true
       }
 
       render(<Toolbar editor={mockEditor} formattingState={activeFormattingState} onCommand={mockOnCommand} />)
@@ -122,7 +140,7 @@ describe('Toolbar', () => {
     it('should show bullet list button as active when bulletList is true', () => {
       const activeFormattingState: FormattingState = {
         ...defaultFormattingState,
-        bulletList: true
+        isBulletList: true
       }
 
       render(<Toolbar editor={mockEditor} formattingState={activeFormattingState} onCommand={mockOnCommand} />)

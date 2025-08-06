@@ -45,8 +45,7 @@ const PopupContainer: React.FC<Props> = ({ content, modalProps, resolve, childre
   }, [])
 
   const onOk = () => {
-    // 保存HTML格式以保持富文本格式
-    const finalContent = editorRef.current?.getHtml() || richContent
+    const finalContent = editorRef.current?.getMarkdown() || richContent
     resolve(finalContent)
     setOpen(false)
   }
@@ -119,9 +118,9 @@ const PopupContainer: React.FC<Props> = ({ content, modalProps, resolve, childre
     setRichContent(newContent)
   }
 
-  const handleHtmlChange = (newHtml: string) => {
-    // 同时更新HTML内容状态
-    setRichContent(newHtml)
+  const handleMarkdownChange = (newMarkdown: string) => {
+    // 更新Markdown内容状态
+    setRichContent(newMarkdown)
   }
 
   RichEditPopup.hide = onCancel
@@ -139,6 +138,7 @@ const PopupContainer: React.FC<Props> = ({ content, modalProps, resolve, childre
       onCancel={onCancel}
       afterClose={onClose}
       afterOpenChange={handleAfterOpenChange}
+      maskClosable={false}
       centered>
       <EditorContainer>
         <RichEditor
@@ -146,7 +146,7 @@ const PopupContainer: React.FC<Props> = ({ content, modalProps, resolve, childre
           initialContent={content}
           placeholder={t('knowledge.note_placeholder', 'Enter your note here...')}
           onContentChange={handleContentChange}
-          onHtmlChange={handleHtmlChange}
+          onMarkdownChange={handleMarkdownChange}
           minHeight={300}
           maxHeight={500}
           className="rich-edit-popup-editor"

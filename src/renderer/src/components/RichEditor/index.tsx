@@ -1,11 +1,12 @@
-import { Underline } from '@tiptap/extension-underline'
-import { EditorContent, useEditor } from '@tiptap/react'
-import { StarterKit } from '@tiptap/starter-kit'
-import React, { useEffect, useImperativeHandle, useMemo, useState } from 'react'
+import DragHandle from '@tiptap/extension-drag-handle-react'
+import { EditorContent } from '@tiptap/react'
+import React, { useEffect, useImperativeHandle } from 'react'
 
+import { MdiDragHandle } from '../Icons/SVGIcon'
 import { EditorContent as StyledEditorContent, RichEditorWrapper } from './styles'
 import { Toolbar } from './toolbar'
-import type { FormattingCommand, FormattingState, RichEditorProps, RichEditorRef } from './types'
+import type { FormattingCommand, RichEditorProps, RichEditorRef } from './types'
+import { useRichEditor } from './useRichEditor'
 
 const RichEditor = ({
   ref,
@@ -13,6 +14,7 @@ const RichEditor = ({
   placeholder = '',
   onContentChange,
   onHtmlChange,
+  onMarkdownChange,
   editable = true,
   className = '',
   showToolbar = true,
@@ -20,89 +22,23 @@ const RichEditor = ({
   maxHeight
   // toolbarItems: _toolbarItems // TODO: Implement custom toolbar items
 }: RichEditorProps & { ref?: React.RefObject<RichEditorRef | null> }) => {
-  const [formattingState, setFormattingState] = useState<FormattingState>({
-    bold: false,
-    italic: false,
-    underline: false,
-    headingLevel: 0,
-    bulletList: false,
-    orderedList: false
-  })
-
-  const extensions = useMemo(
-    () => [
-      StarterKit.configure({
-        heading: {
-          levels: [1, 2, 3, 4, 5, 6]
-        }
-      }),
-      Underline
-    ],
-    []
-  )
-
-  const editor = useEditor({
-    extensions,
-    content: initialContent,
+  // Use the rich editor hook for complete editor management
+  const { editor, markdown, html, formattingState, setMarkdown, setHtml, clear, getPreviewText } = useRichEditor({
+    initialContent,
+    onChange: onMarkdownChange,
+    onHtmlChange,
+    onContentChange,
+    placeholder,
     editable,
-    editorProps: {
-      attributes: {
-        'data-placeholder': placeholder
-      }
-    },
-    onUpdate: ({ editor }) => {
-      const content = editor.getText()
-      const html = editor.getHTML()
-
-      onContentChange?.(content)
-      onHtmlChange?.(html)
-
-      // Update formatting state
-      setFormattingState({
-        bold: editor.isActive('bold'),
-        italic: editor.isActive('italic'),
-        underline: editor.isActive('underline'),
-        headingLevel: getHeadingLevel(editor),
-        bulletList: editor.isActive('bulletList'),
-        orderedList: editor.isActive('orderedList')
-      })
-    },
-    onSelectionUpdate: ({ editor }) => {
-      // Update formatting state when selection changes
-      setFormattingState({
-        bold: editor.isActive('bold'),
-        italic: editor.isActive('italic'),
-        underline: editor.isActive('underline'),
-        headingLevel: getHeadingLevel(editor),
-        bulletList: editor.isActive('bulletList'),
-        orderedList: editor.isActive('orderedList')
-      })
-    }
+    disabled: !editable
   })
 
-  // Helper function to get heading level
-  const getHeadingLevel = (editor: any): number => {
-    for (let level = 1; level <= 6; level++) {
-      if (editor.isActive('heading', { level })) {
-        return level
-      }
-    }
-    return 0
-  }
-
-  // Update formatting state when editor becomes available
+  // Update editor content when markdown changes externally
   useEffect(() => {
-    if (editor) {
-      setFormattingState({
-        bold: editor.isActive('bold'),
-        italic: editor.isActive('italic'),
-        underline: editor.isActive('underline'),
-        headingLevel: getHeadingLevel(editor),
-        bulletList: editor.isActive('bulletList'),
-        orderedList: editor.isActive('orderedList')
-      })
+    if (editor && html && html !== editor.getHTML()) {
+      editor.commands.setContent(html)
     }
-  }, [editor])
+  }, [editor, html])
 
   const handleCommand = (command: FormattingCommand) => {
     if (!editor) return
@@ -117,13 +53,35 @@ const RichEditor = ({
       case 'underline':
         editor.chain().focus().toggleUnderline().run()
         break
-      case 'heading':
-        // Toggle between paragraph and heading level 2
-        if (editor.isActive('heading')) {
-          editor.chain().focus().setParagraph().run()
-        } else {
-          editor.chain().focus().toggleHeading({ level: 2 }).run()
-        }
+      case 'strike':
+        editor.chain().focus().toggleStrike().run()
+        break
+      case 'code':
+        editor.chain().focus().toggleCode().run()
+        break
+      case 'clearMarks':
+        editor.chain().focus().unsetAllMarks().run()
+        break
+      case 'paragraph':
+        editor.chain().focus().setParagraph().run()
+        break
+      case 'heading1':
+        editor.chain().focus().toggleHeading({ level: 1 }).run()
+        break
+      case 'heading2':
+        editor.chain().focus().toggleHeading({ level: 2 }).run()
+        break
+      case 'heading3':
+        editor.chain().focus().toggleHeading({ level: 3 }).run()
+        break
+      case 'heading4':
+        editor.chain().focus().toggleHeading({ level: 4 }).run()
+        break
+      case 'heading5':
+        editor.chain().focus().toggleHeading({ level: 5 }).run()
+        break
+      case 'heading6':
+        editor.chain().focus().toggleHeading({ level: 6 }).run()
         break
       case 'bulletList':
         editor.chain().focus().toggleBulletList().run()
@@ -131,8 +89,17 @@ const RichEditor = ({
       case 'orderedList':
         editor.chain().focus().toggleOrderedList().run()
         break
-      case 'paragraph':
-        editor.chain().focus().setParagraph().run()
+      case 'codeBlock':
+        editor.chain().focus().toggleCodeBlock().run()
+        break
+      case 'blockquote':
+        editor.chain().focus().toggleBlockquote().run()
+        break
+      case 'undo':
+        editor.chain().focus().undo().run()
+        break
+      case 'redo':
+        editor.chain().focus().redo().run()
         break
     }
   }
@@ -142,17 +109,22 @@ const RichEditor = ({
     ref,
     () => ({
       getContent: () => editor?.getText() || '',
-      getHtml: () => editor?.getHTML() || '',
+      getHtml: () => html,
+      getMarkdown: () => markdown,
       setContent: (content: string) => {
         editor?.commands.setContent(content)
       },
-      setHtml: (html: string) => {
-        editor?.commands.setContent(html)
+      setHtml: (htmlContent: string) => {
+        setHtml(htmlContent)
+      },
+      setMarkdown: (markdownContent: string) => {
+        setMarkdown(markdownContent)
       },
       focus: () => {
         editor?.commands.focus()
       },
       clear: () => {
+        clear()
         editor?.commands.clearContent()
       },
       insertText: (text: string) => {
@@ -162,15 +134,21 @@ const RichEditor = ({
         if (editor?.commands && command in editor.commands) {
           editor.commands[command](value)
         }
+      },
+      getPreviewText: (maxLength?: number) => {
+        return getPreviewText(markdown, maxLength)
       }
     }),
-    [editor]
+    [editor, html, markdown, setHtml, setMarkdown, clear, getPreviewText]
   )
 
   return (
     <RichEditorWrapper className={`rich-editor-wrapper ${className}`} $minHeight={minHeight} $maxHeight={maxHeight}>
       {showToolbar && <Toolbar editor={editor} formattingState={formattingState} onCommand={handleCommand} />}
       <StyledEditorContent>
+        <DragHandle editor={editor}>
+          <MdiDragHandle />
+        </DragHandle>
         <EditorContent editor={editor} />
       </StyledEditorContent>
     </RichEditorWrapper>
