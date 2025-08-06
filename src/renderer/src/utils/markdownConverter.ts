@@ -1,6 +1,8 @@
 import { loggerService } from '@logger'
 import DOMPurify from 'dompurify'
+import he from 'he'
 import MarkdownIt from 'markdown-it'
+import striptags from 'striptags'
 import TurndownService from 'turndown'
 
 const logger = loggerService.withContext('markdownConverter')
@@ -26,7 +28,7 @@ const turndownService = new TurndownService({
 
 // Configure turndown rules for better conversion
 turndownService.addRule('strikethrough', {
-  filter: ['del', 's', 'strike'],
+  filter: ['del', 's'],
   replacement: (content) => `~~${content}~~`
 })
 
@@ -105,7 +107,7 @@ export const sanitizeHtml = (html: string): string => {
     ],
     ALLOWED_ATTR: ['href', 'title', 'alt', 'src', 'class', 'id'],
     ALLOW_DATA_ATTR: false,
-    ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp):|[^a-z]|[a-z+.-]+(?:[^a-z+.-:]|$))/i
+    ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp):|[^a-z]|[a-z+.\\-]+(?:[^a-z+.\-:]|$))/i
   })
 }
 
@@ -130,16 +132,7 @@ export const markdownToPreviewText = (markdown: string, maxLength: number = 50):
 
   // Convert to HTML first, then strip tags
   const html = markdownToHtml(markdown)
-  const textContent = html
-    .replace(/<[^>]*>/g, '') // Remove HTML tags
-    .replace(/&nbsp;/g, ' ') // Replace non-breaking spaces
-    .replace(/&amp;/g, '&') // Decode ampersands
-    .replace(/&lt;/g, '<') // Decode less than
-    .replace(/&gt;/g, '>') // Decode greater than
-    .replace(/&quot;/g, '"') // Decode quotes
-    .replace(/&#39;/g, "'") // Decode apostrophes
-    .replace(/\s+/g, ' ') // Normalize whitespace
-    .trim()
+  const textContent = he.decode(striptags(html)).replace(/\s+/g, ' ').trim()
 
   return textContent.length > maxLength ? `${textContent.slice(0, maxLength)}...` : textContent
 }
