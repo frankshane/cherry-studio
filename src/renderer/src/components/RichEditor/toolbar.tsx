@@ -1,29 +1,9 @@
 import { Tooltip } from 'antd'
-import {
-  Bold,
-  Calculator,
-  Code,
-  FileCode,
-  Heading1,
-  Heading2,
-  Heading3,
-  Image as ImageIcon,
-  Italic,
-  Link,
-  Link2Off,
-  List,
-  ListOrdered,
-  Quote,
-  Redo,
-  Strikethrough,
-  Table,
-  Type,
-  Underline,
-  Undo
-} from 'lucide-react'
+import { Link2Off } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { getCommandsByGroup } from './command'
 import { ImageUploader } from './components/ImageUploader'
 import MathInputDialog from './components/MathInputDialog'
 import { ToolbarButton, ToolbarDivider, ToolbarWrapper } from './styles'
@@ -34,37 +14,34 @@ interface ToolbarItemInternal {
   command?: FormattingCommand
   icon?: React.ComponentType
   type?: 'divider'
+  handler?: () => void
 }
 
-const DEFAULT_TOOLBAR_ITEMS: ToolbarItemInternal[] = [
-  { id: 'bold', command: 'bold' as FormattingCommand, icon: Bold },
-  { id: 'italic', command: 'italic' as FormattingCommand, icon: Italic },
-  { id: 'underline', command: 'underline' as FormattingCommand, icon: Underline },
-  { id: 'strike', command: 'strike' as FormattingCommand, icon: Strikethrough },
-  { id: 'divider-1', type: 'divider' },
-  { id: 'code', command: 'code' as FormattingCommand, icon: Code },
-  { id: 'divider-2', type: 'divider' },
-  { id: 'paragraph', command: 'paragraph' as FormattingCommand, icon: Type },
-  { id: 'heading1', command: 'heading1' as FormattingCommand, icon: Heading1 },
-  { id: 'heading2', command: 'heading2' as FormattingCommand, icon: Heading2 },
-  { id: 'heading3', command: 'heading3' as FormattingCommand, icon: Heading3 },
-  { id: 'divider-3', type: 'divider' },
-  { id: 'bulletList', command: 'bulletList' as FormattingCommand, icon: List },
-  { id: 'orderedList', command: 'orderedList' as FormattingCommand, icon: ListOrdered },
-  { id: 'divider-4', type: 'divider' },
-  { id: 'blockquote', command: 'blockquote' as FormattingCommand, icon: Quote },
-  { id: 'codeBlock', command: 'codeBlock' as FormattingCommand, icon: FileCode },
-  { id: 'math', command: 'math' as FormattingCommand, icon: Calculator },
-  { id: 'divider-5', type: 'divider' },
-  { id: 'table', command: 'table' as FormattingCommand, icon: Table },
-  { id: 'image', command: 'image' as FormattingCommand, icon: ImageIcon },
-  { id: 'divider-6', type: 'divider' },
-  { id: 'link', command: 'link' as FormattingCommand, icon: Link },
-  { id: 'unlink', command: 'unlink' as FormattingCommand, icon: Link2Off },
-  { id: 'divider-7', type: 'divider' },
-  { id: 'undo', command: 'undo' as FormattingCommand, icon: Undo },
-  { id: 'redo', command: 'redo' as FormattingCommand, icon: Redo }
-]
+// Group ordering for toolbar layout
+const TOOLBAR_GROUP_ORDER = ['formatting', 'text', 'blocks', 'structure', 'media', 'history']
+
+function getToolbarItems(): ToolbarItemInternal[] {
+  const items: ToolbarItemInternal[] = []
+
+  TOOLBAR_GROUP_ORDER.forEach((groupName, groupIndex) => {
+    const groupCommands = getCommandsByGroup(groupName)
+
+    if (groupCommands.length > 0 && groupIndex > 0) {
+      items.push({ id: `divider-${groupIndex}`, type: 'divider' })
+    }
+
+    groupCommands.forEach((cmd) => {
+      items.push({
+        id: cmd.id,
+        command: cmd.formattingCommand as FormattingCommand,
+        icon: cmd.id === 'unlink' ? Link2Off : cmd.icon, // Special case for unlink icon
+        handler: () => cmd.handler
+      })
+    })
+  })
+
+  return items
+}
 
 // Function to get tooltip text for toolbar commands
 const getTooltipText = (t: any, command: FormattingCommand): string => {
@@ -164,9 +141,12 @@ export const Toolbar: React.FC<ToolbarProps> = ({ editor, formattingState, onCom
     setShowImageUploader(false)
   }
 
+  // Get dynamic toolbar items
+  const toolbarItems = getToolbarItems()
+
   return (
     <ToolbarWrapper data-testid="rich-editor-toolbar">
-      {DEFAULT_TOOLBAR_ITEMS.map((item) => {
+      {toolbarItems.map((item) => {
         if (item.type === 'divider') {
           return <ToolbarDivider key={item.id} />
         }

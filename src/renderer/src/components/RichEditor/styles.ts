@@ -19,9 +19,29 @@ export const ToolbarWrapper = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 8px 12px;
+  padding: 4px 8px;
   border-bottom: 1px solid var(--color-border);
   background: var(--color-background-soft);
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+
+  &::-webkit-scrollbar-track {
+    background: var(--color-background-soft);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-3);
+  }
+
+  /* Firefox 滚动条样式 */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) var(--color-background-soft);
 `
 
 export const ToolbarButton = styled.button<{
@@ -40,6 +60,7 @@ export const ToolbarButton = styled.button<{
     $disabled ? 'var(--color-text-3)' : $active ? 'var(--color-white)' : 'var(--color-text)'};
   cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
   transition: all 0.2s ease;
+  flex-shrink: 0; /* 防止按钮收缩 */
 
   &:hover:not(:disabled) {
     background: ${({ $active }) => ($active ? 'var(--color-primary)' : 'var(--color-hover)')};
@@ -60,6 +81,7 @@ export const ToolbarDivider = styled.div`
   height: 20px;
   background: var(--color-border);
   margin: 0 4px;
+  flex-shrink: 0; /* 防止分隔符收缩 */
 `
 
 export const EditorContent = styled.div`

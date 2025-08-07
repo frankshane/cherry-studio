@@ -6,6 +6,7 @@ import { posToDOMRect, ReactRenderer } from '@tiptap/react'
 import type { SuggestionOptions } from '@tiptap/suggestion'
 import type { LucideIcon } from 'lucide-react'
 import {
+  Bold,
   Calculator,
   CheckCircle,
   Code,
@@ -14,13 +15,18 @@ import {
   Heading2,
   Heading3,
   Image,
+  Italic,
   Link,
   List,
   ListOrdered,
   Minus,
   Quote,
+  Redo,
+  Strikethrough,
   Table,
   Type,
+  Underline,
+  Undo,
   X
 } from 'lucide-react'
 
@@ -37,6 +43,10 @@ export interface Command {
   keywords: string[]
   handler: (editor: Editor) => void
   isAvailable?: (editor: Editor) => boolean
+  // Toolbar support
+  showInToolbar?: boolean
+  toolbarGroup?: 'text' | 'formatting' | 'blocks' | 'media' | 'structure' | 'history'
+  formattingCommand?: string // Maps to FormattingCommand for state checking
 }
 
 export enum CommandCategory {
@@ -54,8 +64,148 @@ export interface CommandSuggestion {
   clientRect?: () => DOMRect | null
 }
 
-// Command registry
-export const COMMANDS: Command[] = [
+// Internal dynamic command registry
+const commandRegistry = new Map<string, Command>()
+
+export function registerCommand(cmd: Command): void {
+  commandRegistry.set(cmd.id, cmd)
+}
+
+export function unregisterCommand(id: string): void {
+  commandRegistry.delete(id)
+}
+
+export function getCommand(id: string): Command | undefined {
+  return commandRegistry.get(id)
+}
+
+export function getAllCommands(): Command[] {
+  return Array.from(commandRegistry.values())
+}
+
+export function getToolbarCommands(): Command[] {
+  return getAllCommands().filter((cmd) => cmd.showInToolbar)
+}
+
+export function getCommandsByGroup(group: string): Command[] {
+  return getAllCommands().filter((cmd) => cmd.toolbarGroup === group)
+}
+
+// Dynamic toolbar management
+export function registerToolbarCommand(cmd: Command): void {
+  if (!cmd.showInToolbar) {
+    cmd.showInToolbar = true
+  }
+  registerCommand(cmd)
+}
+
+export function unregisterToolbarCommand(id: string): void {
+  const cmd = getCommand(id)
+  if (cmd) {
+    cmd.showInToolbar = false
+    // Keep command for slash menu, just hide from toolbar
+  }
+}
+
+export function setCommandAvailability(id: string, isAvailable: (editor: Editor) => boolean): void {
+  const cmd = getCommand(id)
+  if (cmd) {
+    cmd.isAvailable = isAvailable
+  }
+}
+
+// Convenience functions for common scenarios
+export function disableCommandsWhen(commandIds: string[], condition: (editor: Editor) => boolean): void {
+  commandIds.forEach((id) => {
+    setCommandAvailability(id, (editor) => !condition(editor))
+  })
+}
+
+export function hideToolbarCommandsWhen(commandIds: string[], condition: () => boolean): void {
+  if (condition()) {
+    commandIds.forEach((id) => unregisterToolbarCommand(id))
+  } else {
+    commandIds.forEach((id) => {
+      const cmd = getCommand(id)
+      if (cmd) {
+        cmd.showInToolbar = true
+      }
+    })
+  }
+}
+
+// Default command definitions
+const DEFAULT_COMMANDS: Command[] = [
+  {
+    id: 'bold',
+    title: 'Bold',
+    description: 'Make text bold',
+    category: CommandCategory.TEXT,
+    icon: Bold,
+    keywords: ['bold', 'strong', 'b'],
+    handler: (editor: Editor) => {
+      editor.chain().focus().toggleBold().run()
+    },
+    showInToolbar: true,
+    toolbarGroup: 'formatting',
+    formattingCommand: 'bold'
+  },
+  {
+    id: 'italic',
+    title: 'Italic',
+    description: 'Make text italic',
+    category: CommandCategory.TEXT,
+    icon: Italic,
+    keywords: ['italic', 'emphasis', 'i'],
+    handler: (editor: Editor) => {
+      editor.chain().focus().toggleItalic().run()
+    },
+    showInToolbar: true,
+    toolbarGroup: 'formatting',
+    formattingCommand: 'italic'
+  },
+  {
+    id: 'underline',
+    title: 'Underline',
+    description: 'Underline text',
+    category: CommandCategory.TEXT,
+    icon: Underline,
+    keywords: ['underline', 'u'],
+    handler: (editor: Editor) => {
+      editor.chain().focus().toggleUnderline().run()
+    },
+    showInToolbar: true,
+    toolbarGroup: 'formatting',
+    formattingCommand: 'underline'
+  },
+  {
+    id: 'strike',
+    title: 'Strikethrough',
+    description: 'Strike through text',
+    category: CommandCategory.TEXT,
+    icon: Strikethrough,
+    keywords: ['strikethrough', 'strike', 's'],
+    handler: (editor: Editor) => {
+      editor.chain().focus().toggleStrike().run()
+    },
+    showInToolbar: true,
+    toolbarGroup: 'formatting',
+    formattingCommand: 'strike'
+  },
+  {
+    id: 'inlineCode',
+    title: 'Inline Code',
+    description: 'Add inline code',
+    category: CommandCategory.SPECIAL,
+    icon: Code,
+    keywords: ['code', 'inline', 'monospace'],
+    handler: (editor: Editor) => {
+      editor.chain().focus().toggleCode().run()
+    },
+    showInToolbar: true,
+    toolbarGroup: 'formatting',
+    formattingCommand: 'code'
+  },
   {
     id: 'paragraph',
     title: 'Text',
@@ -65,7 +215,10 @@ export const COMMANDS: Command[] = [
     keywords: ['text', 'paragraph', 'p'],
     handler: (editor: Editor) => {
       editor.chain().focus().setParagraph().run()
-    }
+    },
+    showInToolbar: true,
+    toolbarGroup: 'text',
+    formattingCommand: 'paragraph'
   },
   {
     id: 'heading1',
@@ -76,7 +229,10 @@ export const COMMANDS: Command[] = [
     keywords: ['heading', 'h1', 'title', 'big'],
     handler: (editor: Editor) => {
       editor.chain().focus().toggleHeading({ level: 1 }).run()
-    }
+    },
+    showInToolbar: true,
+    toolbarGroup: 'text',
+    formattingCommand: 'heading1'
   },
   {
     id: 'heading2',
@@ -87,7 +243,10 @@ export const COMMANDS: Command[] = [
     keywords: ['heading', 'h2', 'subtitle', 'medium'],
     handler: (editor: Editor) => {
       editor.chain().focus().toggleHeading({ level: 2 }).run()
-    }
+    },
+    showInToolbar: true,
+    toolbarGroup: 'text',
+    formattingCommand: 'heading2'
   },
   {
     id: 'heading3',
@@ -98,7 +257,10 @@ export const COMMANDS: Command[] = [
     keywords: ['heading', 'h3', 'small'],
     handler: (editor: Editor) => {
       editor.chain().focus().toggleHeading({ level: 3 }).run()
-    }
+    },
+    showInToolbar: true,
+    toolbarGroup: 'text',
+    formattingCommand: 'heading3'
   },
   {
     id: 'bulletList',
@@ -109,7 +271,10 @@ export const COMMANDS: Command[] = [
     keywords: ['bullet', 'list', 'ul', 'unordered'],
     handler: (editor: Editor) => {
       editor.chain().focus().toggleBulletList().run()
-    }
+    },
+    showInToolbar: true,
+    toolbarGroup: 'blocks',
+    formattingCommand: 'bulletList'
   },
   {
     id: 'orderedList',
@@ -120,7 +285,10 @@ export const COMMANDS: Command[] = [
     keywords: ['number', 'list', 'ol', 'ordered'],
     handler: (editor: Editor) => {
       editor.chain().focus().toggleOrderedList().run()
-    }
+    },
+    showInToolbar: true,
+    toolbarGroup: 'blocks',
+    formattingCommand: 'orderedList'
   },
   {
     id: 'codeBlock',
@@ -131,7 +299,10 @@ export const COMMANDS: Command[] = [
     keywords: ['code', 'block', 'snippet', 'programming'],
     handler: (editor: Editor) => {
       editor.chain().focus().toggleCodeBlock().run()
-    }
+    },
+    showInToolbar: true,
+    toolbarGroup: 'blocks',
+    formattingCommand: 'codeBlock'
   },
   {
     id: 'blockquote',
@@ -142,7 +313,10 @@ export const COMMANDS: Command[] = [
     keywords: ['quote', 'blockquote', 'citation'],
     handler: (editor: Editor) => {
       editor.chain().focus().toggleBlockquote().run()
-    }
+    },
+    showInToolbar: true,
+    toolbarGroup: 'blocks',
+    formattingCommand: 'blockquote'
   },
   {
     id: 'divider',
@@ -164,7 +338,10 @@ export const COMMANDS: Command[] = [
     keywords: ['image', 'img', 'picture', 'photo'],
     handler: (editor: Editor) => {
       editor.chain().focus().insertImagePlaceholder().run()
-    }
+    },
+    showInToolbar: true,
+    toolbarGroup: 'media',
+    formattingCommand: 'image'
   },
   {
     id: 'link',
@@ -178,7 +355,10 @@ export const COMMANDS: Command[] = [
       if (url) {
         editor.chain().focus().setLink({ href: url }).run()
       }
-    }
+    },
+    showInToolbar: true,
+    toolbarGroup: 'media',
+    formattingCommand: 'link'
   },
   {
     id: 'table',
@@ -189,8 +369,12 @@ export const COMMANDS: Command[] = [
     keywords: ['table', 'grid', 'rows', 'columns'],
     handler: (editor: Editor) => {
       editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
-    }
+    },
+    showInToolbar: true,
+    toolbarGroup: 'structure',
+    formattingCommand: 'table'
   },
+  // Additional commands for slash menu only
   {
     id: 'taskList',
     title: 'Task List',
@@ -200,17 +384,6 @@ export const COMMANDS: Command[] = [
     keywords: ['task', 'todo', 'checklist', 'checkbox'],
     handler: (editor: Editor) => {
       editor.chain().focus().toggleTaskList().run()
-    }
-  },
-  {
-    id: 'inlineCode',
-    title: 'Inline Code',
-    description: 'Add inline code',
-    category: CommandCategory.SPECIAL,
-    icon: Code,
-    keywords: ['code', 'inline', 'monospace'],
-    handler: (editor: Editor) => {
-      editor.chain().focus().toggleCode().run()
     }
   },
   {
@@ -225,6 +398,32 @@ export const COMMANDS: Command[] = [
     }
   },
   {
+    id: 'divider',
+    title: 'Divider',
+    description: 'Add a horizontal line',
+    category: CommandCategory.STRUCTURE,
+    icon: Minus,
+    keywords: ['divider', 'hr', 'line', 'separator'],
+    handler: (editor: Editor) => {
+      editor.chain().focus().setHorizontalRule().run()
+    }
+  },
+  // Unlink command for toolbar
+  {
+    id: 'unlink',
+    title: 'Remove Link',
+    description: 'Remove link formatting',
+    category: CommandCategory.SPECIAL,
+    icon: X, // Will be replaced with Link2Off in toolbar
+    keywords: ['unlink', 'remove link'],
+    handler: (editor: Editor) => {
+      editor.chain().focus().unsetLink().run()
+    },
+    showInToolbar: true,
+    toolbarGroup: 'media',
+    formattingCommand: 'unlink'
+  },
+  {
     id: 'math',
     title: 'Math Formula',
     description: 'Insert mathematical formula',
@@ -233,7 +432,39 @@ export const COMMANDS: Command[] = [
     keywords: ['math', 'formula', 'equation', 'latex'],
     handler: (editor: Editor) => {
       editor.chain().focus().insertMathPlaceholder().run()
-    }
+    },
+    showInToolbar: true,
+    toolbarGroup: 'media',
+    formattingCommand: 'math'
+  },
+  // History commands
+  {
+    id: 'undo',
+    title: 'Undo',
+    description: 'Undo last action',
+    category: CommandCategory.SPECIAL,
+    icon: Undo,
+    keywords: ['undo', 'revert'],
+    handler: (editor: Editor) => {
+      editor.chain().focus().undo().run()
+    },
+    showInToolbar: true,
+    toolbarGroup: 'history',
+    formattingCommand: 'undo'
+  },
+  {
+    id: 'redo',
+    title: 'Redo',
+    description: 'Redo last action',
+    category: CommandCategory.SPECIAL,
+    icon: Redo,
+    keywords: ['redo', 'repeat'],
+    handler: (editor: Editor) => {
+      editor.chain().focus().redo().run()
+    },
+    showInToolbar: true,
+    toolbarGroup: 'history',
+    formattingCommand: 'redo'
   }
 ]
 
@@ -247,7 +478,7 @@ export interface CommandFilterOptions {
 export function filterCommands(options: CommandFilterOptions = {}): Command[] {
   const { query = '', category, maxResults = 10 } = options
 
-  let filtered = COMMANDS
+  let filtered = getAllCommands()
 
   // Filter by category if specified
   if (category) {
@@ -301,6 +532,9 @@ const updatePosition = (editor: Editor, element: HTMLElement) => {
   })
 }
 
+// Register default commands into the dynamic registry
+DEFAULT_COMMANDS.forEach(registerCommand)
+
 // TipTap suggestion configuration
 export const commandSuggestion: Omit<SuggestionOptions<Command, MentionNodeAttrs>, 'editor'> = {
   char: '/',
@@ -317,9 +551,11 @@ export const commandSuggestion: Omit<SuggestionOptions<Command, MentionNodeAttrs
     editor.chain().focus().deleteRange(range).run()
 
     // Find the original command by id
-    const command = COMMANDS.find((cmd) => cmd.id === props.id)
-    if (command) {
-      command.handler(editor)
+    if (props.id) {
+      const command = getCommand(props.id)
+      if (command) {
+        command.handler(editor)
+      }
     }
   },
 

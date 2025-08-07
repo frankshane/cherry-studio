@@ -1,16 +1,17 @@
 import 'emoji-picker-element'
 
 import { CloseCircleFilled } from '@ant-design/icons'
-import CodeEditor from '@renderer/components/CodeEditor'
 import EmojiPicker from '@renderer/components/EmojiPicker'
 import { Box, HSpaceBetweenStack, HStack } from '@renderer/components/Layout'
+import RichEditor from '@renderer/components/RichEditor'
+import { RichEditorRef } from '@renderer/components/RichEditor/types'
 import { usePromptProcessor } from '@renderer/hooks/usePromptProcessor'
 import { estimateTextTokens } from '@renderer/services/TokenService'
 import { Assistant, AssistantSettings } from '@renderer/types'
 import { getLeadingEmoji } from '@renderer/utils'
 import { Button, Input, Popover } from 'antd'
 import { Edit, Eye, HelpCircle } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import ReactMarkdown from 'react-markdown'
 import styled from 'styled-components'
@@ -31,10 +32,13 @@ const AssistantPromptSettings: React.FC<Props> = ({ assistant, updateAssistant }
   const [tokenCount, setTokenCount] = useState(0)
   const { t } = useTranslation()
   const [showPreview, setShowPreview] = useState(prompt.length > 0)
+  const editorRef = useRef<RichEditorRef>(null)
 
   useEffect(() => {
     const updateTokenCount = async () => {
-      const count = await estimateTextTokens(prompt)
+      // 对于 Markdown 内容，先转换为纯文本再计算 token
+      const textContent = editorRef.current?.getContent() || prompt
+      const count = await estimateTextTokens(textContent)
       setTokenCount(count)
     }
     updateTokenCount()
@@ -64,6 +68,23 @@ const AssistantPromptSettings: React.FC<Props> = ({ assistant, updateAssistant }
   }
 
   const promptVarsContent = <pre>{t('agents.add.prompt.variables.tip.content')}</pre>
+
+  const handleCommandsReady = (commandAPI: Pick<RichEditorRef, 'unregisterCommand'>) => {
+    const disabledCommands = ['image']
+    disabledCommands.forEach((commandId) => {
+      commandAPI.unregisterCommand(commandId)
+    })
+  }
+
+  const handleMarkdownChange = (newMarkdown: string) => {
+    setPrompt(newMarkdown)
+  }
+
+  const handleBlur = useCallback(() => {
+    const _assistant = { ...assistant, name: name.trim(), emoji, prompt }
+    updateAssistant(_assistant)
+    window.message.success(t('common.saved'))
+  }, [assistant, name, emoji, prompt, updateAssistant, t])
 
   return (
     <Container>
@@ -124,27 +145,18 @@ const AssistantPromptSettings: React.FC<Props> = ({ assistant, updateAssistant }
             <div style={{ height: '30px' }} />
           </MarkdownContainer>
         ) : (
-          <CodeEditor
-            value={prompt}
-            language="markdown"
-            placeholder={t('common.assistant') + t('common.prompt')}
-            onChange={setPrompt}
-            onBlur={onUpdate}
-            height="calc(80vh - 202px)"
-            fontSize="var(--ant-font-size)"
-            expanded
-            unwrapped={false}
-            options={{
-              autocompletion: false,
-              keymap: true,
-              lineNumbers: false,
-              lint: false
-            }}
-            style={{
-              border: '0.5px solid var(--color-border)',
-              borderRadius: '5px'
-            }}
-          />
+          <RichEditorContainer>
+            <RichEditor
+              ref={editorRef}
+              initialContent={prompt}
+              placeholder={t('common.assistant') + t('common.prompt')}
+              onMarkdownChange={handleMarkdownChange}
+              onBlur={handleBlur}
+              onCommandsReady={handleCommandsReady}
+              showToolbar={true}
+              className="prompt-rich-editor"
+            />
+          </RichEditorContainer>
         )}
       </TextAreaContainer>
       <HSpaceBetweenStack width="100%" justifyContent="flex-end" mt="10px">
@@ -195,6 +207,29 @@ const MarkdownContainer = styled.div`
   padding-right: 2px;
   overflow: auto;
   overflow-x: hidden;
+`
+
+const RichEditorContainer = styled.div`
+  height: calc(80vh - 202px);
+  border: 0.5px solid var(--color-border);
+  border-radius: 5px;
+  overflow: hidden;
+
+  .prompt-rich-editor {
+    border: none;
+    height: 100%;
+
+    .rich-editor-wrapper {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .rich-editor-content {
+      flex: 1;
+      overflow: auto;
+    }
+  }
 `
 
 export default AssistantPromptSettings

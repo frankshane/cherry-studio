@@ -21,6 +21,7 @@ interface ShowParams {
   content: string
   modalProps?: ModalProps
   showTranslate?: boolean
+  disableCommands?: string[] // 要禁用的命令列表
   children?: (props: { onOk?: () => void; onCancel?: () => void }) => React.ReactNode
 }
 
@@ -28,7 +29,14 @@ interface Props extends ShowParams {
   resolve: (data: any) => void
 }
 
-const PopupContainer: React.FC<Props> = ({ content, modalProps, resolve, children, showTranslate = true }) => {
+const PopupContainer: React.FC<Props> = ({
+  content,
+  modalProps,
+  resolve,
+  children,
+  showTranslate = true,
+  disableCommands = ['image'] // 默认禁用 image 命令
+}) => {
   const [open, setOpen] = useState(true)
   const { t } = useTranslation()
   const [richContent, setRichContent] = useState(content)
@@ -123,6 +131,16 @@ const PopupContainer: React.FC<Props> = ({ content, modalProps, resolve, childre
     setRichContent(newMarkdown)
   }
 
+  // 处理命令配置
+  const handleCommandsReady = (commandAPI: Pick<RichEditorRef, 'unregisterToolbarCommand' | 'unregisterCommand'>) => {
+    // 禁用指定的命令
+    if (disableCommands?.length) {
+      disableCommands.forEach((commandId) => {
+        commandAPI.unregisterCommand(commandId)
+      })
+    }
+  }
+
   RichEditPopup.hide = onCancel
 
   return (
@@ -147,6 +165,7 @@ const PopupContainer: React.FC<Props> = ({ content, modalProps, resolve, childre
           placeholder={t('richEditor.placeholder')}
           onContentChange={handleContentChange}
           onMarkdownChange={handleMarkdownChange}
+          onCommandsReady={handleCommandsReady}
           minHeight={300}
           maxHeight={500}
           className="rich-edit-popup-editor"

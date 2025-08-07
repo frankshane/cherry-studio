@@ -1,8 +1,17 @@
 import DragHandle from '@tiptap/extension-drag-handle-react'
 import { EditorContent } from '@tiptap/react'
-import React, { useImperativeHandle } from 'react'
+import React, { useEffect, useImperativeHandle } from 'react'
 
 import { MdiDragHandle } from '../Icons/SVGIcon'
+import {
+  getAllCommands,
+  getToolbarCommands,
+  registerCommand,
+  registerToolbarCommand,
+  setCommandAvailability,
+  unregisterCommand,
+  unregisterToolbarCommand
+} from './command'
 import { EditorContent as StyledEditorContent, RichEditorWrapper } from './styles'
 import { Toolbar } from './toolbar'
 import type { FormattingCommand, RichEditorProps, RichEditorRef } from './types'
@@ -15,11 +24,14 @@ const RichEditor = ({
   onContentChange,
   onHtmlChange,
   onMarkdownChange,
+  onBlur,
   editable = true,
   className = '',
   showToolbar = true,
   minHeight,
-  maxHeight
+  maxHeight,
+  initialCommands,
+  onCommandsReady
   // toolbarItems: _toolbarItems // TODO: Implement custom toolbar items
 }: RichEditorProps & { ref?: React.RefObject<RichEditorRef | null> }) => {
   // Use the rich editor hook for complete editor management
@@ -28,10 +40,38 @@ const RichEditor = ({
     onChange: onMarkdownChange,
     onHtmlChange,
     onContentChange,
+    onBlur,
     placeholder,
     editable,
     disabled: !editable
   })
+
+  // Register initial commands on mount
+  useEffect(() => {
+    if (initialCommands) {
+      initialCommands.forEach((cmd) => {
+        if (cmd.showInToolbar) {
+          registerToolbarCommand(cmd)
+        } else {
+          registerCommand(cmd)
+        }
+      })
+    }
+  }, [initialCommands])
+
+  // Call onCommandsReady when editor is ready
+  useEffect(() => {
+    if (editor && onCommandsReady) {
+      const commandAPI = {
+        registerCommand,
+        registerToolbarCommand,
+        unregisterCommand,
+        unregisterToolbarCommand,
+        setCommandAvailability
+      }
+      onCommandsReady(commandAPI)
+    }
+  }, [editor, onCommandsReady])
 
   const handleCommand = (command: FormattingCommand) => {
     if (!editor) return
@@ -169,7 +209,15 @@ const RichEditor = ({
       },
       getPreviewText: (maxLength?: number) => {
         return getPreviewText(markdown, maxLength)
-      }
+      },
+      // Dynamic command management
+      registerCommand,
+      registerToolbarCommand,
+      unregisterCommand,
+      unregisterToolbarCommand,
+      setCommandAvailability,
+      getAllCommands,
+      getToolbarCommands
     }),
     [editor, html, markdown, setHtml, setMarkdown, clear, getPreviewText]
   )

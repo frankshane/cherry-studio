@@ -37,6 +37,8 @@ export interface UseRichEditorOptions {
   onHtmlChange?: (html: string) => void
   /** Callback when content changes (plain text) */
   onContentChange?: (content: string) => void
+  /** Callback when editor loses focus */
+  onBlur?: () => void
   /** Maximum length for preview text */
   previewLength?: number
   /** Whether the editor is disabled */
@@ -90,6 +92,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     onChange,
     onHtmlChange,
     onContentChange,
+    onBlur,
     previewLength = 50,
     disabled = false,
     placeholder = '',
@@ -177,6 +180,9 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
       } catch (error) {
         logger.error('Error converting HTML to markdown:', error as Error)
       }
+    },
+    onBlur: () => {
+      onBlur?.()
     },
     onCreate: ({ editor: currentEditor }) => {
       migrateMathStrings(currentEditor)

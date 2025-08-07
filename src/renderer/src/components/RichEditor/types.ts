@@ -9,6 +9,8 @@ export interface RichEditorProps {
   onHtmlChange?: (html: string) => void
   /** Callback when Markdown content changes */
   onMarkdownChange?: (markdown: string) => void
+  /** Callback when editor loses focus */
+  onBlur?: () => void
   /** Whether the editor is editable */
   editable?: boolean
   /** Custom CSS class name */
@@ -23,6 +25,19 @@ export interface RichEditorProps {
   toolbarItems?: ToolbarItem[]
   /** Whether initial content is markdown (default: auto-detect) */
   isMarkdown?: boolean
+  /** Initial commands to register on mount */
+  initialCommands?: Command[]
+  /** Command configuration callback called after editor initialization */
+  onCommandsReady?: (
+    commandAPI: Pick<
+      RichEditorRef,
+      | 'registerCommand'
+      | 'registerToolbarCommand'
+      | 'unregisterCommand'
+      | 'unregisterToolbarCommand'
+      | 'setCommandAvailability'
+    >
+  ) => void
 }
 
 export interface ToolbarItem {
@@ -78,6 +93,21 @@ export interface RichEditorRef {
   executeCommand: (command: string, value?: any) => void
   /** Get preview text from current content */
   getPreviewText: (maxLength?: number) => string
+  // Dynamic command management
+  /** Register a new command/toolbar item */
+  registerCommand: (cmd: Command) => void
+  /** Register a command that shows in toolbar */
+  registerToolbarCommand: (cmd: Command) => void
+  /** Remove a command completely */
+  unregisterCommand: (id: string) => void
+  /** Hide a command from toolbar (keep in slash menu) */
+  unregisterToolbarCommand: (id: string) => void
+  /** Set command availability condition */
+  setCommandAvailability: (id: string, isAvailable: (editor: any) => boolean) => void
+  /** Get all registered commands */
+  getAllCommands: () => Command[]
+  /** Get toolbar commands only */
+  getToolbarCommands: () => Command[]
 }
 
 export interface FormattingState {
@@ -185,6 +215,17 @@ export interface ToolbarProps {
 }
 
 // Command System Types for Slash Commands
+import type { Editor } from '@tiptap/core'
+import { LucideIcon } from 'lucide-react'
+
+export enum CommandCategory {
+  TEXT = 'text',
+  LISTS = 'lists',
+  BLOCKS = 'blocks',
+  MEDIA = 'media',
+  STRUCTURE = 'structure',
+  SPECIAL = 'special'
+}
 
 export interface Command {
   /** Unique identifier for the command */
@@ -198,20 +239,15 @@ export interface Command {
   /** Command category for grouping */
   category: CommandCategory
   /** Icon component or icon name */
-  icon?: React.ComponentType | string
+  icon: LucideIcon
   /** Handler function to execute the command */
-  handler: (editor: any) => void
+  handler: (editor: Editor) => void
   /** Whether the command is available in current context */
-  isAvailable?: (editor: any) => boolean
-}
-
-export interface CommandCategory {
-  /** Category identifier */
-  id: string
-  /** Display label for the category */
-  label: string
-  /** Category priority for sorting */
-  priority: number
+  isAvailable?: (editor: Editor) => boolean
+  // Toolbar support
+  showInToolbar?: boolean
+  toolbarGroup?: 'text' | 'formatting' | 'blocks' | 'media' | 'structure' | 'history'
+  formattingCommand?: string // Maps to FormattingCommand for state checking
 }
 
 export interface CommandSuggestion {
