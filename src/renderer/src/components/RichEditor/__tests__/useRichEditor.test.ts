@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { useRichEditor } from '../../components/RichEditor/useRichEditor'
+import { useRichEditor } from '../useRichEditor'
 
 // Mock the markdown converter
 vi.mock('@renderer/utils/markdownConverter', () => ({
@@ -154,11 +154,7 @@ describe('useRichEditor', () => {
     })
 
     it('should support disabled state', () => {
-      const { result } = renderHook(() =>
-        useRichEditor({
-          disabled: true
-        })
-      )
+      const { result } = renderHook(() => useRichEditor({ editable: false }))
 
       expect(result.current.disabled).toBe(true)
     })
