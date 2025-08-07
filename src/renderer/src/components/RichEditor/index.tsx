@@ -1,5 +1,6 @@
 import DragHandle from '@tiptap/extension-drag-handle-react'
 import { EditorContent } from '@tiptap/react'
+import { t } from 'i18next'
 import React, { useEffect, useImperativeHandle } from 'react'
 
 import { MdiDragHandle } from '../Icons/SVGIcon'
@@ -20,7 +21,7 @@ import { useRichEditor } from './useRichEditor'
 const RichEditor = ({
   ref,
   initialContent = '',
-  placeholder = '',
+  placeholder = t('richEditor.placeholder'),
   onContentChange,
   onHtmlChange,
   onMarkdownChange,
