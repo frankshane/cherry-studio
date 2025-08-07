@@ -41,8 +41,6 @@ export interface UseRichEditorOptions {
   onBlur?: () => void
   /** Maximum length for preview text */
   previewLength?: number
-  /** Whether the editor is disabled */
-  disabled?: boolean
   /** Placeholder text when editor is empty */
   placeholder?: string
   /** Whether the editor is editable */
@@ -94,7 +92,6 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     onContentChange,
     onBlur,
     previewLength = 50,
-    disabled = false,
     placeholder = '',
     editable = true
   } = options
@@ -160,7 +157,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     shouldRerenderOnTransaction: true,
     extensions,
     content: html || '',
-    editable: editable && !disabled,
+    editable: editable,
     onUpdate: ({ editor }) => {
       const content = editor.getText()
       const htmlContent = editor.getHTML()
@@ -193,6 +190,13 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
       }
     }
   })
+
+  // Update editor editable state when prop changes
+  useEffect(() => {
+    if (editor && !editor.isDestroyed) {
+      editor.setEditable(editable)
+    }
+  }, [editor, editable])
 
   // Cleanup editor on unmount to prevent memory leaks
   useEffect(() => {
@@ -374,7 +378,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     html,
     previewText,
     isMarkdown,
-    disabled,
+    disabled: !editable,
     formattingState,
 
     // Actions

@@ -1750,6 +1750,10 @@
         "description": "插入引用文字",
         "title": "引用"
       },
+      "bold": {
+        "description": "標記為粗體",
+        "title": "粗體"
+      },
       "bulletList": {
         "description": "建立簡單的項目符號清單",
         "title": "無序清單"
@@ -1761,6 +1765,10 @@
       "calloutWarning": {
         "description": "添加警告提示框",
         "title": "警告提示框"
+      },
+      "code": {
+        "description": "插入代碼片段",
+        "title": "代碼"
       },
       "codeBlock": {
         "description": "插入程式碼片段",
@@ -1814,6 +1822,10 @@
         "description": "添加行內程式碼",
         "title": "行內程式碼"
       },
+      "italic": {
+        "description": "標記為斜體",
+        "title": "斜體"
+      },
       "link": {
         "description": "添加連結",
         "title": "連結"
@@ -1831,6 +1843,10 @@
         "description": "開始編寫普通文字",
         "title": "內文"
       },
+      "strike": {
+        "description": "標記為刪除線",
+        "title": "刪除線"
+      },
       "table": {
         "description": "插入表格",
         "title": "表格"
@@ -1838,6 +1854,10 @@
       "taskList": {
         "description": "建立待辦事項清單",
         "title": "任務清單"
+      },
+      "underline": {
+        "description": "標記為下劃線",
+        "title": "下劃線"
       }
     },
     "image": {

@@ -1750,6 +1750,10 @@
         "description": "参照されたテキストを挿入します",
         "title": "引用"
       },
+      "bold": {
+        "description": "太字でマークされています",
+        "title": "大胆な"
+      },
       "bulletList": {
         "description": "シンプルな弾丸リストを作成します",
         "title": "順序付けられていないリスト"
@@ -1761,6 +1765,10 @@
       "calloutWarning": {
         "description": "警告ボックスを追加します",
         "title": "警告プロンプトボックス"
+      },
+      "code": {
+        "description": "コードスニペットを挿入します",
+        "title": "コード"
       },
       "codeBlock": {
         "description": "コードスニペットを挿入します",
@@ -1814,6 +1822,10 @@
         "description": "インラインコードを追加します",
         "title": "インラインコード"
       },
+      "italic": {
+        "description": "イタリックとしてマークされています",
+        "title": "イタリック"
+      },
       "link": {
         "description": "リンクを追加します",
         "title": "リンク"
@@ -1831,6 +1843,10 @@
         "description": "プレーンテキストの書き始めます",
         "title": "文章"
       },
+      "strike": {
+        "description": "削除行としてマークします",
+        "title": "行を削除します"
+      },
       "table": {
         "description": "テーブルを挿入します",
         "title": "シート"
@@ -1838,6 +1854,10 @@
       "taskList": {
         "description": "To Doリストを作成します",
         "title": "タスクリスト"
+      },
+      "underline": {
+        "description": "下線付けのマーク",
+        "title": "下線"
       }
     },
     "image": {

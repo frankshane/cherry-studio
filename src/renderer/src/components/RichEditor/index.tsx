@@ -43,8 +43,7 @@ const RichEditor = ({
     onContentChange,
     onBlur,
     placeholder,
-    editable,
-    disabled: !editable
+    editable
   })
 
   // Register initial commands on mount

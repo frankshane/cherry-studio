@@ -9,12 +9,11 @@ import { usePromptProcessor } from '@renderer/hooks/usePromptProcessor'
 import { estimateTextTokens } from '@renderer/services/TokenService'
 import { Assistant, AssistantSettings } from '@renderer/types'
 import { getLeadingEmoji } from '@renderer/utils'
-import { Button, Flex, Input, Popover } from 'antd'
+import { Button, Input, Popover } from 'antd'
 import { throttle } from 'lodash'
-import { Edit, Eye, HelpCircle, Save } from 'lucide-react'
+import { HelpCircle, Save } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import ReactMarkdown from 'react-markdown'
 import styled from 'styled-components'
 
 import { SettingDivider } from '..'
@@ -138,39 +137,33 @@ const AssistantPromptSettings: React.FC<Props> = ({ assistant, updateAssistant }
         </Popover>
       </HStack>
       <TextAreaContainer>
-        {showPreview ? (
-          <MarkdownContainer className="markdown" onClick={() => setShowPreview(false)}>
-            <ReactMarkdown>{processedPrompt || prompt}</ReactMarkdown>
-            <div style={{ height: '30px' }} />
-          </MarkdownContainer>
-        ) : (
-          <RichEditorContainer>
-            <RichEditor
-              ref={editorRef}
-              initialContent={prompt}
-              onMarkdownChange={handleMarkdownChange}
-              onCommandsReady={handleCommandsReady}
-              showToolbar={true}
-              className="prompt-rich-editor"
-            />
-          </RichEditorContainer>
-        )}
+        <RichEditorContainer>
+          <RichEditor
+            ref={editorRef}
+            initialContent={processedPrompt || prompt}
+            onMarkdownChange={handleMarkdownChange}
+            onCommandsReady={handleCommandsReady}
+            showToolbar={!showPreview}
+            editable={!showPreview}
+            className="prompt-rich-editor"
+          />
+        </RichEditorContainer>
       </TextAreaContainer>
       <HSpaceBetweenStack width="100%" justifyContent="flex-end" mt="10px">
         <TokenCount>Tokens: {tokenCount}</TokenCount>
-        <Flex gap={8} justify="flex-end">
-          <Button
-            type="primary"
-            icon={showPreview ? <Edit size={14} /> : <Eye size={14} />}
-            onClick={() => setShowPreview((prev) => !prev)}>
-            {showPreview ? t('common.edit') : t('common.preview')}
-          </Button>
-          {!showPreview && (
-            <Button type="primary" icon={<Save size={14} />} onClick={onUpdate}>
-              {t('common.save')}
-            </Button>
-          )}
-        </Flex>
+        <Button
+          type="primary"
+          icon={<Save size={14} />}
+          onClick={() => {
+            if (showPreview) {
+              setShowPreview(false)
+            } else {
+              onUpdate()
+              setShowPreview(true)
+            }
+          }}>
+          {showPreview ? t('common.edit') : t('common.save')}
+        </Button>
       </HSpaceBetweenStack>
     </Container>
   )
@@ -203,14 +196,6 @@ const TokenCount = styled.div`
   font-size: 14px;
   color: var(--color-text-2);
   user-select: none;
-`
-
-const MarkdownContainer = styled.div`
-  min-height: calc(80vh - 200px);
-  max-height: calc(80vh - 200px);
-  padding-right: 2px;
-  overflow: auto;
-  overflow-x: hidden;
 `
 
 const RichEditorContainer = styled.div`

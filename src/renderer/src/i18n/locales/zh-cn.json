@@ -1750,6 +1750,10 @@
         "description": "插入引用文本",
         "title": "引用"
       },
+      "bold": {
+        "description": "标记为粗体",
+        "title": "粗体"
+      },
       "bulletList": {
         "description": "创建简单的项目符号列表",
         "title": "无序列表"
@@ -1761,6 +1765,10 @@
       "calloutWarning": {
         "description": "添加警告提示框",
         "title": "警告提示框"
+      },
+      "code": {
+        "description": "插入代码片段",
+        "title": "代码"
       },
       "codeBlock": {
         "description": "插入代码片段",
@@ -1814,6 +1822,10 @@
         "description": "添加行内代码",
         "title": "行内代码"
       },
+      "italic": {
+        "description": "标记为斜体",
+        "title": "斜体"
+      },
       "link": {
         "description": "添加链接",
         "title": "链接"
@@ -1831,6 +1843,10 @@
         "description": "开始编写普通文本",
         "title": "正文"
       },
+      "strike": {
+        "description": "标记为删除线",
+        "title": "删除线"
+      },
       "table": {
         "description": "插入表格",
         "title": "表格"
@@ -1838,6 +1854,10 @@
       "taskList": {
         "description": "创建待办事项清单",
         "title": "任务列表"
+      },
+      "underline": {
+        "description": "标记为下划线",
+        "title": "下划线"
       }
     },
     "image": {

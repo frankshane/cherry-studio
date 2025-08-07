@@ -1750,6 +1750,10 @@
         "description": "Capture a quote",
         "title": "Quote"
       },
+      "bold": {
+        "description": "Marked in bold",
+        "title": "Bold"
+      },
       "bulletList": {
         "description": "Create a simple bulleted list",
         "title": "Bulleted list"
@@ -1761,6 +1765,10 @@
       "calloutWarning": {
         "description": "Add a warning callout box",
         "title": "Warning Callout"
+      },
+      "code": {
+        "description": "Insert code snippet",
+        "title": "Code"
       },
       "codeBlock": {
         "description": "Capture a code snippet",
@@ -1814,6 +1822,10 @@
         "description": "Add inline code",
         "title": "Inline Code"
       },
+      "italic": {
+        "description": "Marked as italic",
+        "title": "Italic"
+      },
       "link": {
         "description": "Add a link",
         "title": "Link"
@@ -1831,6 +1843,10 @@
         "description": "Start writing with plain text",
         "title": "Text"
       },
+      "strike": {
+        "description": "Mark as a delete line",
+        "title": "Delete line"
+      },
       "table": {
         "description": "Insert a table",
         "title": "Table"
@@ -1838,6 +1854,10 @@
       "taskList": {
         "description": "Create a checklist",
         "title": "Task List"
+      },
+      "underline": {
+        "description": "Mark as underlined",
+        "title": "Underline"
       }
     },
     "image": {
