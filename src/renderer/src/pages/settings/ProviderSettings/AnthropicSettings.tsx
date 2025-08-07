@@ -1,6 +1,5 @@
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { loggerService } from '@logger'
-import { createAnthropicOAuth } from '@renderer/pages/settings/ProviderSettings/anthropicOAuth'
 import { Alert, Button, Input, Modal } from 'antd'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -25,10 +24,9 @@ const AnthropicSettings = () => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const anthropicOAuth = createAnthropicOAuth()
-        const token = await anthropicOAuth.getValidAccessToken()
+        const hasCredentials = await window.api.anthropic_oauth.hasCredentials()
 
-        if (token) {
+        if (hasCredentials) {
           setAuthStatus(AuthStatus.AUTHENTICATED)
         }
       } catch (error) {
@@ -43,8 +41,7 @@ const AnthropicSettings = () => {
   const handleRedirectOAuth = async () => {
     try {
       setLoading(true)
-      const anthropicOAuth = createAnthropicOAuth()
-      await anthropicOAuth.startOAuthFlow()
+      await window.api.anthropic_oauth.startOAuthFlow()
       setAuthStatus(AuthStatus.AUTHENTICATING)
       setCodeModalVisible(true)
     } catch (error) {
@@ -58,12 +55,23 @@ const AnthropicSettings = () => {
   // 处理授权码提交
   const handleSubmitCode = async () => {
     logger.info('Submitting auth code')
+    try {
+      setLoading(true)
+      await window.api.anthropic_oauth.completeOAuthWithCode(authCode)
+      setAuthStatus(AuthStatus.AUTHENTICATED)
+      setCodeModalVisible(false)
+      window.message.success(t('settings.provider.anthropic.auth_success'))
+    } catch (error) {
+      logger.error('Code submission failed:', error as Error)
+      window.message.error(t('settings.provider.anthropic.code_error'))
+    } finally {
+      setLoading(false)
+    }
   }
 
   // 处理取消认证
   const handleCancelAuth = () => {
-    const anthropicOAuth = createAnthropicOAuth()
-    anthropicOAuth.cancelOAuthFlow()
+    window.api.anthropic_oauth.cancelOAuthFlow()
     setAuthStatus(AuthStatus.NOT_STARTED)
     setCodeModalVisible(false)
     setAuthCode('')
@@ -72,8 +80,7 @@ const AnthropicSettings = () => {
   // 处理登出
   const handleLogout = async () => {
     try {
-      const anthropicOAuth = createAnthropicOAuth()
-      await anthropicOAuth.clearCredentials()
+      await window.api.anthropic_oauth.clearCredentials()
       setAuthStatus(AuthStatus.NOT_STARTED)
       window.message.success(t('settings.provider.anthropic.logout_success'))
     } catch (error) {

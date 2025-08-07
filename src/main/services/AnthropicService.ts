@@ -25,7 +25,7 @@ interface PKCEPair {
   challenge: string
 }
 
-export class AnthropicOAuth {
+class AnthropicService extends Error {
   private currentPKCE: PKCEPair | null = null
 
   // 1. Generate PKCE pair
@@ -218,12 +218,4 @@ export class AnthropicOAuth {
   }
 }
 
-// Create singleton instance
-let instance: AnthropicOAuth | null = null
-
-export const createAnthropicOAuth = (): AnthropicOAuth => {
-  if (!instance) {
-    instance = new AnthropicOAuth()
-  }
-  return instance
-}
+export default new AnthropicService()
