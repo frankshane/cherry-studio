@@ -178,6 +178,7 @@ export type Provider = {
   isNotSupportStreamOptions?: boolean
   isNotSupportDeveloperRole?: boolean
 
+  authType?: 'apiKey' | 'oauth'
   isVertex?: boolean
   notes?: string
   extra_headers?: Record<string, string>

@@ -1,5 +1,6 @@
 import { loggerService } from '@logger'
 import * as crypto from 'crypto'
+import { shell } from 'electron'
 
 const logger = loggerService.withContext('AnthropicOAuth')
 
@@ -104,12 +105,22 @@ export class AnthropicOAuth {
 
   // // 5. Save credentials
   // private async saveCredentials(creds: Credentials): Promise<void> {
-  //
+  //   try {
+  //     await ipcRenderer.invoke('file:write', CREDS_PATH, JSON.stringify(creds, null, 2))
+  //   } catch (error) {
+  //     logger.error('Failed to save credentials:', error as Error)
+  //     throw error
+  //   }
   // }
-
+  //
   // // 6. Load credentials
   // private async loadCredentials(): Promise<Credentials | null> {
-  //
+  //   try {
+  //     const data = await ipcRenderer.invoke('file:read', CREDS_PATH)
+  //     return JSON.parse(data)
+  //   } catch (error) {
+  //     return null
+  //   }
   // }
 
   // // 7. Get valid access token (refresh if needed)
@@ -132,7 +143,7 @@ export class AnthropicOAuth {
   //     return null
   //   }
   // }
-
+  //
   // // 8. Start OAuth flow with external browser
   // public async startOAuthFlow(): Promise<string> {
   //   // Try to get existing valid token
@@ -176,17 +187,22 @@ export class AnthropicOAuth {
   //   }
   // }
 
-  // 10. Cancel current OAuth flow
-  public cancelOAuthFlow(): void {
-    if (this.currentPKCE) {
-      logger.info('Cancelling OAuth flow')
-      this.currentPKCE = null
-    }
-  }
+  // // 10. Cancel current OAuth flow
+  // public cancelOAuthFlow(): void {
+  //   if (this.currentPKCE) {
+  //     logger.info('Cancelling OAuth flow')
+  //     this.currentPKCE = null
+  //   }
+  // }
 
   // // 11. Clear stored credentials
   // public async clearCredentials(): Promise<void> {
-  //
+  //   try {
+  //     await ipcRenderer.invoke('file:delete', CREDS_PATH)
+  //     logger.info('Credentials cleared')
+  //   } catch (error) {
+  //     logger.warn('Failed to clear credentials:', error as Error)
+  //   }
   // }
 
   // // 12. Check if credentials exist

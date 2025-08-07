@@ -1,7 +1,7 @@
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { loggerService } from '@logger'
 import { createAnthropicOAuth } from '@renderer/pages/settings/ProviderSettings/anthropicOAuth'
-import { Alert, Button, Input, message, Modal } from 'antd'
+import { Alert, Button, Input, Modal } from 'antd'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
@@ -112,7 +112,6 @@ const AnthropicSettings = () => {
             <Alert
               type="success"
               message={t('settings.provider.anthropic.authenticated')}
-              description={t('settings.provider.anthropic.authenticated_detail')}
               action={
                 <Button type="primary" onClick={handleLogout}>
                   {t('settings.provider.anthropic.logout')}
@@ -130,14 +129,23 @@ const AnthropicSettings = () => {
               type="info"
               message={t('settings.provider.anthropic.authenticating')}
               description={t('settings.provider.anthropic.authenticating_detail')}
-              action={
-                <Button type="primary" loading={loading} onClick={() => setCodeModalVisible(true)}>
-                  {t('settings.provider.anthropic.enter_code')}
-                </Button>
-              }
               showIcon
               icon={<ExclamationCircleOutlined />}
             />
+            <Modal
+              title={t('settings.provider.anthropic.enter_auth_code')}
+              open={codeModalVisible}
+              onOk={handleSubmitCode}
+              onCancel={handleCancelAuth}
+              okButtonProps={{ loading }}
+              okText={t('settings.provider.anthropic.submit_code')}
+              cancelText={t('settings.provider.anthropic.cancel')}>
+              <Input
+                value={authCode}
+                onChange={(e) => setAuthCode(e.target.value)}
+                placeholder={t('settings.provider.anthropic.code_placeholder')}
+              />
+            </Modal>
           </StartContainer>
         )
       default:
@@ -160,25 +168,7 @@ const AnthropicSettings = () => {
     }
   }
 
-  return (
-    <Container>
-      {renderAuthContent()}
-      <Modal
-        title={t('settings.provider.anthropic.enter_auth_code')}
-        open={codeModalVisible}
-        onOk={handleSubmitCode}
-        onCancel={handleCancelAuth}
-        okButtonProps={{ loading }}
-        okText={t('settings.provider.anthropic.submit_code')}
-        cancelText={t('settings.provider.anthropic.cancel')}>
-        <Input
-          value={authCode}
-          onChange={(e) => setAuthCode(e.target.value)}
-          placeholder={t('settings.provider.anthropic.code_placeholder')}
-        />
-      </Modal>
-    </Container>
-  )
+  return <Container>{renderAuthContent()}</Container>
 }
 
 const Container = styled.div`
