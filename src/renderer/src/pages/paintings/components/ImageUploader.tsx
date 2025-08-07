@@ -1,6 +1,4 @@
 import { DeleteOutlined } from '@ant-design/icons'
-import IcImageUp from '@renderer/assets/images/paintings/ic_ImageUp.svg'
-import { useTheme } from '@renderer/context/ThemeProvider'
 import { FileMetadata } from '@renderer/types'
 import { Popconfirm, Upload } from 'antd'
 import { Button } from 'antd'
@@ -27,46 +25,41 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   onDeleteImage,
   onAddImage
 }) => {
-  const { theme } = useTheme()
-
   const handleBeforeUpload = (file: RcFile, index?: number) => {
     onAddImage(file, index)
-    return false // 阻止默认上传行为
+    return false
   }
 
-  // 自定义上传请求，不执行任何网络请求
   const customRequest: UploadProps['customRequest'] = ({ onSuccess }) => {
     if (onSuccess) {
       onSuccess('ok' as any)
     }
   }
 
+  const hasImages = fileMap.paths && fileMap.paths.length > 0
+
   return (
-    <>
-      <HeaderContainer>
-        {fileMap.imageFiles && fileMap.imageFiles.length > 0 && (
+    <Container>
+      {hasImages && (
+        <HeaderContainer>
           <Button size="small" onClick={onClearImages}>
             清除全部
           </Button>
-        )}
-      </HeaderContainer>
+        </HeaderContainer>
+      )}
 
-      <UploadImageList>
-        {fileMap.paths && fileMap.paths.length > 0 ? (
-          <>
-            {fileMap.paths.map((src, index) => (
-              <UploadImageItem key={index}>
+      <UploadContainer>
+        {hasImages && (
+          <ImageGrid>
+            {fileMap.paths!.map((src, index) => (
+              <ImageItem key={index}>
                 <ImageUploadButton
-                  accept="image/png, image/jpeg"
+                  accept="image/*"
                   maxCount={1}
                   multiple={false}
                   showUploadList={false}
-                  listType="picture-card"
-                  action=""
                   customRequest={customRequest}
-                  beforeUpload={(file) => {
-                    handleBeforeUpload(file, index)
-                  }}>
+                  beforeUpload={(file) => handleBeforeUpload(file, index)}>
                   <ImagePreview>
                     <img src={src} alt={`预览图${index + 1}`} />
                   </ImagePreview>
@@ -80,59 +73,70 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                     <DeleteOutlined />
                   </DeleteButton>
                 </Popconfirm>
-              </UploadImageItem>
+              </ImageItem>
             ))}
-          </>
-        ) : (
-          ''
+          </ImageGrid>
         )}
 
-        {fileMap.imageFiles && fileMap.imageFiles.length < maxImages ? (
-          <UploadImageItem>
-            <ImageUploadButton
+        {(!fileMap.imageFiles || fileMap.imageFiles.length < maxImages) && (
+          <EmptyUploadArea>
+            <Upload
+              accept="image/*"
               multiple={false}
-              accept="image/png, image/jpeg"
-              maxCount={1}
               showUploadList={false}
-              listType="picture-card"
-              action=""
               customRequest={customRequest}
-              beforeUpload={(file) => {
-                handleBeforeUpload(file)
-              }}>
-              <ImageSizeImage src={IcImageUp} theme={theme} />
-            </ImageUploadButton>
-          </UploadImageItem>
-        ) : (
-          ''
+              beforeUpload={(file) => handleBeforeUpload(file)}>
+              <UploadContent />
+            </Upload>
+          </EmptyUploadArea>
         )}
-      </UploadImageList>
-    </>
+      </UploadContainer>
+    </Container>
   )
 }
 
-// 样式组件
+const Container = styled.div`
+  width: 100%;
+`
+
 const HeaderContainer = styled.div`
   display: flex;
-  align-items: center;
-  margin-bottom: 10px;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+`
+
+const UploadContainer = styled.div`
+  width: 100%;
+`
+
+const ImageGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+`
+
+const ImageItem = styled.div`
+  position: relative;
+  aspect-ratio: 1;
 `
 
 const ImageUploadButton = styled(Upload)`
-  & .ant-upload.ant-upload-select,
-  .ant-upload-list-item-container {
+  width: 100%;
+  height: 100%;
+
+  .ant-upload {
     width: 100% !important;
     height: 100% !important;
-    aspect-ratio: 1 !important;
+    border-radius: 8px;
+    overflow: hidden;
   }
-  margin-bottom: 5px;
 `
 
 const ImagePreview = styled.div`
   width: 100%;
   height: 100%;
-  position: relative;
-  border-radius: 6px;
+  border-radius: 8px;
   overflow: hidden;
 
   img {
@@ -154,31 +158,14 @@ const ImagePreview = styled.div`
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    border-radius: 8px;
   }
-`
-
-const ImageSizeImage = styled.img<{ theme: string }>`
-  filter: ${({ theme }) => (theme === 'dark' ? 'invert(100%)' : 'none')};
-  margin-top: 8px;
-`
-
-const UploadImageList = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-`
-
-const UploadImageItem = styled.div`
-  width: 45%;
-  height: 45%;
-  margin-bottom: 5px;
-  margin-right: 5px;
-  position: relative;
 `
 
 const DeleteButton = styled.button`
   position: absolute;
-  top: 5px;
-  right: 5px;
+  top: 8px;
+  right: 8px;
   background-color: rgba(0, 0, 0, 0.6);
   color: white;
   border: none;
@@ -189,13 +176,41 @@ const DeleteButton = styled.button`
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  opacity: 0.7;
-  transition: opacity 0.3s ease;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
   z-index: 10;
 
   &:hover {
     opacity: 1;
+    background-color: rgba(0, 0, 0, 0.8);
   }
+`
+
+const EmptyUploadArea = styled.div`
+  width: 100%;
+  height: 200px;
+
+  .ant-upload {
+    width: 100% !important;
+    height: 100% !important;
+    border: 2px dashed #d9d9d9;
+    border-radius: 8px;
+    background: transparent;
+    transition: border-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ant-upload:hover {
+    border-color: #1890ff;
+  }
+`
+
+const UploadContent = styled.div`
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
 `
 
 export default ImageUploader

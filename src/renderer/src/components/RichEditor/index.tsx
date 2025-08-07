@@ -121,6 +121,18 @@ const RichEditor = ({
       case 'redo':
         editor.chain().focus().redo().run()
         break
+      case 'math': {
+        // Math is handled by the MathInputDialog component in toolbar
+        // This case is here for completeness but shouldn't be called directly
+        break
+      }
+      case 'table':
+        editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+        break
+      case 'image':
+        // Image insertion is handled by the ImageUploader component in toolbar
+        // This case is here for completeness but shouldn't be called directly
+        break
     }
   }
 

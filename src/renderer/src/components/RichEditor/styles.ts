@@ -21,7 +21,7 @@ export const ToolbarWrapper = styled.div`
   gap: 4px;
   padding: 8px 12px;
   border-bottom: 1px solid var(--color-border);
-  background: var(--color-background-secondary);
+  background: var(--color-background-soft);
 `
 
 export const ToolbarButton = styled.button<{
@@ -37,7 +37,7 @@ export const ToolbarButton = styled.button<{
   border-radius: 4px;
   background: ${({ $active }) => ($active ? 'var(--color-primary)' : 'transparent')};
   color: ${({ $active, $disabled }) =>
-    $disabled ? 'var(--color-text-disabled)' : $active ? 'var(--color-white)' : 'var(--color-text)'};
+    $disabled ? 'var(--color-text-3)' : $active ? 'var(--color-white)' : 'var(--color-text)'};
   cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
   transition: all 0.2s ease;
 
@@ -64,21 +64,27 @@ export const ToolbarDivider = styled.div`
 
 export const EditorContent = styled.div`
   flex: 1;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   .drag-handle {
     align-items: center;
-    background: #f0f0f0;
+    background: var(--color-background-soft);
     border-radius: 0.25rem;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--color-border);
     cursor: grab;
     display: flex;
     height: 1.5rem;
     justify-content: center;
     width: 1.5rem;
 
+    &:hover {
+      background: var(--color-hover);
+    }
+
     svg {
       width: 1.25rem;
       height: 1.25rem;
+      color: var(--color-icon);
     }
   }
 `

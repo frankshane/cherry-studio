@@ -1840,6 +1840,31 @@
         "title": "Task List"
       }
     },
+    "image": {
+      "placeholder": "Add a picture"
+    },
+    "imageUploader": {
+      "embedImage": "Embed image",
+      "embedLink": "Embed link",
+      "embedSuccess": "Image embedded successfully",
+      "invalidType": "Please select an image file",
+      "invalidUrl": "Invalid image URL",
+      "processing": "Processing image...",
+      "title": "Add an image",
+      "tooLarge": "Image size cannot exceed 10MB",
+      "upload": "Upload",
+      "uploadError": "Image upload failed",
+      "uploadFile": "Upload file",
+      "uploadHint": "Supports JPG, PNG, GIF and other formats, max 10MB",
+      "uploadSuccess": "Image uploaded successfully",
+      "uploadText": "Click or drag image here to upload",
+      "uploading": "Uploading image",
+      "urlPlaceholder": "Paste image link",
+      "urlRequired": "Please enter image URL"
+    },
+    "math": {
+      "placeholder": "Enter LaTeX formula"
+    },
     "placeholder": "Write '/' for commands",
     "toolbar": {
       "blockquote": "Quote",
@@ -1854,12 +1879,15 @@
       "heading4": "Heading 4",
       "heading5": "Heading 5",
       "heading6": "Heading 6",
+      "image": "Image",
       "italic": "Italic",
       "link": "Link",
+      "math": "Mathematical formulas",
       "orderedList": "Ordered List",
       "paragraph": "Paragraph",
       "redo": "Redo",
       "strike": "Strikethrough",
+      "table": "Table",
       "underline": "Underline",
       "undo": "Undo",
       "unlink": "Unlink"
@@ -3275,7 +3303,7 @@
         "label": "HTTP authentication",
         "password": {
           "label": "Password",
-          "tip": ""
+          "tip": "Enter your password"
         },
         "tip": "Applicable to instances deployed remotely (see the documentation). Currently, only the Basic scheme (RFC 7617) is supported.",
         "user_name": {

@@ -7,7 +7,6 @@ import type { SuggestionOptions } from '@tiptap/suggestion'
 import type { LucideIcon } from 'lucide-react'
 import {
   Calculator,
-  Calendar,
   CheckCircle,
   Code,
   FileCode,
@@ -164,10 +163,7 @@ export const COMMANDS: Command[] = [
     icon: Image,
     keywords: ['image', 'img', 'picture', 'photo'],
     handler: (editor: Editor) => {
-      const url = window.prompt('Enter image URL')
-      if (url) {
-        editor.chain().focus().setImage({ src: url }).run()
-      }
+      editor.chain().focus().insertImagePlaceholder().run()
     }
   },
   {
@@ -236,22 +232,7 @@ export const COMMANDS: Command[] = [
     icon: Calculator,
     keywords: ['math', 'formula', 'equation', 'latex'],
     handler: (editor: Editor) => {
-      const formula = window.prompt('Enter LaTeX formula')
-      if (formula) {
-        editor.chain().focus().insertContent(`$$${formula}$$`).run()
-      }
-    }
-  },
-  {
-    id: 'date',
-    title: 'Date',
-    description: 'Insert current date',
-    category: CommandCategory.SPECIAL,
-    icon: Calendar,
-    keywords: ['date', 'time', 'today'],
-    handler: (editor: Editor) => {
-      const today = new Date().toLocaleDateString()
-      editor.chain().focus().insertContent(today).run()
+      editor.chain().focus().insertMathPlaceholder().run()
     }
   }
 ]

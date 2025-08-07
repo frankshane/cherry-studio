@@ -1840,6 +1840,31 @@
         "title": "任務清單"
       }
     },
+    "image": {
+      "placeholder": "添加圖片"
+    },
+    "imageUploader": {
+      "embedImage": "嵌入圖片",
+      "embedLink": "嵌入連結",
+      "embedSuccess": "圖片嵌入成功",
+      "invalidType": "請選擇圖片檔案",
+      "invalidUrl": "無效的圖片連結",
+      "processing": "正在處理圖片...",
+      "title": "添加圖片",
+      "tooLarge": "圖片大小不能超過 10MB",
+      "upload": "上傳",
+      "uploadError": "圖片上傳失敗",
+      "uploadFile": "上傳檔案",
+      "uploadHint": "支援 JPG、PNG、GIF 等格式，最大 10MB",
+      "uploadSuccess": "圖片上傳成功",
+      "uploadText": "點擊或拖拽圖片到此處上傳",
+      "uploading": "正在上傳圖片",
+      "urlPlaceholder": "貼上圖片連結地址",
+      "urlRequired": "請輸入圖片連結地址"
+    },
+    "math": {
+      "placeholder": "輸入 LaTeX 公式"
+    },
     "placeholder": "輸入'/'調用命令",
     "toolbar": {
       "blockquote": "引用",
@@ -1854,12 +1879,15 @@
       "heading4": "四級標題",
       "heading5": "五級標題",
       "heading6": "六級標題",
+      "image": "圖片",
       "italic": "斜體",
       "link": "連結",
+      "math": "數學公式",
       "orderedList": "有序清單",
       "paragraph": "內文",
       "redo": "重做",
       "strike": "刪除線",
+      "table": "表格",
       "underline": "底線",
       "undo": "復原",
       "unlink": "取消連結"
@@ -3275,7 +3303,7 @@
         "label": "HTTP 認證",
         "password": {
           "label": "密碼",
-          "tip": ""
+          "tip": "輸入密碼"
         },
         "tip": "適用於透過伺服器部署的實例（請參閱文檔）。目前僅支援 Basic 方案（RFC7617）",
         "user_name": {

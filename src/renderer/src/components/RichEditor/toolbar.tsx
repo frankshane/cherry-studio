@@ -1,11 +1,13 @@
 import { Tooltip } from 'antd'
 import {
   Bold,
+  Calculator,
   Code,
   FileCode,
   Heading1,
   Heading2,
   Heading3,
+  Image as ImageIcon,
   Italic,
   Link,
   Link2Off,
@@ -14,13 +16,16 @@ import {
   Quote,
   Redo,
   Strikethrough,
+  Table,
   Type,
   Underline,
   Undo
 } from 'lucide-react'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { ImageUploader } from './components/ImageUploader'
+import MathInputDialog from './components/MathInputDialog'
 import { ToolbarButton, ToolbarDivider, ToolbarWrapper } from './styles'
 import type { FormattingCommand, FormattingState, ToolbarProps } from './types'
 
@@ -49,10 +54,14 @@ const DEFAULT_TOOLBAR_ITEMS: ToolbarItemInternal[] = [
   { id: 'divider-4', type: 'divider' },
   { id: 'blockquote', command: 'blockquote' as FormattingCommand, icon: Quote },
   { id: 'codeBlock', command: 'codeBlock' as FormattingCommand, icon: FileCode },
+  { id: 'math', command: 'math' as FormattingCommand, icon: Calculator },
   { id: 'divider-5', type: 'divider' },
+  { id: 'table', command: 'table' as FormattingCommand, icon: Table },
+  { id: 'image', command: 'image' as FormattingCommand, icon: ImageIcon },
+  { id: 'divider-6', type: 'divider' },
   { id: 'link', command: 'link' as FormattingCommand, icon: Link },
   { id: 'unlink', command: 'unlink' as FormattingCommand, icon: Link2Off },
-  { id: 'divider-6', type: 'divider' },
+  { id: 'divider-7', type: 'divider' },
   { id: 'undo', command: 'undo' as FormattingCommand, icon: Undo },
   { id: 'redo', command: 'redo' as FormattingCommand, icon: Redo }
 ]
@@ -80,7 +89,10 @@ const getTooltipText = (t: any, command: FormattingCommand): string => {
     link: t('richEditor.toolbar.link'),
     unlink: t('richEditor.toolbar.unlink'),
     undo: t('richEditor.toolbar.undo'),
-    redo: t('richEditor.toolbar.redo')
+    redo: t('richEditor.toolbar.redo'),
+    table: t('richEditor.toolbar.table'),
+    image: t('richEditor.toolbar.image'),
+    math: t('richEditor.toolbar.math')
   }
 
   return tooltipMap[command] || command
@@ -88,13 +100,68 @@ const getTooltipText = (t: any, command: FormattingCommand): string => {
 
 export const Toolbar: React.FC<ToolbarProps> = ({ editor, formattingState, onCommand }) => {
   const { t } = useTranslation()
+  const [showImageUploader, setShowImageUploader] = useState(false)
+  const [showMathInput, setShowMathInput] = useState(false)
+  const [placeholderCallbacks, setPlaceholderCallbacks] = useState<{
+    onMathSubmit?: (latex: string) => void
+    onMathCancel?: () => void
+    onMathFormulaChange?: (formula: string) => void
+    mathDefaultValue?: string
+    onImageSelect?: (imageUrl: string) => void
+    onImageCancel?: () => void
+  }>({})
+
+  // Listen for custom events from placeholder nodes
+  useEffect(() => {
+    const handleMathDialog = (event: CustomEvent) => {
+      const { defaultValue, onSubmit, onFormulaChange } = event.detail
+      setPlaceholderCallbacks((prev) => ({
+        ...prev,
+        onMathSubmit: onSubmit,
+        onMathCancel: () => {},
+        onMathFormulaChange: onFormulaChange,
+        mathDefaultValue: defaultValue
+      }))
+      setShowMathInput(true)
+    }
+
+    const handleImageUploader = (event: CustomEvent) => {
+      const { onImageSelect, onCancel } = event.detail
+      setPlaceholderCallbacks((prev) => ({ ...prev, onImageSelect, onImageCancel: onCancel }))
+      setShowImageUploader(true)
+    }
+
+    window.addEventListener('openMathDialog', handleMathDialog as EventListener)
+    window.addEventListener('openImageUploader', handleImageUploader as EventListener)
+
+    return () => {
+      window.removeEventListener('openMathDialog', handleMathDialog as EventListener)
+      window.removeEventListener('openImageUploader', handleImageUploader as EventListener)
+    }
+  }, [])
 
   if (!editor) {
     return null
   }
 
   const handleCommand = (command: FormattingCommand) => {
-    onCommand(command)
+    if (command === 'image') {
+      // Insert image placeholder that will emit event when clicked
+      editor.chain().focus().insertImagePlaceholder().run()
+    } else if (command === 'math') {
+      // Insert math placeholder that will emit event when clicked
+      editor.chain().focus().insertMathPlaceholder().run()
+    } else {
+      onCommand(command)
+    }
+  }
+
+  const handleImageSelect = (imageUrl: string) => {
+    // Insert image into editor
+    if (editor) {
+      editor.chain().focus().setImage({ src: imageUrl }).run()
+    }
+    setShowImageUploader(false)
   }
 
   return (
@@ -115,19 +182,94 @@ export const Toolbar: React.FC<ToolbarProps> = ({ editor, formattingState, onCom
         const isDisabled = getDisabledState(formattingState, command)
         const tooltipText = getTooltipText(t, command)
 
+        const buttonElement = (
+          <ToolbarButton
+            $active={isActive}
+            data-active={isActive}
+            disabled={isDisabled}
+            onClick={() => handleCommand(command)}
+            data-testid={`toolbar-${command}`}>
+            <Icon />
+          </ToolbarButton>
+        )
+
         return (
           <Tooltip key={item.id} title={tooltipText} placement="top">
-            <ToolbarButton
-              $active={isActive}
-              data-active={isActive}
-              disabled={isDisabled}
-              onClick={() => handleCommand(command)}
-              data-testid={`toolbar-${command}`}>
-              <Icon />
-            </ToolbarButton>
+            {buttonElement}
           </Tooltip>
         )
       })}
+      <ImageUploader
+        visible={showImageUploader}
+        onImageSelect={(imageUrl) => {
+          // Handle both toolbar button and placeholder clicks
+          if (placeholderCallbacks.onImageSelect) {
+            placeholderCallbacks.onImageSelect(imageUrl)
+            setPlaceholderCallbacks((prev) => ({ ...prev, onImageSelect: undefined, onImageCancel: undefined }))
+          } else {
+            handleImageSelect(imageUrl)
+          }
+          setShowImageUploader(false)
+        }}
+        onClose={() => {
+          // Handle both toolbar button and placeholder clicks
+          if (placeholderCallbacks.onImageCancel) {
+            placeholderCallbacks.onImageCancel()
+            setPlaceholderCallbacks((prev) => ({ ...prev, onImageSelect: undefined, onImageCancel: undefined }))
+          }
+          setShowImageUploader(false)
+        }}
+      />
+      <MathInputDialog
+        visible={showMathInput}
+        defaultValue={placeholderCallbacks.mathDefaultValue || ''}
+        onSubmit={(formula) => {
+          // Handle both toolbar button and enhanced math clicks
+          if (placeholderCallbacks.onMathSubmit) {
+            placeholderCallbacks.onMathSubmit(formula)
+            setPlaceholderCallbacks((prev) => ({
+              ...prev,
+              onMathSubmit: undefined,
+              onMathCancel: undefined,
+              onMathFormulaChange: undefined,
+              mathDefaultValue: undefined
+            }))
+          } else {
+            if (editor) {
+              editor.chain().focus().insertBlockMath({ latex: formula }).run()
+            }
+          }
+          setShowMathInput(false)
+        }}
+        onCancel={() => {
+          // Handle both toolbar button and enhanced math clicks
+          if (placeholderCallbacks.onMathCancel) {
+            placeholderCallbacks.onMathCancel()
+            setPlaceholderCallbacks((prev) => ({
+              ...prev,
+              onMathSubmit: undefined,
+              onMathCancel: undefined,
+              onMathFormulaChange: undefined,
+              mathDefaultValue: undefined
+            }))
+          }
+          setShowMathInput(false)
+        }}
+        onFormulaChange={(formula) => {
+          // Handle real-time updates
+          if (placeholderCallbacks.onMathFormulaChange) {
+            placeholderCallbacks.onMathFormulaChange(formula)
+          } else {
+            // This is from toolbar button - update any existing math node
+            if (editor) {
+              const mathNodeType = editor.schema.nodes.math || editor.schema.nodes.mathBlock
+              if (mathNodeType) {
+                editor.chain().updateBlockMath({ latex: formula }).run()
+              }
+            }
+          }
+        }}
+      />
     </ToolbarWrapper>
   )
 }
@@ -168,6 +310,10 @@ function getFormattingState(state: FormattingState, command: FormattingCommand):
       return state?.isBlockquote || false
     case 'link':
       return state?.isLink || false
+    case 'table':
+      return state?.isTable || false
+    case 'math':
+      return state?.isMath || false
     default:
       return false
   }
@@ -195,6 +341,12 @@ function getDisabledState(state: FormattingState, command: FormattingCommand): b
       return !state?.canLink
     case 'unlink':
       return !state?.canUnlink
+    case 'table':
+      return !state?.canTable
+    case 'image':
+      return !state?.canImage
+    case 'math':
+      return !state?.canMath
     default:
       return false
   }

@@ -2,6 +2,7 @@ import 'katex/dist/katex.min.css'
 
 import { loggerService } from '@logger'
 import type { FormattingState } from '@renderer/components/RichEditor/types'
+import { useCodeStyle } from '@renderer/context/CodeStyleProvider'
 import {
   htmlToMarkdown,
   isMarkdownContent,
@@ -11,8 +12,7 @@ import {
   sanitizeHtml
 } from '@renderer/utils/markdownConverter'
 import type { Editor } from '@tiptap/core'
-import Image from '@tiptap/extension-image'
-import Math, { migrateMathStrings } from '@tiptap/extension-mathematics'
+import { migrateMathStrings } from '@tiptap/extension-mathematics'
 import Mention from '@tiptap/extension-mention'
 import { TableKit } from '@tiptap/extension-table'
 import Typography from '@tiptap/extension-typography'
@@ -21,7 +21,9 @@ import { StarterKit } from '@tiptap/starter-kit'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { commandSuggestion } from './command'
-import { CodeBlockNode } from './extensions/CodeBlock'
+import { CodeBlockShiki } from './extensions/code-block-shiki/code-block-shiki'
+import { EnhancedImage } from './extensions/enhanced-image'
+import { EnhancedMath } from './extensions/enhanced-math'
 import { Placeholder } from './extensions/placeholder'
 
 const logger = loggerService.withContext('useRichEditor')
@@ -94,8 +96,10 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     editable = true
   } = options
 
-  // State
   const [markdown, setMarkdownState] = useState<string>(initialContent)
+
+  // Get theme and language mapping from CodeStyleProvider
+  const { activeShikiTheme, languageMap } = useCodeStyle()
 
   // TipTap editor extensions
   const extensions = useMemo(
@@ -106,25 +110,11 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
         },
         codeBlock: false
       }),
-      CodeBlockNode,
-      Math.configure({
-        blockOptions: {
-          onClick: (node, pos) => {
-            const newCalculation = prompt('Enter new calculation:', node.attrs.latex)
-            if (newCalculation) {
-              editor.chain().setNodeSelection(pos).updateBlockMath({ latex: newCalculation }).focus().run()
-            }
-          }
-        },
-        inlineOptions: {
-          onClick: (node, pos) => {
-            const newCalculation = prompt('Enter new calculation:', node.attrs.latex)
-            if (newCalculation) {
-              editor.chain().setNodeSelection(pos).updateInlineMath({ latex: newCalculation }).focus().run()
-            }
-          }
-        }
+      CodeBlockShiki.configure({
+        theme: activeShikiTheme,
+        defaultLanguage: 'plaintext'
       }),
+      EnhancedMath,
       Placeholder.configure({
         placeholder,
         showOnlyWhenEditable: true,
@@ -138,15 +128,13 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
         suggestion: commandSuggestion
       }),
       Typography,
-      Image.configure({
-        allowBase64: true
-      }),
+      EnhancedImage,
       TableKit.configure({
         table: { resizable: true }
       })
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [placeholder]
+    [placeholder, activeShikiTheme, languageMap]
   )
 
   // Derived values
@@ -192,6 +180,11 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     },
     onCreate: ({ editor: currentEditor }) => {
       migrateMathStrings(currentEditor)
+      try {
+        currentEditor.commands.focus('end')
+      } catch (error) {
+        logger.warn('Could not set cursor to end:', error as Error)
+      }
     }
   })
 
@@ -236,7 +229,12 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
           canLink: false,
           canUnlink: false,
           canUndo: false,
-          canRedo: false
+          canRedo: false,
+          isTable: false,
+          canTable: false,
+          canImage: false,
+          isMath: false,
+          canMath: false
         }
       }
 
@@ -267,7 +265,12 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
         canLink: editor.can().chain().setLink({ href: '' }).run() ?? false,
         canUnlink: editor.can().chain().unsetLink().run() ?? false,
         canUndo: editor.can().chain().undo().run() ?? false,
-        canRedo: editor.can().chain().redo().run() ?? false
+        canRedo: editor.can().chain().redo().run() ?? false,
+        isTable: editor.isActive('table') ?? false,
+        canTable: editor.can().chain().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run() ?? false,
+        canImage: editor.can().chain().setImage({ src: '' }).run() ?? false,
+        isMath: editor.isActive('mathBlock') ?? false,
+        canMath: true
       }
     }
   })

@@ -135,6 +135,16 @@ export interface FormattingState {
   canUndo: boolean
   /** Whether redo can be executed */
   canRedo: boolean
+  /** Whether table is active */
+  isTable: boolean
+  /** Whether table command can be executed */
+  canTable: boolean
+  /** Whether image command can be executed */
+  canImage: boolean
+  /** Whether math is active */
+  isMath: boolean
+  /** Whether math command can be executed */
+  canMath: boolean
 }
 
 export type FormattingCommand =
@@ -159,6 +169,9 @@ export type FormattingCommand =
   | 'unlink'
   | 'undo'
   | 'redo'
+  | 'math'
+  | 'table'
+  | 'image'
 
 export interface ToolbarProps {
   /** Editor instance ref */
