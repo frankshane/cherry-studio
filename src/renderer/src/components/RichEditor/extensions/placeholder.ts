@@ -36,12 +36,15 @@ export const Placeholder = Extension.create<PlaceholderOptions>({
               return DecorationSet.empty
             }
 
+            // Check if we're in the middle of a drag operation
+            const isDragging = this.editor.view.dragging
+
             doc.descendants((node, pos) => {
               const hasAnchor = anchor >= pos && anchor <= pos + node.nodeSize
               const isEmpty = !node.isLeaf && !node.childCount
 
               // Skip codeBlock nodes as they have their own content management
-              if (node.type.name === 'codeBlock') {
+              if (node.type.name === 'codeBlock' || isDragging) {
                 return false
               }
 
