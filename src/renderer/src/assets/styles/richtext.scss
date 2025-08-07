@@ -173,9 +173,25 @@
     }
 
     th {
-      background-color: var(--color-gray-1);
+      background-color: var(--color-gray-1) !important;
       font-weight: bold;
       text-align: left;
+    }
+
+    // Ensure td cells don't inherit header background after drag operations
+    td {
+      background-color: transparent !important;
+    }
+
+    // Fix for drag handle causing table cell style pollution
+    [data-drag-handle-body] td {
+      background-color: transparent !important;
+    }
+
+    // Override any inherited background during ProseMirror operations
+    .ProseMirror-widget td,
+    .ProseMirror-nodeview-content td {
+      background-color: transparent !important;
     }
 
     .selectedCell:after {

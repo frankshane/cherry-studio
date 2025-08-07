@@ -115,7 +115,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
       }),
       CodeBlockShiki.configure({
         theme: activeShikiTheme,
-        defaultLanguage: 'plaintext'
+        defaultLanguage: 'text'
       }),
       EnhancedMath,
       Placeholder.configure({

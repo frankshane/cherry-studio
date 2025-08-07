@@ -33,15 +33,26 @@ function getDecorations({
 
   findChildren(doc, (node) => node.type.name === name).forEach((block) => {
     let from = block.pos + 1
-    const language = block.node.attrs.language || defaultLanguage || 'plaintext'
+    const language = block.node.attrs.language || defaultLanguage || 'text'
     const code = block.node.textContent
 
+    // Skip completely empty code blocks (no content at all)
     if (!code) return
 
     try {
-      // Check if language is loaded; fallback to plaintext if not.
+      // Check if language is loaded; fallback to text if not.
       const loadedLanguages = highlighter.getLoadedLanguages()
-      const actualLanguage = loadedLanguages.includes(language) ? language : 'plaintext'
+      let actualLanguage = language
+
+      if (!loadedLanguages.includes(language)) {
+        // Try 'text' first, then 'plaintext' as fallback
+        if (loadedLanguages.includes('text')) {
+          actualLanguage = 'text'
+        } else {
+          // Skip highlighting if no fallback language is available
+          return
+        }
+      }
 
       const tokens = highlighter.codeToTokens(code, {
         lang: actualLanguage,
@@ -178,9 +189,12 @@ export function ShikiPlugin({
           let didLoadSomething = false
 
           for (const block of codeBlocks) {
+            // Skip completely empty code blocks in loading check too
+            if (!block.node.textContent) continue
+
             const { theme: blockTheme, language: blockLanguage } = block.node.attrs
 
-            if (!this.highlighter.getLoadedThemes().includes(blockTheme)) {
+            if (blockTheme && !this.highlighter.getLoadedThemes().includes(blockTheme)) {
               tasks.push(
                 loadThemeIfNeeded(this.highlighter, blockTheme).then(() => {
                   didLoadSomething = true
@@ -188,7 +202,7 @@ export function ShikiPlugin({
               )
             }
 
-            if (!this.highlighter.getLoadedLanguages().includes(blockLanguage)) {
+            if (blockLanguage && !this.highlighter.getLoadedLanguages().includes(blockLanguage)) {
               tasks.push(
                 loadLanguageIfNeeded(this.highlighter, blockLanguage).then(() => {
                   didLoadSomething = true

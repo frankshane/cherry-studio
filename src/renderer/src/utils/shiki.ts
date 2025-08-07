@@ -5,6 +5,7 @@ import { getTokenStyleObject, type HighlighterGeneric, SpecialLanguage, ThemedTo
 import { AsyncInitializer } from './asyncInitializer'
 
 export const DEFAULT_LANGUAGES = [
+  'text',
   'javascript',
   'typescript',
   'python',
