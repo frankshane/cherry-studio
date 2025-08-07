@@ -87,7 +87,8 @@ export const ToolbarDivider = styled.div`
 export const EditorContent = styled.div`
   flex: 1;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: auto; /* Allow horizontal scrolling to prevent drag handle from being cut off */
+
   .drag-handle {
     align-items: center;
     background: var(--color-background-soft);
@@ -98,6 +99,9 @@ export const EditorContent = styled.div`
     height: 1.5rem;
     justify-content: center;
     width: 1.5rem;
+    position: relative; /* Ensure proper positioning */
+    z-index: 10; /* Keep drag handle above other content */
+    flex-shrink: 0; /* Prevent the drag handle from shrinking */
 
     &:hover {
       background: var(--color-hover);
@@ -108,5 +112,10 @@ export const EditorContent = styled.div`
       height: 1.25rem;
       color: var(--color-icon);
     }
+  }
+
+  /* Ensure the ProseMirror editor content doesn't override drag handle positioning */
+  .ProseMirror {
+    position: relative;
   }
 `
