@@ -1,3 +1,8 @@
+/**
+ * Reference:
+ * This code is adapted from https://github.com/ThinkInAIXYZ/deepchat
+ * Original file: src/main/presenter/anthropicOAuth.ts
+ */
 import path from 'node:path'
 
 import { loggerService } from '@logger'

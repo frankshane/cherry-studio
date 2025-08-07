@@ -191,7 +191,6 @@ export class AnthropicAPIClient extends BaseApiClient<
   /**
    * Get the message parameter
    * @param message - The message
-   * @param model - The model
    * @returns The message parameter
    */
   public async convertMessageToSdkParam(message: Message): Promise<AnthropicSdkMessageParam> {
