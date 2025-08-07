@@ -9,9 +9,10 @@ import { usePromptProcessor } from '@renderer/hooks/usePromptProcessor'
 import { estimateTextTokens } from '@renderer/services/TokenService'
 import { Assistant, AssistantSettings } from '@renderer/types'
 import { getLeadingEmoji } from '@renderer/utils'
-import { Button, Input, Popover } from 'antd'
-import { Edit, Eye, HelpCircle } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Button, Flex, Input, Popover } from 'antd'
+import { throttle } from 'lodash'
+import { Edit, Eye, HelpCircle, Save } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import ReactMarkdown from 'react-markdown'
 import styled from 'styled-components'
@@ -49,11 +50,15 @@ const AssistantPromptSettings: React.FC<Props> = ({ assistant, updateAssistant }
     modelName: assistant.model?.name
   })
 
-  const onUpdate = () => {
-    const _assistant = { ...assistant, name: name.trim(), emoji, prompt }
-    updateAssistant(_assistant)
-    window.message.success(t('common.saved'))
-  }
+  const onUpdate = useMemo(
+    () =>
+      throttle(() => {
+        const _assistant = { ...assistant, name: name.trim(), emoji, prompt }
+        updateAssistant(_assistant)
+        window.message.success(t('common.saved'))
+      }, 500),
+    [assistant, name, emoji, prompt, updateAssistant, t]
+  )
 
   const handleEmojiSelect = (selectedEmoji: string) => {
     setEmoji(selectedEmoji)
@@ -79,12 +84,6 @@ const AssistantPromptSettings: React.FC<Props> = ({ assistant, updateAssistant }
   const handleMarkdownChange = (newMarkdown: string) => {
     setPrompt(newMarkdown)
   }
-
-  const handleBlur = useCallback(() => {
-    const _assistant = { ...assistant, name: name.trim(), emoji, prompt }
-    updateAssistant(_assistant)
-    window.message.success(t('common.saved'))
-  }, [assistant, name, emoji, prompt, updateAssistant, t])
 
   return (
     <Container>
@@ -149,9 +148,7 @@ const AssistantPromptSettings: React.FC<Props> = ({ assistant, updateAssistant }
             <RichEditor
               ref={editorRef}
               initialContent={prompt}
-              placeholder={t('common.assistant') + t('common.prompt')}
               onMarkdownChange={handleMarkdownChange}
-              onBlur={handleBlur}
               onCommandsReady={handleCommandsReady}
               showToolbar={true}
               className="prompt-rich-editor"
@@ -161,12 +158,19 @@ const AssistantPromptSettings: React.FC<Props> = ({ assistant, updateAssistant }
       </TextAreaContainer>
       <HSpaceBetweenStack width="100%" justifyContent="flex-end" mt="10px">
         <TokenCount>Tokens: {tokenCount}</TokenCount>
-        <Button
-          type="primary"
-          icon={showPreview ? <Edit size={14} /> : <Eye size={14} />}
-          onClick={() => setShowPreview((prev) => !prev)}>
-          {showPreview ? t('common.edit') : t('common.preview')}
-        </Button>
+        <Flex gap={8} justify="flex-end">
+          <Button
+            type="primary"
+            icon={showPreview ? <Edit size={14} /> : <Eye size={14} />}
+            onClick={() => setShowPreview((prev) => !prev)}>
+            {showPreview ? t('common.edit') : t('common.preview')}
+          </Button>
+          {!showPreview && (
+            <Button type="primary" icon={<Save size={14} />} onClick={onUpdate}>
+              {t('common.save')}
+            </Button>
+          )}
+        </Flex>
       </HSpaceBetweenStack>
     </Container>
   )
