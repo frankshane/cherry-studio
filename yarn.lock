@@ -4972,6 +4972,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rollup/rollup-linux-x64-gnu@npm:4.45.1":
+  version: 4.45.1
+  resolution: "@rollup/rollup-linux-x64-gnu@npm:4.45.1"
+  conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
 "@selderee/plugin-htmlparser2@npm:^0.11.0":
   version: 0.11.0
   resolution: "@selderee/plugin-htmlparser2@npm:0.11.0"
@@ -6537,6 +6544,20 @@ __metadata:
   version: 0.23.0
   resolution: "@tootallnate/quickjs-emscripten@npm:0.23.0"
   checksum: 10c0/2a939b781826fb5fd3edd0f2ec3b321d259d760464cf20611c9877205aaca3ccc0b7304dea68416baa0d568e82cd86b17d29548d1e5139fa3155a4a86a2b4b49
+  languageName: node
+  linkType: hard
+
+"@truto/turndown-plugin-gfm@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "@truto/turndown-plugin-gfm@npm:1.0.2"
+  dependencies:
+    "@rollup/rollup-linux-x64-gnu": "npm:4.45.1"
+  peerDependencies:
+    turndown: ^7.0.0
+  dependenciesMeta:
+    "@rollup/rollup-linux-x64-gnu":
+      optional: true
+  checksum: 10c0/bec3a748546515a9be86dffadb17a55c0394dd6659062ee7dd940dc71b25a86cfc28635e77732271c030ee13d74bbc2a40b8f568fccbf346e4bb72f64d3a66f6
   languageName: node
   linkType: hard
 
@@ -8208,6 +8229,7 @@ __metadata:
     "@tiptap/starter-kit": "npm:^3.0.9"
     "@tiptap/suggestion": "npm:^3.0.9"
     "@tiptap/y-tiptap": "npm:^3.0.0"
+    "@truto/turndown-plugin-gfm": "npm:^1.0.2"
     "@tryfabric/martian": "npm:^1.2.4"
     "@types/cli-progress": "npm:^3"
     "@types/diff": "npm:^7"
@@ -8339,6 +8361,7 @@ __metadata:
     tokenx: "npm:^1.1.0"
     tsx: "npm:^4.20.3"
     turndown: "npm:7.2.0"
+    turndown-plugin-gfm: "npm:^1.0.2"
     typescript: "npm:^5.6.2"
     undici: "npm:6.21.2"
     unified: "npm:^11.0.5"
@@ -21277,6 +21300,13 @@ __metadata:
   dependencies:
     safe-buffer: "npm:^5.0.1"
   checksum: 10c0/4c7a1b813e7beae66fdbf567a65ec6d46313643753d0beefb3c7973d66fcec3a1e7f39759f0a0b4465883499c6dc8b0750ab8b287399af2e583823e40410a17a
+  languageName: node
+  linkType: hard
+
+"turndown-plugin-gfm@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "turndown-plugin-gfm@npm:1.0.2"
+  checksum: 10c0/eb9bc20dbb08d5335231f9617d7440f14b35781f14a3a393d8f13fc8205afeb11a0a632d52da4548ab0fa353f315ca265462b24d368faf23258dccbe439182b9
   languageName: node
   linkType: hard
 

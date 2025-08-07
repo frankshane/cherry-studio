@@ -1,4 +1,5 @@
 import { loggerService } from '@logger'
+import { tables } from '@truto/turndown-plugin-gfm'
 import DOMPurify from 'dompurify'
 import he from 'he'
 import MarkdownIt from 'markdown-it'
@@ -31,6 +32,13 @@ turndownService.addRule('strikethrough', {
   filter: ['del', 's'],
   replacement: (content) => `~~${content}~~`
 })
+
+turndownService.addRule('underline', {
+  filter: ['u'],
+  replacement: (content) => `<u>${content}</u>`
+})
+
+turndownService.use(tables)
 
 /**
  * Converts HTML content to Markdown
@@ -103,9 +111,16 @@ export const sanitizeHtml = (html: string): string => {
       'code',
       'pre',
       'a',
-      'img'
+      'img',
+      'table',
+      'thead',
+      'tbody',
+      'tfoot',
+      'tr',
+      'td',
+      'th'
     ],
-    ALLOWED_ATTR: ['href', 'title', 'alt', 'src', 'class', 'id'],
+    ALLOWED_ATTR: ['href', 'title', 'alt', 'src', 'class', 'id', 'colspan', 'rowspan'],
     ALLOW_DATA_ATTR: false,
     ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp):|[^a-z]|[a-z+.\\-]+(?:[^a-z+.\-:]|$))/i
   })

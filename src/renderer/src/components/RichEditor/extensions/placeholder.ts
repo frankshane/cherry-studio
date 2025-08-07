@@ -28,7 +28,7 @@ export const Placeholder = Extension.create<PlaceholderOptions>({
         key: new PluginKey('placeholder'),
         props: {
           decorations: ({ doc, selection }) => {
-            const active = this.editor.isActive || this.editor.isEditable
+            const active = this.editor.isEditable
             const { anchor } = selection
             const decorations: Decoration[] = []
 
