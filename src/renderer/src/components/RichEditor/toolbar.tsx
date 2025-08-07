@@ -1,5 +1,4 @@
 import { Tooltip } from 'antd'
-import { Link2Off } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -34,7 +33,7 @@ function getToolbarItems(): ToolbarItemInternal[] {
       items.push({
         id: cmd.id,
         command: cmd.formattingCommand as FormattingCommand,
-        icon: cmd.id === 'unlink' ? Link2Off : cmd.icon, // Special case for unlink icon
+        icon: cmd.icon,
         handler: () => cmd.handler
       })
     })
@@ -64,7 +63,6 @@ const getTooltipText = (t: any, command: FormattingCommand): string => {
     codeBlock: t('richEditor.toolbar.codeBlock'),
     blockquote: t('richEditor.toolbar.blockquote'),
     link: t('richEditor.toolbar.link'),
-    unlink: t('richEditor.toolbar.unlink'),
     undo: t('richEditor.toolbar.undo'),
     redo: t('richEditor.toolbar.redo'),
     table: t('richEditor.toolbar.table'),
@@ -319,8 +317,6 @@ function getDisabledState(state: FormattingState, command: FormattingCommand): b
       return !state?.canClearMarks
     case 'link':
       return !state?.canLink
-    case 'unlink':
-      return !state?.canUnlink
     case 'table':
       return !state?.canTable
     case 'image':

@@ -1843,6 +1843,10 @@
         "description": "プレーンテキストの書き始めます",
         "title": "文章"
       },
+      "redo": {
+        "description": "前のステップを作り直します",
+        "title": "やり直し"
+      },
       "strike": {
         "description": "削除行としてマークします",
         "title": "行を削除します"
@@ -1858,6 +1862,10 @@
       "underline": {
         "description": "下線付けのマーク",
         "title": "下線"
+      },
+      "undo": {
+        "description": "前の操作を元に戻します",
+        "title": "取り消す"
       }
     },
     "image": {
@@ -1909,8 +1917,7 @@
       "strike": "行を削除します",
       "table": "シート",
       "underline": "下線",
-      "undo": "取り消す",
-      "unlink": "リンクをキャンセルします"
+      "undo": "取り消す"
     }
   },
   "selection": {

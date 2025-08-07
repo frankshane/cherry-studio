@@ -1,7 +1,9 @@
-import Scrollbar from '@renderer/components/Scrollbar'
+import '@renderer/assets/styles/CommandListPopover.scss'
+
+import { DynamicVirtualList, type DynamicVirtualListRef } from '@renderer/components/VirtualList'
 import { useTheme } from '@renderer/context/ThemeProvider'
 import type { SuggestionProps } from '@tiptap/suggestion'
-import { List, Typography } from 'antd'
+import { Typography } from 'antd'
 import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -26,6 +28,7 @@ const CommandListPopover = ({
   const { items, command } = props
   const [internalSelectedIndex, setInternalSelectedIndex] = useState(0)
   const listRef = useRef<HTMLDivElement>(null)
+  const virtualListRef = useRef<DynamicVirtualListRef>(null)
   const { t } = useTranslation()
 
   // Helper function to get translated text with fallback
@@ -43,15 +46,14 @@ const CommandListPopover = ({
     setInternalSelectedIndex(0)
   }, [items])
 
-  // Auto scroll to selected item
+  // Auto scroll to selected item using virtual list
   useEffect(() => {
-    if (listRef.current) {
-      const selectedElement = listRef.current.querySelector(`[data-index="${internalSelectedIndex}"]`)
-      if (selectedElement) {
-        selectedElement.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-      }
+    if (virtualListRef.current && items.length > 0) {
+      virtualListRef.current.scrollToIndex(internalSelectedIndex, {
+        align: 'auto'
+      })
     }
-  }, [internalSelectedIndex])
+  }, [internalSelectedIndex, items.length])
 
   const selectItem = useCallback(
     (index: number) => {
@@ -110,22 +112,6 @@ const CommandListPopover = ({
     [handleKeyDown, props, internalSelectedIndex, selectItem]
   )
 
-  // List data source with proper typing
-  const dataSource = useMemo(
-    () =>
-      items.map((item, index) => ({
-        ...item,
-        key: item.id,
-        index
-      })),
-    [items]
-  )
-
-  // Handle mouse enter for hover effect
-  const handleItemMouseEnter = useCallback((index: number) => {
-    setInternalSelectedIndex(index)
-  }, [])
-
   // Get theme from context
   const { theme } = useTheme()
 
@@ -140,73 +126,91 @@ const CommandListPopover = ({
     }
   }, [theme])
 
+  // Handle mouse enter for hover effect
+  const handleItemMouseEnter = useCallback((index: number) => {
+    setInternalSelectedIndex(index)
+  }, [])
+
+  // Estimate size for virtual list items
+  const estimateSize = useCallback(() => 50, []) // Estimated height per item
+
+  // Render virtual list item
+  const renderVirtualItem = useCallback(
+    (item: Command, index: number) => {
+      return (
+        <div
+          key={item.id}
+          data-index={index}
+          style={{
+            padding: '10px 16px',
+            cursor: 'pointer',
+            backgroundColor: index === internalSelectedIndex ? colors.selectedBackground : 'transparent',
+            border: 'none',
+            transition: 'all 0.15s ease',
+            borderRadius: '4px',
+            margin: '2px',
+            minHeight: '46px', // Ensure consistent height for virtual list
+            display: 'flex',
+            alignItems: 'center'
+          }}
+          onClick={() => selectItem(index)}
+          onMouseEnter={() => handleItemMouseEnter(index)}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
+            <div
+              style={{
+                width: '20px',
+                height: '20px',
+                flexShrink: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+              <item.icon size={16} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <Text strong style={{ fontSize: '14px', display: 'block', lineHeight: '20px' }}>
+                {getTranslatedCommand(item, 'title')}
+              </Text>
+              <Text type="secondary" style={{ fontSize: '12px', lineHeight: '16px' }}>
+                {getTranslatedCommand(item, 'description')}
+              </Text>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    [internalSelectedIndex, colors.selectedBackground, selectItem, handleItemMouseEnter, getTranslatedCommand]
+  )
+
   const style: React.CSSProperties = {
-    position: 'fixed',
-    zIndex: 1000,
     background: colors.background,
     border: `1px solid ${colors.border}`,
     borderRadius: '6px',
     boxShadow: colors.boxShadow,
     maxHeight: '280px',
-    minWidth: '240px',
-    maxWidth: '320px',
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column'
   }
 
   return (
-    <div ref={listRef} style={style}>
-      <Scrollbar style={{ flex: 1, minHeight: 0 }}>
-        <List
-          size="small"
-          dataSource={dataSource}
-          split={false}
-          renderItem={(item, index) => (
-            <List.Item
-              key={item.id}
-              data-index={index}
-              style={{
-                padding: '10px 16px',
-                cursor: 'pointer',
-                backgroundColor: index === internalSelectedIndex ? colors.selectedBackground : 'transparent',
-                border: 'none',
-                transition: 'all 0.15s ease',
-                borderRadius: '4px',
-                margin: '2px'
-              }}
-              onClick={() => selectItem(index)}
-              onMouseEnter={() => handleItemMouseEnter(index)}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
-                <div
-                  style={{
-                    width: '20px',
-                    height: '20px',
-                    flexShrink: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                  <item.icon size={16} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <Text strong style={{ fontSize: '14px', display: 'block', lineHeight: '20px' }}>
-                    {getTranslatedCommand(item, 'title')}
-                  </Text>
-                  <Text type="secondary" style={{ fontSize: '12px', lineHeight: '16px' }}>
-                    {getTranslatedCommand(item, 'description')}
-                  </Text>
-                </div>
-              </div>
-            </List.Item>
-          )}
+    <div ref={listRef} style={style} className="command-list-popover">
+      {items.length === 0 ? (
+        <div style={{ padding: '12px', color: '#999', textAlign: 'center', fontSize: '14px' }}>
+          {t('richEditor.commands.noCommandsFound')}
+        </div>
+      ) : (
+        <DynamicVirtualList
+          ref={virtualListRef}
+          list={items}
+          estimateSize={estimateSize}
+          size="100%"
+          children={renderVirtualItem}
+          scrollerStyle={{
+            overflow: 'auto'
+          }}
         />
-        {items.length === 0 && (
-          <div style={{ padding: '12px', color: '#999', textAlign: 'center', fontSize: '14px' }}>
-            {t('richEditor.commands.noCommandsFound')}
-          </div>
-        )}
-      </Scrollbar>
+      )}
     </div>
   )
 }

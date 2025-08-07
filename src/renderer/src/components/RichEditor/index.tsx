@@ -159,9 +159,6 @@ const RichEditor = ({
         }
         break
       }
-      case 'unlink':
-        editor.chain().focus().unsetLink().run()
-        break
       case 'undo':
         editor.chain().focus().undo().run()
         break

@@ -1843,6 +1843,10 @@
         "description": "开始编写普通文本",
         "title": "正文"
       },
+      "redo": {
+        "description": "重做上一步操作",
+        "title": "重做"
+      },
       "strike": {
         "description": "标记为删除线",
         "title": "删除线"
@@ -1858,6 +1862,10 @@
       "underline": {
         "description": "标记为下划线",
         "title": "下划线"
+      },
+      "undo": {
+        "description": "撤销上一步操作",
+        "title": "撤销"
       }
     },
     "image": {
@@ -1909,8 +1917,7 @@
       "strike": "删除线",
       "table": "表格",
       "underline": "下划线",
-      "undo": "撤销",
-      "unlink": "取消链接"
+      "undo": "撤销"
     }
   },
   "selection": {

@@ -5,12 +5,37 @@ import { useRichEditor } from '../useRichEditor'
 
 // Mock the markdown converter
 vi.mock('@renderer/utils/markdownConverter', () => ({
-  htmlToMarkdown: vi.fn().mockReturnValue('# Mocked Markdown'),
-  markdownToHtml: vi.fn().mockReturnValue('<h1>Mocked HTML</h1>'),
-  markdownToSafeHtml: vi.fn().mockReturnValue('<h1>Safe HTML</h1>'),
+  htmlToMarkdown: vi.fn().mockImplementation((html) => {
+    // Simple HTML to markdown conversion for testing
+    if (html.includes('<h1>')) {
+      return html.replace(/<h1>(.*?)<\/h1>/, '# $1')
+    }
+    return html.replace(/<[^>]*>/g, '') // Strip HTML tags
+  }),
+  markdownToHtml: vi.fn().mockImplementation((markdown) => {
+    // Simple markdown to HTML conversion for testing
+    if (markdown.startsWith('# ')) {
+      return `<h1>${markdown.slice(2)}</h1>`
+    }
+    return `<p>${markdown}</p>`
+  }),
+  markdownToSafeHtml: vi.fn().mockImplementation((markdown) => {
+    // Same as markdownToHtml for testing
+    if (markdown.startsWith('# ')) {
+      return `<h1>${markdown.slice(2)}</h1>`
+    }
+    return `<p>${markdown}</p>`
+  }),
   sanitizeHtml: vi.fn().mockImplementation((html) => `sanitized: ${html}`),
-  markdownToPreviewText: vi.fn().mockReturnValue('Preview text'),
-  isMarkdownContent: vi.fn().mockReturnValue(true)
+  markdownToPreviewText: vi.fn().mockImplementation((markdown, length = 50) => {
+    // Remove markdown formatting for preview
+    const cleanText = markdown.replace(/^#+\s*/, '').replace(/[*_`]/g, '')
+    return cleanText.length > length ? cleanText.slice(0, length) + '...' : cleanText
+  }),
+  isMarkdownContent: vi.fn().mockImplementation((content) => {
+    // Check if content looks like markdown
+    return /^#+\s/.test(content) || /[*_`]/.test(content)
+  })
 }))
 
 describe('useRichEditor', () => {
@@ -59,7 +84,7 @@ describe('useRichEditor', () => {
         result.current.setHtml('<h1>HTML Content</h1>')
       })
 
-      expect(result.current.markdown).toBe('# Mocked Markdown')
+      expect(result.current.markdown).toBe('# HTML Content')
     })
 
     it('should clear all content', () => {
@@ -78,28 +103,28 @@ describe('useRichEditor', () => {
       const { result } = renderHook(() => useRichEditor())
 
       const html = result.current.toHtml('# Test')
-      expect(html).toBe('<h1>Mocked HTML</h1>')
+      expect(html).toBe('<h1>Test</h1>')
     })
 
     it('should provide markdown to safe HTML conversion', () => {
       const { result } = renderHook(() => useRichEditor())
 
       const safeHtml = result.current.toSafeHtml('# Test')
-      expect(safeHtml).toBe('<h1>Safe HTML</h1>')
+      expect(safeHtml).toBe('<h1>Test</h1>')
     })
 
     it('should provide HTML to markdown conversion', () => {
       const { result } = renderHook(() => useRichEditor())
 
       const markdown = result.current.toMarkdown('<h1>Test</h1>')
-      expect(markdown).toBe('# Mocked Markdown')
+      expect(markdown).toBe('# Test')
     })
 
     it('should provide preview text generation', () => {
       const { result } = renderHook(() => useRichEditor())
 
-      const preview = result.current.getPreviewText('# Test', 20)
-      expect(preview).toBe('Preview text')
+      const preview = result.current.getPreviewText('# Test Content', 20)
+      expect(preview).toBe('Test Content')
     })
   })
 
@@ -149,8 +174,8 @@ describe('useRichEditor', () => {
         })
       )
 
-      const preview = result.current.getPreviewText('# Long content', 100)
-      expect(preview).toBe('Preview text')
+      const preview = result.current.getPreviewText('# Long content that should be truncated properly', 10)
+      expect(preview).toBe('Long conte...')
     })
 
     it('should support disabled state', () => {

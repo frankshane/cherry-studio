@@ -159,8 +159,6 @@ export interface FormattingState {
   isLink: boolean
   /** Whether link command can be executed */
   canLink: boolean
-  /** Whether unlink command can be executed */
-  canUnlink: boolean
   /** Whether undo can be executed */
   canUndo: boolean
   /** Whether redo can be executed */
@@ -196,7 +194,6 @@ export type FormattingCommand =
   | 'codeBlock'
   | 'blockquote'
   | 'link'
-  | 'unlink'
   | 'undo'
   | 'redo'
   | 'math'

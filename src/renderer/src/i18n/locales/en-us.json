@@ -1843,6 +1843,10 @@
         "description": "Start writing with plain text",
         "title": "Text"
       },
+      "redo": {
+        "description": "Redo the last action",
+        "title": "Redo"
+      },
       "strike": {
         "description": "Mark as a delete line",
         "title": "Delete line"
@@ -1858,6 +1862,10 @@
       "underline": {
         "description": "Mark as underlined",
         "title": "Underline"
+      },
+      "undo": {
+        "description": "Undo the last action",
+        "title": "Undo"
       }
     },
     "image": {
@@ -1909,8 +1917,7 @@
       "strike": "Strikethrough",
       "table": "Table",
       "underline": "Underline",
-      "undo": "Undo",
-      "unlink": "Unlink"
+      "undo": "Undo"
     }
   },
   "selection": {

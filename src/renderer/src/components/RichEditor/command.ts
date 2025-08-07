@@ -1,4 +1,4 @@
-import { computePosition, flip, shift } from '@floating-ui/dom'
+import { autoUpdate, computePosition, flip, offset, shift, size } from '@floating-ui/dom'
 import { loggerService } from '@logger'
 import type { Editor } from '@tiptap/core'
 import type { MentionNodeAttrs } from '@tiptap/extension-mention'
@@ -398,32 +398,6 @@ const DEFAULT_COMMANDS: Command[] = [
     }
   },
   {
-    id: 'divider',
-    title: 'Divider',
-    description: 'Add a horizontal line',
-    category: CommandCategory.STRUCTURE,
-    icon: Minus,
-    keywords: ['divider', 'hr', 'line', 'separator'],
-    handler: (editor: Editor) => {
-      editor.chain().focus().setHorizontalRule().run()
-    }
-  },
-  // Unlink command for toolbar
-  {
-    id: 'unlink',
-    title: 'Remove Link',
-    description: 'Remove link formatting',
-    category: CommandCategory.SPECIAL,
-    icon: X, // Will be replaced with Link2Off in toolbar
-    keywords: ['unlink', 'remove link'],
-    handler: (editor: Editor) => {
-      editor.chain().focus().unsetLink().run()
-    },
-    showInToolbar: true,
-    toolbarGroup: 'media',
-    formattingCommand: 'unlink'
-  },
-  {
     id: 'math',
     title: 'Math Formula',
     description: 'Insert mathematical formula',
@@ -476,7 +450,7 @@ export interface CommandFilterOptions {
 
 // Filter commands based on search query and category
 export function filterCommands(options: CommandFilterOptions = {}): Command[] {
-  const { query = '', category, maxResults = 10 } = options
+  const { query = '', category } = options
 
   let filtered = getAllCommands()
 
@@ -512,7 +486,7 @@ export function filterCommands(options: CommandFilterOptions = {}): Command[] {
     })
   }
 
-  return filtered.slice(0, maxResults)
+  return filtered
 }
 
 const updatePosition = (editor: Editor, element: HTMLElement) => {
@@ -522,14 +496,45 @@ const updatePosition = (editor: Editor, element: HTMLElement) => {
 
   computePosition(virtualElement, element, {
     placement: 'bottom-start',
-    strategy: 'absolute',
-    middleware: [shift(), flip()]
-  }).then(({ x, y, strategy }) => {
-    element.style.width = 'max-content'
-    element.style.position = strategy
-    element.style.left = `${x}px`
-    element.style.top = `${y}px`
+    strategy: 'fixed',
+    middleware: [
+      offset(4), // Add small offset from trigger
+      flip({
+        fallbackPlacements: ['top-start', 'bottom-end', 'top-end', 'bottom-start'],
+        padding: 8 // Ensure some padding from viewport edges
+      }),
+      shift({
+        padding: 8 // Prevent overflow on sides
+      }),
+      size({
+        apply({ availableWidth, availableHeight, elements }) {
+          // Ensure the popover doesn't exceed viewport bounds
+          const maxHeight = Math.min(400, availableHeight - 16) // 16px total padding
+          const maxWidth = Math.min(320, availableWidth - 16)
+
+          Object.assign(elements.floating.style, {
+            maxHeight: `${maxHeight}px`,
+            maxWidth: `${maxWidth}px`,
+            minWidth: '240px'
+          })
+        }
+      })
+    ]
   })
+    .then(({ x, y, strategy, placement }) => {
+      Object.assign(element.style, {
+        position: strategy,
+        left: `${x}px`,
+        top: `${y}px`,
+        width: 'max-content'
+      })
+
+      // Add data attribute to track current placement for styling
+      element.setAttribute('data-placement', placement)
+    })
+    .catch((error) => {
+      logger.error('Error positioning command list:', error)
+    })
 }
 
 // Register default commands into the dynamic registry
@@ -541,7 +546,7 @@ export const commandSuggestion: Omit<SuggestionOptions<Command, MentionNodeAttrs
   startOfLine: true,
   items: ({ query }: { query: string }) => {
     try {
-      return filterCommands({ query, maxResults: 8 })
+      return filterCommands({ query })
     } catch (error) {
       logger.error('Error filtering commands:', error as Error)
       return []
@@ -561,6 +566,7 @@ export const commandSuggestion: Omit<SuggestionOptions<Command, MentionNodeAttrs
 
   render: () => {
     let component: ReactRenderer<any, any>
+    let cleanup: (() => void) | undefined
 
     return {
       onStart: (props) => {
@@ -574,10 +580,22 @@ export const commandSuggestion: Omit<SuggestionOptions<Command, MentionNodeAttrs
           editor: props.editor
         })
         const element = component.element as HTMLElement
-        element.style.position = 'absolute'
+        // element.style.position = 'absolute'
+        element.style.zIndex = '1001'
 
         document.body.appendChild(element)
 
+        // Set up auto-updating position that responds to scroll and resize
+        const virtualElement = {
+          getBoundingClientRect: () =>
+            posToDOMRect(props.editor.view, props.editor.state.selection.from, props.editor.state.selection.to)
+        }
+
+        cleanup = autoUpdate(virtualElement, element, () => {
+          updatePosition(props.editor, element)
+        })
+
+        // Initial position update
         updatePosition(props.editor, element)
       },
 
@@ -585,12 +603,19 @@ export const commandSuggestion: Omit<SuggestionOptions<Command, MentionNodeAttrs
         if (!props?.items || !props.clientRect) return
 
         component.updateProps(props)
+
+        // Update position when items change (might affect size)
+        if (component.element) {
+          setTimeout(() => {
+            updatePosition(props.editor, component.element as HTMLElement)
+          }, 0)
+        }
       },
 
       onKeyDown: (props) => {
         if (props.event.key === 'Escape') {
+          if (cleanup) cleanup()
           component.destroy()
-
           return true
         }
 
@@ -598,6 +623,7 @@ export const commandSuggestion: Omit<SuggestionOptions<Command, MentionNodeAttrs
       },
 
       onExit: () => {
+        if (cleanup) cleanup()
         const element = component.element as HTMLElement
         element.remove()
         component.destroy()
