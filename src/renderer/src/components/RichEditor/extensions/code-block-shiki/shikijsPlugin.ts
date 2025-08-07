@@ -10,6 +10,9 @@ import { Decoration, DecorationSet } from '@tiptap/pm/view'
 
 const logger = loggerService.withContext('RichEditor:CodeBlockShiki')
 
+// Languages that should skip syntax highlighting entirely
+const SKIP_HIGHLIGHTING_LANGUAGES = new Set(['text', 'plain', 'plaintext', 'txt', '', null, undefined])
+
 function getDecorations({
   doc,
   name,
@@ -39,23 +42,22 @@ function getDecorations({
     // Skip completely empty code blocks (no content at all)
     if (!code) return
 
+    // Skip highlighting for plain text languages
+    if (SKIP_HIGHLIGHTING_LANGUAGES.has(language)) {
+      return
+    }
+
     try {
-      // Check if language is loaded; fallback to text if not.
+      // Check if language is loaded; skip highlighting if not available
       const loadedLanguages = highlighter.getLoadedLanguages()
-      let actualLanguage = language
 
       if (!loadedLanguages.includes(language)) {
-        // Try 'text' first, then 'plaintext' as fallback
-        if (loadedLanguages.includes('text')) {
-          actualLanguage = 'text'
-        } else {
-          // Skip highlighting if no fallback language is available
-          return
-        }
+        // Skip highlighting for unsupported languages instead of falling back
+        return
       }
 
       const tokens = highlighter.codeToTokens(code, {
-        lang: actualLanguage,
+        lang: language,
         theme
       })
 
@@ -193,6 +195,11 @@ export function ShikiPlugin({
             if (!block.node.textContent) continue
 
             const { theme: blockTheme, language: blockLanguage } = block.node.attrs
+
+            // Skip loading for plain text languages
+            if (SKIP_HIGHLIGHTING_LANGUAGES.has(blockLanguage)) {
+              continue
+            }
 
             if (blockTheme && !this.highlighter.getLoadedThemes().includes(blockTheme)) {
               tasks.push(

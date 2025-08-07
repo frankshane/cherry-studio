@@ -10,7 +10,7 @@ const CodeBlockNodeView: FC<ReactNodeViewProps> = (props) => {
   // Detect language from node attrs or fallback
   const language = (node.attrs.language as string) || 'text'
 
-  // Try to obtain language list from shiki highlighter if available
+  // Build language options with 'text' always available
   const languageOptions: string[] = useMemo(() => {
     let options = DEFAULT_LANGUAGES
 
