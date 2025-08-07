@@ -3099,6 +3099,7 @@
         "auth_failed": "Échec de l'authentification Anthropic",
         "auth_method": "Mode d'authentification",
         "authenticated": "Certifié",
+        "authenticating": "Authentification en cours",
         "cancel": "Annuler",
         "code_placeholder": "Veuillez saisir le code d'autorisation affiché dans le navigateur",
         "code_required": "Le code d'autorisation ne peut pas être vide",

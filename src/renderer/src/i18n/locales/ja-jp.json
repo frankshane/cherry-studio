@@ -3099,6 +3099,7 @@
         "auth_failed": "Anthropic 身份验证に失敗しました",
         "auth_method": "認証方法",
         "authenticated": "認証済み",
+        "authenticating": "認証中です",
         "cancel": "取消",
         "code_placeholder": "ブラウザに表示されている認証コードを入力してください",
         "code_required": "認証コードは空にできません",

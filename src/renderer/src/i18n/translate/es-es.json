@@ -3099,6 +3099,7 @@
         "auth_failed": "Error de autenticación de Anthropic",
         "auth_method": "Método de autenticación",
         "authenticated": "Verificado",
+        "authenticating": "Autenticando",
         "cancel": "Cancelar",
         "code_placeholder": "Introduzca el código de autorización que se muestra en el navegador",
         "code_required": "El código de autorización no puede estar vacío",

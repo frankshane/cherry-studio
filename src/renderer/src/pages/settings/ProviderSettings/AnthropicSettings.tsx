@@ -114,7 +114,6 @@ const AnthropicSettings = () => {
             <Alert
               type="info"
               message={t('settings.provider.anthropic.authenticating')}
-              description={t('settings.provider.anthropic.authenticating_detail')}
               showIcon
               icon={<ExclamationCircleOutlined />}
             />
@@ -125,7 +124,8 @@ const AnthropicSettings = () => {
               onCancel={handleCancelAuth}
               okButtonProps={{ loading }}
               okText={t('settings.provider.anthropic.submit_code')}
-              cancelText={t('settings.provider.anthropic.cancel')}>
+              cancelText={t('settings.provider.anthropic.cancel')}
+              centered>
               <Input
                 value={authCode}
                 onChange={(e) => setAuthCode(e.target.value)}

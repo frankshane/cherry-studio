@@ -3099,6 +3099,7 @@
         "auth_failed": "Anthropic 身份认证失败",
         "auth_method": "认证方式",
         "authenticated": "已认证",
+        "authenticating": "正在认证",
         "cancel": "取消",
         "code_placeholder": "请输入浏览器中显示的授权码",
         "code_required": "授权码不能为空",

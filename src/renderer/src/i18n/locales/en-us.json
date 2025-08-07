@@ -3099,6 +3099,7 @@
         "auth_failed": "Anthropic authentication failed",
         "auth_method": "Authentication method",
         "authenticated": "Verified",
+        "authenticating": "Authenticating",
         "cancel": "Cancel",
         "code_placeholder": "Please enter the authorization code displayed in your browser",
         "code_required": "Authorization code cannot be empty",
