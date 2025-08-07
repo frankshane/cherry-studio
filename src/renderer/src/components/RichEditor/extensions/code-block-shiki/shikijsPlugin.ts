@@ -26,8 +26,6 @@ function getDecorations({
 }) {
   const highlighter = cachedHighlighter
 
-  // If highlighter is not ready yet, return an empty decoration set; view will
-  // dispatch a transaction once the highlighter is initialized to refresh.
   if (!highlighter) {
     return DecorationSet.empty
   }
@@ -48,11 +46,9 @@ function getDecorations({
     }
 
     try {
-      // Check if language is loaded; skip highlighting if not available
       const loadedLanguages = highlighter.getLoadedLanguages()
 
       if (!loadedLanguages.includes(language)) {
-        // Skip highlighting for unsupported languages instead of falling back
         return
       }
 

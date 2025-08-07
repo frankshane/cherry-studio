@@ -133,20 +133,27 @@ const RichEditor = ({
         const { selection } = editor.state
         const { $from } = selection
 
-        // 获取当前段落的文本内容
-        const paragraphText = $from.parent.textContent
-
         // 如果当前已经是链接，则取消链接
         if (editor.isActive('link')) {
           editor.chain().focus().unsetLink().run()
         } else {
+          // 获取当前段落的文本内容
+          const paragraphText = $from.parent.textContent
+
           // 如果段落有文本，将段落文本设置为链接
           if (paragraphText.trim()) {
             const url = paragraphText.trim().startsWith('http')
               ? paragraphText.trim()
               : `https://${paragraphText.trim()}`
-            // 选择整个段落然后设置链接
-            editor.chain().focus().selectParentNode().setLink({ href: url }).run()
+
+            try {
+              const { $from } = selection
+              const start = $from.start()
+              const end = $from.end()
+              editor.chain().focus().setTextSelection({ from: start, to: end }).setLink({ href: url }).run()
+            } catch (error) {
+              editor.chain().focus().toggleLink().run()
+            }
           } else {
             editor.chain().focus().toggleLink().run()
           }
