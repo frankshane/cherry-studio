@@ -195,6 +195,17 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
   useEffect(() => {
     if (editor && !editor.isDestroyed) {
       editor.setEditable(editable)
+      if (editable) {
+        try {
+          setTimeout(() => {
+            if (editor && !editor.isDestroyed) {
+              editor.commands.focus('end')
+            }
+          }, 0)
+        } catch (error) {
+          logger.warn('Could not set cursor to end after enabling editable:', error as Error)
+        }
+      }
     }
   }, [editor, editable])
 
