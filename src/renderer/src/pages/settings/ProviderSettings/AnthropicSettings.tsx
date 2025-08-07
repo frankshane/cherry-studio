@@ -18,7 +18,6 @@ const AnthropicSettings = () => {
   const { t } = useTranslation()
   const [authStatus, setAuthStatus] = useState<AuthStatus>(AuthStatus.NOT_STARTED)
   const [loading, setLoading] = useState<boolean>(false)
-  const [authToken, setAuthToken] = useState<string | null>(null)
   const [codeModalVisible, setCodeModalVisible] = useState<boolean>(false)
   const [authCode, setAuthCode] = useState<string>('')
 
@@ -30,7 +29,6 @@ const AnthropicSettings = () => {
         const token = await anthropicOAuth.getValidAccessToken()
 
         if (token) {
-          setAuthToken(token)
           setAuthStatus(AuthStatus.AUTHENTICATED)
         }
       } catch (error) {
@@ -59,25 +57,7 @@ const AnthropicSettings = () => {
 
   // 处理授权码提交
   const handleSubmitCode = async () => {
-    if (!authCode.trim()) {
-      return window.message.error(t('settings.provider.anthropic.code_required'))
-    }
-
-    try {
-      setLoading(true)
-      const anthropicOAuth = createAnthropicOAuth()
-      const token = await anthropicOAuth.completeOAuthWithCode(authCode)
-      setAuthToken(token)
-      setAuthStatus(AuthStatus.AUTHENTICATED)
-      setCodeModalVisible(false)
-      window.message.success(t('settings.provider.anthropic.auth_success'))
-    } catch (error) {
-      logger.error('OAuth code exchange failed:', error as Error)
-      window.message.error(t('settings.provider.anthropic.code_exchange_failed'))
-    } finally {
-      setLoading(false)
-      setAuthCode('')
-    }
+    logger.info('Submitting auth code')
   }
 
   // 处理取消认证
@@ -94,7 +74,6 @@ const AnthropicSettings = () => {
     try {
       const anthropicOAuth = createAnthropicOAuth()
       await anthropicOAuth.clearCredentials()
-      setAuthToken(null)
       setAuthStatus(AuthStatus.NOT_STARTED)
       window.message.success(t('settings.provider.anthropic.logout_success'))
     } catch (error) {

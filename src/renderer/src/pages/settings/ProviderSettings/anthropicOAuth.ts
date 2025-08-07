@@ -1,11 +1,17 @@
+import path from 'node:path'
+
 import { loggerService } from '@logger'
 import * as crypto from 'crypto'
 import { shell } from 'electron'
+import { promises } from 'fs'
+import os from 'os'
+import { dirname } from 'path'
 
 const logger = loggerService.withContext('AnthropicOAuth')
 
 // Constants
 const CLIENT_ID = '9d1c250a-e61b-44d9-88ed-5944d1962f5e'
+const CREDS_PATH = path.join(os.homedir(), '.cherrystudio', 'config', 'anthropic.json')
 
 // Types
 interface Credentials {
@@ -103,113 +109,113 @@ export class AnthropicOAuth {
     }
   }
 
-  // // 5. Save credentials
-  // private async saveCredentials(creds: Credentials): Promise<void> {
-  //   try {
-  //     await ipcRenderer.invoke('file:write', CREDS_PATH, JSON.stringify(creds, null, 2))
-  //   } catch (error) {
-  //     logger.error('Failed to save credentials:', error as Error)
-  //     throw error
-  //   }
-  // }
-  //
-  // // 6. Load credentials
-  // private async loadCredentials(): Promise<Credentials | null> {
-  //   try {
-  //     const data = await ipcRenderer.invoke('file:read', CREDS_PATH)
-  //     return JSON.parse(data)
-  //   } catch (error) {
-  //     return null
-  //   }
-  // }
+  // 5. Save credentials
+  private async saveCredentials(creds: Credentials): Promise<void> {
+    await promises.mkdir(dirname(CREDS_PATH), { recursive: true })
+    await promises.writeFile(CREDS_PATH, JSON.stringify(creds, null, 2))
+    await promises.chmod(CREDS_PATH, 0o600) // Read/write for owner only
+  }
 
-  // // 7. Get valid access token (refresh if needed)
-  // public async getValidAccessToken(): Promise<string | null> {
-  //   const creds = await this.loadCredentials()
-  //   if (!creds) return null
-  //
-  //   // If token is still valid, return it
-  //   if (creds.expires_at > Date.now() + 60000) {
-  //     // 1 minute buffer
-  //     return creds.access_token
-  //   }
-  //
-  //   // Otherwise, refresh it
-  //   try {
-  //     const newCreds = await this.refreshAccessToken(creds.refresh_token)
-  //     await this.saveCredentials(newCreds)
-  //     return newCreds.access_token
-  //   } catch {
-  //     return null
-  //   }
-  // }
-  //
-  // // 8. Start OAuth flow with external browser
-  // public async startOAuthFlow(): Promise<string> {
-  //   // Try to get existing valid token
-  //   const existingToken = await this.getValidAccessToken()
-  //   if (existingToken) return existingToken
-  //
-  //   // Generate PKCE pair and store it for later use
-  //   this.currentPKCE = this.generatePKCE()
-  //
-  //   // Build authorization URL
-  //   const authUrl = this.getAuthorizationURL(this.currentPKCE)
-  //   logger.debug(authUrl)
-  //
-  //   // Open URL in external browser
-  //   await shell.openExternal(authUrl)
-  //
-  //   // Return the URL for UI to show (optional)
-  //   return authUrl
-  // }
+  // 6. Load credentials
+  private async loadCredentials(): Promise<Credentials | null> {
+    try {
+      const data = await promises.readFile(CREDS_PATH, 'utf-8')
+      return JSON.parse(data)
+    } catch {
+      return null
+    }
+  }
 
-  // // 9. Complete OAuth flow with manual code input
-  // public async completeOAuthWithCode(code: string): Promise<string> {
-  //   if (!this.currentPKCE) {
-  //     throw new Error('OAuth flow not started. Please call startOAuthFlow first.')
-  //   }
-  //
-  //   try {
-  //     // Exchange code for tokens using stored PKCE verifier
-  //     const credentials = await this.exchangeCodeForTokens(code, this.currentPKCE.verifier)
-  //     await this.saveCredentials(credentials)
-  //
-  //     // Clear stored PKCE after successful exchange
-  //     this.currentPKCE = null
-  //
-  //     return credentials.access_token
-  //   } catch (error) {
-  //     logger.error('OAuth code exchange failed:', error as Error)
-  //     // Clear PKCE on error
-  //     this.currentPKCE = null
-  //     throw error
-  //   }
-  // }
+  // 7. Get valid access token (refresh if needed)
+  public async getValidAccessToken(): Promise<string | null> {
+    const creds = await this.loadCredentials()
+    if (!creds) return null
 
-  // // 10. Cancel current OAuth flow
-  // public cancelOAuthFlow(): void {
-  //   if (this.currentPKCE) {
-  //     logger.info('Cancelling OAuth flow')
-  //     this.currentPKCE = null
-  //   }
-  // }
+    // If token is still valid, return it
+    if (creds.expires_at > Date.now() + 60000) {
+      // 1 minute buffer
+      return creds.access_token
+    }
 
-  // // 11. Clear stored credentials
-  // public async clearCredentials(): Promise<void> {
-  //   try {
-  //     await ipcRenderer.invoke('file:delete', CREDS_PATH)
-  //     logger.info('Credentials cleared')
-  //   } catch (error) {
-  //     logger.warn('Failed to clear credentials:', error as Error)
-  //   }
-  // }
+    // Otherwise, refresh it
+    try {
+      const newCreds = await this.refreshAccessToken(creds.refresh_token)
+      await this.saveCredentials(newCreds)
+      return newCreds.access_token
+    } catch {
+      return null
+    }
+  }
 
-  // // 12. Check if credentials exist
-  // public async hasCredentials(): Promise<boolean> {
-  //   const creds = await this.loadCredentials()
-  //   return creds !== null
-  // }
+  // 8. Start OAuth flow with external browser
+  public async startOAuthFlow(): Promise<string> {
+    // Try to get existing valid token
+    const existingToken = await this.getValidAccessToken()
+    if (existingToken) return existingToken
+
+    // Generate PKCE pair and store it for later use
+    this.currentPKCE = this.generatePKCE()
+
+    // Build authorization URL
+    const authUrl = this.getAuthorizationURL(this.currentPKCE)
+    logger.debug(authUrl)
+
+    // Open URL in external browser
+    await shell.openExternal(authUrl)
+
+    // Return the URL for UI to show (optional)
+    return authUrl
+  }
+
+  // 9. Complete OAuth flow with manual code input
+  public async completeOAuthWithCode(code: string): Promise<string> {
+    if (!this.currentPKCE) {
+      throw new Error('OAuth flow not started. Please call startOAuthFlow first.')
+    }
+
+    try {
+      // Exchange code for tokens using stored PKCE verifier
+      const credentials = await this.exchangeCodeForTokens(code, this.currentPKCE.verifier)
+      await this.saveCredentials(credentials)
+
+      // Clear stored PKCE after successful exchange
+      this.currentPKCE = null
+
+      return credentials.access_token
+    } catch (error) {
+      logger.error('OAuth code exchange failed:', error as Error)
+      // Clear PKCE on error
+      this.currentPKCE = null
+      throw error
+    }
+  }
+
+  // 10. Cancel current OAuth flow
+  public cancelOAuthFlow(): void {
+    if (this.currentPKCE) {
+      logger.info('Cancelling OAuth flow')
+      this.currentPKCE = null
+    }
+  }
+
+  // 11. Clear stored credentials
+  public async clearCredentials(): Promise<void> {
+    try {
+      await promises.unlink(CREDS_PATH)
+      logger.info('Credentials cleared')
+    } catch (error) {
+      // File doesn't exist, which is fine
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+        throw error
+      }
+    }
+  }
+
+  // 12. Check if credentials exist
+  public async hasCredentials(): Promise<boolean> {
+    const creds = await this.loadCredentials()
+    return creds !== null
+  }
 }
 
 // Create singleton instance
