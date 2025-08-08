@@ -1,5 +1,7 @@
 import 'katex/dist/katex.min.css'
 
+// Replace old EnhancedTable with TableKit from local package
+import { TableKit } from '@cherrystudio/extension-table-plus'
 import { loggerService } from '@logger'
 import type { FormattingState } from '@renderer/components/RichEditor/types'
 import { useCodeStyle } from '@renderer/context/CodeStyleProvider'
@@ -15,7 +17,6 @@ import type { Editor } from '@tiptap/core'
 import { TaskItem, TaskList } from '@tiptap/extension-list'
 import { migrateMathStrings } from '@tiptap/extension-mathematics'
 import Mention from '@tiptap/extension-mention'
-import { TableKit } from '@tiptap/extension-table'
 import Typography from '@tiptap/extension-typography'
 import { useEditor, useEditorState } from '@tiptap/react'
 import { StarterKit } from '@tiptap/starter-kit'
@@ -130,8 +131,17 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
       }),
       Typography,
       EnhancedImage,
+      // Use TableKit which internally wires the proper TableView (div.tableWrapper > table > colgroup + tbody contentDOM)
       TableKit.configure({
-        table: { resizable: true }
+        table: {
+          resizable: true,
+          allowTableNodeSelection: true
+        },
+        tableRow: {},
+        tableHeader: {},
+        tableCell: {
+          allowNestedTables: false
+        }
       }),
       TaskList,
       TaskItem.configure({

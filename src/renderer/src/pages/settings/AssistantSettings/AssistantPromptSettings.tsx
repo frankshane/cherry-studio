@@ -11,7 +11,7 @@ import { Assistant, AssistantSettings } from '@renderer/types'
 import { getLeadingEmoji } from '@renderer/utils'
 import { Button, Input, Popover } from 'antd'
 import { throttle } from 'lodash'
-import { HelpCircle, Save } from 'lucide-react'
+import { Edit, HelpCircle, Save } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
@@ -139,6 +139,7 @@ const AssistantPromptSettings: React.FC<Props> = ({ assistant, updateAssistant }
       <TextAreaContainer>
         <RichEditorContainer>
           <RichEditor
+            key={showPreview ? 'preview' : 'edit'}
             ref={editorRef}
             initialContent={processedPrompt || prompt}
             onMarkdownChange={handleMarkdownChange}
@@ -153,7 +154,7 @@ const AssistantPromptSettings: React.FC<Props> = ({ assistant, updateAssistant }
         <TokenCount>Tokens: {tokenCount}</TokenCount>
         <Button
           type="primary"
-          icon={<Save size={14} />}
+          icon={showPreview ? <Edit size={14} /> : <Save size={14} />}
           onClick={() => {
             if (showPreview) {
               setShowPreview(false)

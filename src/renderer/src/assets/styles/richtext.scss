@@ -161,8 +161,9 @@
 
     td,
     th {
-      border: 1px solid var(--color-gray-3);
+      border: 1px solid var(--color-border-soft);
       box-sizing: border-box;
+      display: table-cell;
       min-width: 1em;
       padding: 6px 8px;
       position: relative;
@@ -173,26 +174,11 @@
       }
     }
 
+    th,
     th * {
-      background-color: var(--color-gray-1) !important;
+      background-color: var(--color-gray-1);
       font-weight: bold;
       text-align: left;
-    }
-
-    // Ensure td cells don't inherit header background after drag operations
-    td {
-      background-color: transparent !important;
-    }
-
-    // Fix for drag handle causing table cell style pollution
-    [data-drag-handle-body] td {
-      background-color: transparent !important;
-    }
-
-    // Override any inherited background during ProseMirror operations
-    .ProseMirror-widget td,
-    .ProseMirror-nodeview-content td {
-      background-color: transparent !important;
     }
 
     .selectedCell:after {
@@ -219,8 +205,91 @@
   }
 
   .tableWrapper {
+    position: relative;
     margin: 1rem 0;
-    overflow-x: auto;
+    display: grid;
+    grid-template-columns: 1fr 25px;
+    grid-template-rows: 1fr 25px;
+    grid-template-areas:
+      'table column-btn'
+      'row-btn corner';
+    gap: 5px;
+
+    .table-container {
+      grid-area: table;
+      overflow-x: auto;
+      overflow-y: visible;
+
+      table {
+        width: 100%;
+        min-width: max-content;
+      }
+    }
+
+    .add-row-button,
+    .add-column-button {
+      border: 1px solid var(--color-border);
+      background: var(--color-bg-base);
+      border-radius: 4px;
+      font-size: 12px;
+      line-height: 1;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text);
+      z-index: 20;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      pointer-events: auto;
+
+      &:hover {
+        background: var(--color-primary);
+        color: white;
+        border-color: var(--color-primary);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      &:active {
+        transform: scale(0.98);
+      }
+
+      &::before {
+        content: '+';
+        font-weight: bold;
+      }
+    }
+
+    .add-row-button {
+      grid-area: row-btn;
+    }
+
+    .add-column-button {
+      grid-area: column-btn;
+    }
+
+    &:hover,
+    &:has(.add-row-button:hover),
+    &:has(.add-column-button:hover) {
+      .add-row-button,
+      .add-column-button {
+        display: flex;
+      }
+    }
+
+    /* Do not show in readonly even on hover */
+    &.is-readonly,
+    &.is-readonly:hover {
+      .add-row-button,
+      .add-column-button {
+        display: none !important;
+      }
+    }
+
+    .add-row-button:hover,
+    .add-column-button:hover {
+      display: flex !important;
+    }
   }
 
   &.resize-cursor {
