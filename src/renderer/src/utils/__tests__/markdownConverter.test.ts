@@ -7,7 +7,8 @@ vi.mock('turndown', () => {
   return {
     default: vi.fn().mockImplementation(() => ({
       turndown: vi.fn().mockReturnValue('# Mocked Markdown'),
-      addRule: vi.fn()
+      addRule: vi.fn(),
+      use: vi.fn()
     }))
   }
 })
