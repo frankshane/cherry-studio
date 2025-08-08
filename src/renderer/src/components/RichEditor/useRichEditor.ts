@@ -1,6 +1,5 @@
 import 'katex/dist/katex.min.css'
 
-// Replace old EnhancedTable with TableKit from local package
 import { TableKit } from '@cherrystudio/extension-table-plus'
 import { loggerService } from '@logger'
 import type { FormattingState } from '@renderer/components/RichEditor/types'
@@ -131,7 +130,6 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
       }),
       Typography,
       EnhancedImage,
-      // Use TableKit which internally wires the proper TableView (div.tableWrapper > table > colgroup + tbody contentDOM)
       TableKit.configure({
         table: {
           resizable: true,
@@ -152,7 +150,6 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     [placeholder, activeShikiTheme, languageMap]
   )
 
-  // Derived values
   const html = useMemo(() => {
     if (!markdown) return ''
     return markdownToSafeHtml(markdown)
@@ -205,7 +202,6 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     }
   })
 
-  // Update editor editable state when prop changes
   useEffect(() => {
     if (editor && !editor.isDestroyed) {
       editor.setEditable(editable)
