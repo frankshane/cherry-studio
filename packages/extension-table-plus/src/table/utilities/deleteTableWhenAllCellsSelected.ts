@@ -23,6 +23,7 @@ export const deleteTableWhenAllCellsSelected: KeyboardShortcutCommand = ({ edito
     if (['tableCell', 'tableHeader'].includes(node.type.name)) {
       cellCount += 1
     }
+    return true
   })
 
   const allCellsSelected = cellCount === selection.ranges.length
