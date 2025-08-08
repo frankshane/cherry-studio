@@ -24,7 +24,7 @@ export const TableHeader = Node.create<TableHeaderOptions>({
     }
   },
 
-  content: 'block+',
+  content: 'paragraph+',
 
   addAttributes() {
     return {

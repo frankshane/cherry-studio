@@ -138,7 +138,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
         tableRow: {},
         tableHeader: {},
         tableCell: {
-          allowNestedTables: false
+          allowNestedNodes: false
         }
       }),
       TaskList,

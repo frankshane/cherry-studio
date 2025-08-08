@@ -275,18 +275,18 @@ export const Table = Node.create<TableOptions>({
       insertTable:
         ({ rows = 3, cols = 3, withHeaderRow = true } = {}) =>
         ({ tr, dispatch, editor }) => {
-          // Disallow nested tables when TableCell option allowNestedTables is false
+          // Disallow inserting table inside nested nodes when TableCell option allowNestedNodes is false
           const tableCellExtension = this.editor.extensionManager.extensions.find((ext) => ext.name === 'tableCell')
-          const allowNestedTables: boolean = tableCellExtension
-            ? Boolean((tableCellExtension.options as { allowNestedTables?: boolean }).allowNestedTables)
+          const allowNestedNodes: boolean = tableCellExtension
+            ? Boolean((tableCellExtension.options as { allowNestedNodes?: boolean }).allowNestedNodes)
             : false
 
-          if (!allowNestedTables) {
+          if (!allowNestedNodes) {
             const { $from } = tr.selection
-            for (let depth = $from.depth; depth >= 0; depth -= 1) {
-              if ($from.node(depth).type === editor.schema.nodes.table) {
-                return false
-              }
+            // Only allow table insertion at top-level (depth <= 1),
+            // disallow when selection is inside any nested node (list, blockquote, table, etc.)
+            if ($from.depth > 1) {
+              return false
             }
           }
 

@@ -10,10 +10,10 @@ export interface TableCellOptions {
    */
   HTMLAttributes: Record<string, any>
   /**
-   * Whether a table can be nested inside a cell.
+   * Whether nodes can be nested inside a cell.
    * @default false
    */
-  allowNestedTables: boolean
+  allowNestedNodes: boolean
 }
 
 /**
@@ -26,11 +26,11 @@ export const TableCell = Node.create<TableCellOptions>({
   addOptions() {
     return {
       HTMLAttributes: {},
-      allowNestedTables: false
+      allowNestedNodes: false
     }
   },
 
-  content: 'block+',
+  content: 'paragraph+',
 
   addAttributes() {
     return {

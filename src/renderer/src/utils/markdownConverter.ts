@@ -115,6 +115,12 @@ turndownService.addRule('underline', {
   replacement: (content) => `<u>${content}</u>`
 })
 
+// Keep math block containers intact so Turndown does not parse them
+turndownService.keep((node: Node): boolean => {
+  if (!(node instanceof Element)) return false
+  return node.nodeName === 'DIV' && node.classList.contains('block-math-inner')
+})
+
 const taskListItemsPlugin: TurndownPlugin = (turndownService) => {
   turndownService.addRule('taskListItems', {
     filter: (node: Element) => {
