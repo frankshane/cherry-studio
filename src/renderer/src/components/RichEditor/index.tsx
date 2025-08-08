@@ -1,7 +1,7 @@
 import DragHandle from '@tiptap/extension-drag-handle-react'
 import { EditorContent } from '@tiptap/react'
 import { t } from 'i18next'
-import React, { useEffect, useImperativeHandle } from 'react'
+import React, { useEffect, useImperativeHandle, useRef } from 'react'
 
 import { MdiDragHandle } from '../Icons/SVGIcon'
 import {
@@ -45,6 +45,8 @@ const RichEditor = ({
     placeholder,
     editable
   })
+
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null)
 
   // Register initial commands on mount
   useEffect(() => {
@@ -214,6 +216,14 @@ const RichEditor = ({
       getPreviewText: (maxLength?: number) => {
         return getPreviewText(markdown, maxLength)
       },
+      getScrollTop: () => {
+        return scrollContainerRef.current?.scrollTop ?? 0
+      },
+      setScrollTop: (value: number) => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTop = value
+        }
+      },
       // Dynamic command management
       registerCommand,
       registerToolbarCommand,
@@ -229,7 +239,7 @@ const RichEditor = ({
   return (
     <RichEditorWrapper className={`rich-editor-wrapper ${className}`} $minHeight={minHeight} $maxHeight={maxHeight}>
       {showToolbar && <Toolbar editor={editor} formattingState={formattingState} onCommand={handleCommand} />}
-      <StyledEditorContent>
+      <StyledEditorContent ref={scrollContainerRef}>
         <DragHandle editor={editor}>
           <MdiDragHandle />
         </DragHandle>

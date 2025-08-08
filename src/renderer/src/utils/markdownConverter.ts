@@ -89,9 +89,132 @@ function taskListPlugin(md: MarkdownIt, options: TaskListOptions = {}) {
   })
 }
 
+interface TokenLike {
+  content: string
+  block?: boolean
+  map?: [number, number]
+}
+
+interface BlockStateLike {
+  src: string
+  bMarks: number[]
+  eMarks: number[]
+  tShift: number[]
+  line: number
+  parentType: string
+  blkIndent: number
+  push: (type: string, tag: string, nesting: number) => TokenLike
+}
+
+function tipTapKatexPlugin(md: MarkdownIt) {
+  // 1) Parser: recognize $$ ... $$ as a block math token
+  md.block.ruler.before(
+    'fence',
+    'math_block',
+    (stateLike: unknown, startLine: number, endLine: number, silent: boolean): boolean => {
+      const state = stateLike as BlockStateLike
+
+      const startPos = state.bMarks[startLine] + state.tShift[startLine]
+      const maxPos = state.eMarks[startLine]
+
+      // Must begin with $$ at line start (after indentation)
+      if (startPos + 2 > maxPos) return false
+      if (state.src.charCodeAt(startPos) !== 0x24 /* $ */ || state.src.charCodeAt(startPos + 1) !== 0x24 /* $ */) {
+        return false
+      }
+
+      // If requested only to validate existence
+      if (silent) return true
+
+      // Search for closing $$
+      let nextLine = startLine
+      let content = ''
+
+      // Same-line closing? $$ ... $$
+      const sameLineClose = state.src.indexOf('$$', startPos + 2)
+      if (sameLineClose !== -1 && sameLineClose <= maxPos - 2) {
+        content = state.src.slice(startPos + 2, sameLineClose).trim()
+        nextLine = startLine
+      } else {
+        // Multiline: look for closing $$ anywhere
+        for (nextLine = startLine + 1; nextLine < endLine; nextLine++) {
+          const lineStart = state.bMarks[nextLine] + state.tShift[nextLine]
+          const lineEnd = state.eMarks[nextLine]
+          const line = state.src.slice(lineStart, lineEnd)
+
+          // Check if this line contains closing $$
+          const closingPos = line.indexOf('$$')
+          if (closingPos !== -1) {
+            // Found closing $$; extract content between opening and closing
+            const allLines: string[] = []
+
+            // First line: content after opening $$
+            const firstLineStart = state.bMarks[startLine] + state.tShift[startLine] + 2
+            const firstLineEnd = state.eMarks[startLine]
+            const firstLineContent = state.src.slice(firstLineStart, firstLineEnd)
+            if (firstLineContent.trim()) {
+              allLines.push(firstLineContent)
+            }
+
+            // Middle lines: full content
+            for (let lineIdx = startLine + 1; lineIdx < nextLine; lineIdx++) {
+              const midLineStart = state.bMarks[lineIdx] + state.tShift[lineIdx]
+              const midLineEnd = state.eMarks[lineIdx]
+              allLines.push(state.src.slice(midLineStart, midLineEnd))
+            }
+
+            // Last line: content before closing $$
+            const lastLineContent = line.slice(0, closingPos)
+            if (lastLineContent.trim()) {
+              allLines.push(lastLineContent)
+            }
+
+            content = allLines.join('\n').trim()
+            break
+          }
+
+          // Check if line starts with $$ (alternative closing pattern)
+          if (
+            lineStart + 2 <= lineEnd &&
+            state.src.charCodeAt(lineStart) === 0x24 &&
+            state.src.charCodeAt(lineStart + 1) === 0x24
+          ) {
+            // Extract content between start and this line
+            const firstContentLineStart = state.bMarks[startLine] + state.tShift[startLine] + 2
+            const lastContentLineEnd = state.bMarks[nextLine]
+            content = state.src.slice(firstContentLineStart, lastContentLineEnd).trim()
+            break
+          }
+        }
+        if (nextLine >= endLine) {
+          // No closing fence -> not a valid block
+          return false
+        }
+      }
+
+      const token = state.push('math_block', 'div', 0)
+      token.block = true
+      token.map = [startLine, nextLine]
+      token.content = content
+
+      state.line = nextLine + 1
+      return true
+    }
+  )
+
+  // 2) Renderer: output TipTap-friendly container
+  md.renderer.rules.math_block = (tokens: Array<{ content?: string }>, idx: number): string => {
+    const content = tokens[idx]?.content ?? ''
+    const latexEscaped = he.encode(content, { useNamedReferences: true })
+    return `<div data-latex="${latexEscaped}" data-type="block-math"></div>`
+  }
+}
+
 md.use(taskListPlugin, {
   label: true
 })
+
+md.use(tipTapKatexPlugin)
 
 // Initialize turndown service
 const turndownService = new TurndownService({
@@ -101,7 +224,14 @@ const turndownService = new TurndownService({
   codeBlockStyle: 'fenced', // Use ``` for code blocks
   fence: '```', // Use ``` for code blocks
   emDelimiter: '*', // Use * for emphasis
-  strongDelimiter: '**' // Use ** for strong
+  strongDelimiter: '**', // Use ** for strong
+  blankReplacement: (_content, node) => {
+    const el = node as any as HTMLElement
+    if (el.nodeName === 'DIV' && el.getAttribute?.('data-type') === 'block-math') {
+      return `$$${el.getAttribute?.('data-latex')}$$`
+    }
+    return (node as any).isBlock ? '\n\n' : ''
+  }
 })
 
 // Configure turndown rules for better conversion
@@ -113,12 +243,6 @@ turndownService.addRule('strikethrough', {
 turndownService.addRule('underline', {
   filter: ['u'],
   replacement: (content) => `<u>${content}</u>`
-})
-
-// Keep math block containers intact so Turndown does not parse them
-turndownService.keep((node: Node): boolean => {
-  if (!(node instanceof Element)) return false
-  return node.nodeName === 'DIV' && node.classList.contains('block-math-inner')
 })
 
 const taskListItemsPlugin: TurndownPlugin = (turndownService) => {
@@ -201,6 +325,7 @@ export const sanitizeHtml = (html: string): string => {
       'h4',
       'h5',
       'h6',
+      'div',
       'p',
       'br',
       'hr',
@@ -242,7 +367,6 @@ export const sanitizeHtml = (html: string): string => {
  */
 export const markdownToSafeHtml = (markdown: string): string => {
   const html = markdownToHtml(markdown)
-  logger.debug('Generated HTML from markdown', { html, markdown })
   return sanitizeHtml(html)
 }
 

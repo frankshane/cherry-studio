@@ -327,6 +327,13 @@
       margin: 0;
     }
   }
+
+  /* Math block */
+  .block-math-inner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }
 
 // Code block wrapper and header styles

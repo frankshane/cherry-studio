@@ -27,6 +27,12 @@ describe('markdownConverter', () => {
       expect(htmlToMarkdown(null as any)).toBe('')
       expect(htmlToMarkdown(undefined as any)).toBe('')
     })
+
+    it('should keep math block containers intact', () => {
+      const html = '<div data-latex="a+b+c" data-type="block-math"></div>'
+      const result = htmlToMarkdown(html)
+      expect(result).toBe('$$a+b+c$$')
+    })
   })
 
   describe('markdownToHtml', () => {
@@ -34,6 +40,28 @@ describe('markdownConverter', () => {
       const markdown = '# Hello World'
       const result = markdownToHtml(markdown)
       expect(result).toContain('<h1>Hello World</h1>')
+    })
+
+    it('should convert math block syntax to HTML', () => {
+      const markdown = '$$a+b+c$$'
+      const result = markdownToHtml(markdown)
+      expect(result).toContain('<div data-latex="a+b+c" data-type="block-math"></div>')
+    })
+
+    it('should convert multiple math blocks to HTML', () => {
+      const markdown = `$$\\begin{array}{c}
+\\nabla \\times \\vec{\\mathbf{B}} -\\, \\frac1c\\, \\frac{\\partial\\vec{\\mathbf{E}}}{\\partial t} &
+= \\frac{4\\pi}{c}\\vec{\\mathbf{j}}    \\nabla \\cdot \\vec{\\mathbf{E}} & = 4 \\pi \\rho \\\\
+
+\\nabla \\times \\vec{\\mathbf{E}}\\, +\\, \\frac1c\\, \\frac{\\partial\\vec{\\mathbf{B}}}{\\partial t} & = \\vec{\\mathbf{0}} \\\\
+
+\\nabla \\cdot \\vec{\\mathbf{B}} & = 0
+
+\\end{array}$$`
+      const result = markdownToHtml(markdown)
+      expect(result).toContain(
+        '<div data-latex="\\begin{array}{c}\n\\nabla \\times \\vec{\\mathbf{B}} -\\, \\frac1c\\, \\frac{\\partial\\vec{\\mathbf{E}}}{\\partial t} &amp;\n= \\frac{4\\pi}{c}\\vec{\\mathbf{j}}    \\nabla \\cdot \\vec{\\mathbf{E}} &amp; = 4 \\pi \\rho \\\\\n\n\\nabla \\times \\vec{\\mathbf{E}}\\, +\\, \\frac1c\\, \\frac{\\partial\\vec{\\mathbf{B}}}{\\partial t} &amp; = \\vec{\\mathbf{0}} \\\\\n\n\\nabla \\cdot \\vec{\\mathbf{B}} &amp; = 0\n\n\\end{array}" data-type="block-math"></div>'
+      )
     })
 
     it('should convert task list syntax to proper HTML', () => {

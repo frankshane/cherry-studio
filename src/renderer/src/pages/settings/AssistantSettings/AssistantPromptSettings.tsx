@@ -156,11 +156,14 @@ const AssistantPromptSettings: React.FC<Props> = ({ assistant, updateAssistant }
           type="primary"
           icon={showPreview ? <Edit size={14} /> : <Save size={14} />}
           onClick={() => {
+            const currentScrollTop = editorRef.current?.getScrollTop?.() || 0
             if (showPreview) {
               setShowPreview(false)
+              requestAnimationFrame(() => editorRef.current?.setScrollTop?.(currentScrollTop))
             } else {
               onUpdate()
               setShowPreview(true)
+              requestAnimationFrame(() => editorRef.current?.setScrollTop?.(currentScrollTop))
             }
           }}>
           {showPreview ? t('common.edit') : t('common.save')}

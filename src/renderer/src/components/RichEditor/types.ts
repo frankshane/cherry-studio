@@ -93,6 +93,10 @@ export interface RichEditorRef {
   executeCommand: (command: string, value?: any) => void
   /** Get preview text from current content */
   getPreviewText: (maxLength?: number) => string
+  /** Get scrollTop of the editor scroll container */
+  getScrollTop: () => number
+  /** Set scrollTop of the editor scroll container */
+  setScrollTop: (value: number) => void
   // Dynamic command management
   /** Register a new command/toolbar item */
   registerCommand: (cmd: Command) => void
