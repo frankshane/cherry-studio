@@ -12,14 +12,6 @@ vi.mock('turndown', () => {
   }
 })
 
-vi.mock('markdown-it', () => {
-  return {
-    default: vi.fn().mockImplementation(() => ({
-      render: vi.fn().mockReturnValue('<h1>Mocked HTML</h1>')
-    }))
-  }
-})
-
 vi.mock('dompurify', () => ({
   default: {
     sanitize: vi.fn().mockImplementation((html) => `sanitized: ${html}`)
@@ -50,6 +42,21 @@ describe('markdownConverter', () => {
       const markdown = '# Hello World'
       const result = markdownToHtml(markdown)
       expect(result).toBe('<h1>Mocked HTML</h1>')
+    })
+
+    it('should NOT convert standalone task syntax to task list', () => {
+      const markdown = '[x] abcd'
+      const result = markdownToHtml(markdown)
+      // This should remain as paragraph since it's not in a list
+      expect(result).toBe('<p>[x] abcd</p>')
+    })
+
+    it('should convert proper task list syntax', () => {
+      const markdown = '- [x] abcd'
+      const result = markdownToHtml(markdown)
+      // This should be converted to a proper task list
+      expect(result).toContain('checkbox')
+      expect(result).toContain('checked')
     })
 
     it('should handle empty Markdown', () => {

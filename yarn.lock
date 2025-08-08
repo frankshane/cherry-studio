@@ -4979,6 +4979,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rxliuli/markdown-it-task-lists@npm:^2.1.5":
+  version: 2.1.5
+  resolution: "@rxliuli/markdown-it-task-lists@npm:2.1.5"
+  checksum: 10c0/eefb1a9ae1900f41e4f9787ac894132d82b069c2af9822f11c095587ab6e844cfa55b1c72af3f5225a1e913c7036c0e5a9a36a43fa37109f84e8b1b23238f9cf
+  languageName: node
+  linkType: hard
+
 "@selderee/plugin-htmlparser2@npm:^0.11.0":
   version: 0.11.0
   resolution: "@selderee/plugin-htmlparser2@npm:0.11.0"
@@ -8205,6 +8212,7 @@ __metadata:
     "@opentelemetry/sdk-trace-web": "npm:^2.0.0"
     "@playwright/test": "npm:^1.52.0"
     "@reduxjs/toolkit": "npm:^2.2.5"
+    "@rxliuli/markdown-it-task-lists": "npm:^2.1.5"
     "@shikijs/markdown-it": "npm:^3.9.1"
     "@strongtz/win32-arm64-msvc": "npm:^0.4.7"
     "@swc/plugin-styled-components": "npm:^7.1.5"
@@ -8218,6 +8226,7 @@ __metadata:
     "@tiptap/extension-drag-handle": "npm:^3.0.9"
     "@tiptap/extension-drag-handle-react": "npm:^3.0.9"
     "@tiptap/extension-image": "npm:^3.0.9"
+    "@tiptap/extension-list": "npm:^3.0.9"
     "@tiptap/extension-mathematics": "npm:^3.0.9"
     "@tiptap/extension-mention": "npm:^3.0.9"
     "@tiptap/extension-node-range": "npm:^3.0.9"

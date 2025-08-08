@@ -1,5 +1,6 @@
 import { loggerService } from '@logger'
-import { tables } from '@truto/turndown-plugin-gfm'
+import taskLists from '@rxliuli/markdown-it-task-lists'
+import { tables, TurndownPlugin } from '@truto/turndown-plugin-gfm'
 import DOMPurify from 'dompurify'
 import he from 'he'
 import MarkdownIt from 'markdown-it'
@@ -14,6 +15,12 @@ const md = new MarkdownIt({
   breaks: true, // Convert '\n' in paragraphs into <br>
   linkify: true, // Autoconvert URL-like text to links
   typographer: true // Enable smartypants and other sweet transforms
+})
+
+md.use(taskLists, {
+  enabled: true,
+  label: true,
+  labelAfter: false
 })
 
 // Initialize turndown service
@@ -38,7 +45,30 @@ turndownService.addRule('underline', {
   replacement: (content) => `<u>${content}</u>`
 })
 
-turndownService.use(tables)
+const taskListItemsPlugin: TurndownPlugin = (turndownService) => {
+  turndownService.addRule('taskListItems', {
+    filter: (node: Element) => {
+      return node.nodeName === 'LI' && node.getAttribute && node.getAttribute('data-type') === 'taskItem'
+    },
+    replacement: (_content: string, node: Element) => {
+      const checkbox = node.querySelector('input[type="checkbox"]') as HTMLInputElement | null
+      const isChecked = checkbox?.checked || node.getAttribute('data-checked') === 'true'
+      const textContent = node.textContent?.trim() || ''
+
+      return '- ' + (isChecked ? '[x]' : '[ ]') + ' ' + textContent
+    }
+  })
+  turndownService.addRule('taskList', {
+    filter: (node: Element) => {
+      return node.nodeName === 'UL' && node.getAttribute && node.getAttribute('data-type') === 'taskList'
+    },
+    replacement: (content: string) => {
+      return content.trim()
+    }
+  })
+}
+
+turndownService.use([tables, taskListItemsPlugin])
 
 /**
  * Converts HTML content to Markdown
@@ -133,6 +163,7 @@ export const sanitizeHtml = (html: string): string => {
  */
 export const markdownToSafeHtml = (markdown: string): string => {
   const html = markdownToHtml(markdown)
+  logger.debug('Generated HTML from markdown', { html, markdown })
   return sanitizeHtml(html)
 }
 

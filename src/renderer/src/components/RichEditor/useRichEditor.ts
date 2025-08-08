@@ -12,6 +12,7 @@ import {
   sanitizeHtml
 } from '@renderer/utils/markdownConverter'
 import type { Editor } from '@tiptap/core'
+import { TaskItem, TaskList } from '@tiptap/extension-list'
 import { migrateMathStrings } from '@tiptap/extension-mathematics'
 import Mention from '@tiptap/extension-mention'
 import { TableKit } from '@tiptap/extension-table'
@@ -131,6 +132,10 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
       EnhancedImage,
       TableKit.configure({
         table: { resizable: true }
+      }),
+      TaskList,
+      TaskItem.configure({
+        nested: true
       })
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -161,7 +166,6 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     onUpdate: ({ editor }) => {
       const content = editor.getText()
       const htmlContent = editor.getHTML()
-
       // Convert HTML to markdown and update state
       try {
         const convertedMarkdown = htmlToMarkdown(htmlContent)
