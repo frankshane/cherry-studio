@@ -1765,6 +1765,11 @@ __metadata:
   dependencies:
     "@tiptap/core": "npm:^3.0.9"
     "@tiptap/pm": "npm:^3.0.9"
+    eslint: "npm:^9.22.0"
+    eslint-plugin-react-hooks: "npm:^5.2.0"
+    eslint-plugin-simple-import-sort: "npm:^12.1.1"
+    eslint-plugin-unused-imports: "npm:^4.1.4"
+    prettier: "npm:^3.5.3"
     tsdown: "npm:^0.13.3"
   peerDependencies:
     "@tiptap/core": ^3.0.9

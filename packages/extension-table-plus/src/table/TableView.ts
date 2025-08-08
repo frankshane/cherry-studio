@@ -108,6 +108,8 @@ export class TableView implements NodeView {
     updateColumns(node, this.colgroup, this.table, cellMinWidth)
     this.contentDOM = this.table.appendChild(document.createElement('tbody'))
 
+    this.addRowButton = document.createElement('button')
+    this.addColumnButton = document.createElement('button')
     this.createHoverButtons()
 
     this.dom.appendChild(this.tableContainer)
@@ -153,17 +155,11 @@ export class TableView implements NodeView {
   }
 
   createHoverButtons() {
-    // Create add row button
-    this.addRowButton = document.createElement('button')
     this.addRowButton.className = 'add-row-button'
-    this.addRowButton.title = 'Add row below'
     this.addRowButton.type = 'button'
     this.addRowButton.setAttribute('contenteditable', 'false')
 
-    // Create add column button
-    this.addColumnButton = document.createElement('button')
     this.addColumnButton.className = 'add-column-button'
-    this.addColumnButton.title = 'Add column to the right'
     this.addColumnButton.type = 'button'
     this.addColumnButton.setAttribute('contenteditable', 'false')
   }

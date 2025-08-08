@@ -1,4 +1,4 @@
-import { Extension } from '@tiptap/core'
+import { Extension, Node } from '@tiptap/core'
 
 import type { TableCellOptions } from '../cell/index.js'
 import { TableCell } from '../cell/index.js'
@@ -41,7 +41,7 @@ export const TableKit = Extension.create<TableKitOptions>({
   name: 'tableKit',
 
   addExtensions() {
-    const extensions = []
+    const extensions: Node[] = []
 
     if (this.options.table !== false) {
       extensions.push(Table.configure(this.options.table))
