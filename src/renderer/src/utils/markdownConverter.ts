@@ -1,5 +1,4 @@
 import { loggerService } from '@logger'
-import taskLists from '@rxliuli/markdown-it-task-lists'
 import { tables, TurndownPlugin } from '@truto/turndown-plugin-gfm'
 import DOMPurify from 'dompurify'
 import he from 'he'
@@ -8,7 +7,12 @@ import striptags from 'striptags'
 import TurndownService from 'turndown'
 
 const logger = loggerService.withContext('markdownConverter')
-// Initialize markdown-it with common plugins
+
+export interface TaskListOptions {
+  label?: boolean
+}
+
+// Create markdown-it instance with task list plugin
 const md = new MarkdownIt({
   html: true, // Enable HTML tags in source
   xhtmlOut: true, // Use '/' to close single tags (<br />)
@@ -17,10 +21,76 @@ const md = new MarkdownIt({
   typographer: true // Enable smartypants and other sweet transforms
 })
 
-md.use(taskLists, {
-  enabled: true,
-  label: true,
-  labelAfter: false
+// Custom task list plugin for markdown-it
+function taskListPlugin(md: MarkdownIt, options: TaskListOptions = {}) {
+  const { label = false } = options
+  md.core.ruler.after('inline', 'task_list', (state) => {
+    const tokens = state.tokens
+    let inside_task_list = false
+
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i]
+
+      if (token.type === 'bullet_list_open') {
+        // Check if this list contains task items
+        let hasTaskItems = false
+        for (let j = i + 1; j < tokens.length && tokens[j].type !== 'bullet_list_close'; j++) {
+          if (tokens[j].type === 'inline' && /^\s*\[[ x]\]\s/.test(tokens[j].content)) {
+            hasTaskItems = true
+            break
+          }
+        }
+
+        if (hasTaskItems) {
+          inside_task_list = true
+          token.attrSet('data-type', 'taskList')
+          token.attrSet('class', 'task-list')
+        }
+      } else if (token.type === 'bullet_list_close' && inside_task_list) {
+        inside_task_list = false
+      } else if (token.type === 'list_item_open' && inside_task_list) {
+        token.attrSet('data-type', 'taskItem')
+        token.attrSet('class', 'task-list-item')
+      } else if (token.type === 'inline' && inside_task_list) {
+        const match = token.content.match(/^(\s*)\[([x ])\]\s+(.*)/)
+        if (match) {
+          const [, , check, content] = match
+          const isChecked = check.toLowerCase() === 'x'
+
+          // Find the parent list item token
+          for (let j = i - 1; j >= 0; j--) {
+            if (tokens[j].type === 'list_item_open') {
+              tokens[j].attrSet('data-checked', isChecked.toString())
+              break
+            }
+          }
+
+          // Replace content with checkbox HTML and text
+          token.content = content
+
+          // Create checkbox token
+          const checkboxToken = new state.Token('html_inline', '', 0)
+
+          if (label) {
+            checkboxToken.content = `<label><input type="checkbox"${isChecked ? ' checked' : ''} disabled> ${content}</label>`
+            token.children = [checkboxToken]
+          } else {
+            checkboxToken.content = `<input type="checkbox"${isChecked ? ' checked' : ''} disabled>`
+
+            // Insert checkbox at the beginning of inline content
+            const textToken = new state.Token('text', '', 0)
+            textToken.content = ' ' + content
+
+            token.children = [checkboxToken, textToken]
+          }
+        }
+      }
+    }
+  })
+}
+
+md.use(taskListPlugin, {
+  label: true
 })
 
 // Initialize turndown service
@@ -55,7 +125,7 @@ const taskListItemsPlugin: TurndownPlugin = (turndownService) => {
       const isChecked = checkbox?.checked || node.getAttribute('data-checked') === 'true'
       const textContent = node.textContent?.trim() || ''
 
-      return '- ' + (isChecked ? '[x]' : '[ ]') + ' ' + textContent
+      return '\n\n- ' + (isChecked ? '[x]' : '[ ]') + ' ' + textContent
     }
   })
   turndownService.addRule('taskList', {
@@ -91,6 +161,7 @@ export const htmlToMarkdown = (html: string | null | undefined): string => {
 /**
  * Converts Markdown content to HTML
  * @param markdown - Markdown string to convert
+ * @param options - Task list options
  * @returns HTML string
  */
 export const markdownToHtml = (markdown: string | null | undefined): string => {
@@ -148,10 +219,12 @@ export const sanitizeHtml = (html: string): string => {
       'tfoot',
       'tr',
       'td',
-      'th'
+      'th',
+      'input',
+      'label'
     ],
-    ALLOWED_ATTR: ['href', 'title', 'alt', 'src', 'class', 'id', 'colspan', 'rowspan'],
-    ALLOW_DATA_ATTR: false,
+    ALLOWED_ATTR: ['href', 'title', 'alt', 'src', 'class', 'id', 'colspan', 'rowspan', 'type', 'checked', 'disabled'],
+    ALLOW_DATA_ATTR: true,
     ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp):|[^a-z]|[a-z+.\\-]+(?:[^a-z+.\-:]|$))/i
   })
 }
