@@ -103,7 +103,7 @@
     "@cherrystudio/embedjs-loader-xml": "^0.1.31",
     "@cherrystudio/embedjs-ollama": "^0.1.31",
     "@cherrystudio/embedjs-openai": "^0.1.31",
-    "@cherrystudio/extension-table-plus": "^3.0.10",
+    "@cherrystudio/extension-table-plus": "workspace:^",
     "@codemirror/view": "^6.0.0",
     "@electron-toolkit/eslint-config-prettier": "^3.0.0",
     "@electron-toolkit/eslint-config-ts": "^3.0.0",

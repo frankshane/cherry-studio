@@ -1759,7 +1759,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cherrystudio/extension-table-plus@npm:^3.0.10, @cherrystudio/extension-table-plus@workspace:packages/extension-table-plus":
+"@cherrystudio/extension-table-plus@workspace:^, @cherrystudio/extension-table-plus@workspace:packages/extension-table-plus":
   version: 0.0.0-use.local
   resolution: "@cherrystudio/extension-table-plus@workspace:packages/extension-table-plus"
   dependencies:
@@ -8342,7 +8342,7 @@ __metadata:
     "@cherrystudio/embedjs-loader-xml": "npm:^0.1.31"
     "@cherrystudio/embedjs-ollama": "npm:^0.1.31"
     "@cherrystudio/embedjs-openai": "npm:^0.1.31"
-    "@cherrystudio/extension-table-plus": "npm:^3.0.10"
+    "@cherrystudio/extension-table-plus": "workspace:^"
     "@codemirror/view": "npm:^6.0.0"
     "@electron-toolkit/eslint-config-prettier": "npm:^3.0.0"
     "@electron-toolkit/eslint-config-ts": "npm:^3.0.0"
