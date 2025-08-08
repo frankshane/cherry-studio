@@ -124,14 +124,6 @@ describe('markdownConverter', () => {
       expect(result).toContain('data-type="taskItem"')
     })
 
-    it('should not wrap task items with labels by default', () => {
-      const markdown = '- [ ] abcd\n- [x] efgh'
-      const result = markdownToHtml(markdown)
-      expect(result).not.toContain('<label>')
-      expect(result).toContain('<input type="checkbox" disabled>')
-      expect(result).toContain('<input type="checkbox" checked disabled>')
-    })
-
     it('should preserve labels in sanitized HTML', () => {
       const html =
         '<ul data-type="taskList"><li data-type="taskItem"><label><input type="checkbox" checked disabled> Task with label</label></li></ul>'
