@@ -148,7 +148,6 @@
     "@tiptap/extension-mathematics": "^3.0.9",
     "@tiptap/extension-mention": "^3.0.9",
     "@tiptap/extension-node-range": "^3.0.9",
-    "@tiptap/extension-table": "^3.0.9",
     "@tiptap/extension-typography": "^3.0.9",
     "@tiptap/extension-underline": "^3.0.9",
     "@tiptap/pm": "^3.0.9",
