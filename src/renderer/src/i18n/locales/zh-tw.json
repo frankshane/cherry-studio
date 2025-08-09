@@ -1746,6 +1746,10 @@
   },
   "richEditor": {
     "commands": {
+      "blockMath": {
+        "description": "插入數學公式",
+        "title": "數學公式"
+      },
       "blockquote": {
         "description": "插入引用文字",
         "title": "引用"
@@ -1822,6 +1826,10 @@
         "description": "添加行內程式碼",
         "title": "行內程式碼"
       },
+      "inlineMath": {
+        "description": "插入行內數學公式",
+        "title": "行內數學公式"
+      },
       "italic": {
         "description": "標記為斜體",
         "title": "斜體"
@@ -1829,10 +1837,6 @@
       "link": {
         "description": "添加連結",
         "title": "連結"
-      },
-      "math": {
-        "description": "插入數學公式",
-        "title": "數學公式"
       },
       "noCommandsFound": "未找到命令",
       "orderedList": {
@@ -1895,6 +1899,7 @@
     },
     "placeholder": "輸入'/'調用命令",
     "toolbar": {
+      "blockMath": "數學公式塊",
       "blockquote": "引用",
       "bold": "粗體",
       "bulletList": "無序清單",
@@ -1908,9 +1913,9 @@
       "heading5": "五級標題",
       "heading6": "六級標題",
       "image": "圖片",
+      "inlineMath": "行內數學公式",
       "italic": "斜體",
       "link": "連結",
-      "math": "數學公式",
       "orderedList": "有序清單",
       "paragraph": "內文",
       "redo": "重做",

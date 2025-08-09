@@ -1746,6 +1746,10 @@
   },
   "richEditor": {
     "commands": {
+      "blockMath": {
+        "description": "插入数学公式",
+        "title": "数学公式"
+      },
       "blockquote": {
         "description": "插入引用文本",
         "title": "引用"
@@ -1822,6 +1826,10 @@
         "description": "添加行内代码",
         "title": "行内代码"
       },
+      "inlineMath": {
+        "description": "插入行内数学公式",
+        "title": "行内数学公式"
+      },
       "italic": {
         "description": "标记为斜体",
         "title": "斜体"
@@ -1829,10 +1837,6 @@
       "link": {
         "description": "添加链接",
         "title": "链接"
-      },
-      "math": {
-        "description": "插入数学公式",
-        "title": "数学公式"
       },
       "noCommandsFound": "未找到命令",
       "orderedList": {
@@ -1895,6 +1899,7 @@
     },
     "placeholder": "输入'/'调用命令",
     "toolbar": {
+      "blockMath": "数学公式块",
       "blockquote": "引用",
       "bold": "粗体",
       "bulletList": "无序列表",
@@ -1908,9 +1913,9 @@
       "heading5": "五级标题",
       "heading6": "六级标题",
       "image": "图片",
+      "inlineMath": "行内数学公式",
       "italic": "斜体",
       "link": "链接",
-      "math": "数学公式",
       "orderedList": "有序列表",
       "paragraph": "正文",
       "redo": "重做",

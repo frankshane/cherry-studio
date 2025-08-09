@@ -1,4 +1,4 @@
-import { Editor, mergeAttributes, Node } from '@tiptap/core'
+import { mergeAttributes, Node } from '@tiptap/core'
 import Math from '@tiptap/extension-mathematics'
 import { ReactNodeViewRenderer } from '@tiptap/react'
 
@@ -7,68 +7,24 @@ import MathPlaceholderNodeView from '../components/placeholder/MathPlaceholderNo
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     mathPlaceholder: {
-      insertMathPlaceholder: () => ReturnType
+      insertMathPlaceholder: (options?: { mathType?: 'block' | 'inline' }) => ReturnType
     }
   }
 }
 
 // Enhanced Math extension that emits events instead of using prompt
 export const EnhancedMath = Math.extend({
-  addOptions() {
-    return {
-      ...this.parent?.(),
-      blockOptions: {
-        onClick: ({ node, pos, editor }: { node: any; pos: number; editor: Editor }) => {
-          // Emit custom event that toolbar can listen to
-          const event = new CustomEvent('openMathDialog', {
-            detail: {
-              defaultValue: node.attrs.latex || '',
-              onSubmit: (latex: string) => {
-                // Final submission - update the math node
-                editor.chain().setNodeSelection(pos).updateBlockMath({ latex }).focus().run()
-              },
-              onFormulaChange: (formula: string) => {
-                // Real-time update during input
-                editor.chain().setNodeSelection(pos).updateBlockMath({ latex: formula }).run()
-              }
-            }
-          })
-          window.dispatchEvent(event)
-          return true
-        }
-      },
-      inlineOptions: {
-        onClick: ({ node, pos, editor }: { node: any; pos: number; editor: Editor }) => {
-          // Emit custom event for inline math too
-          const event = new CustomEvent('openMathDialog', {
-            detail: {
-              defaultValue: node.attrs.latex || '',
-              onSubmit: (latex: string) => {
-                // Final submission - update the inline math node
-                editor.chain().setNodeSelection(pos).updateInlineMath({ latex }).focus().run()
-              },
-              onFormulaChange: (formula: string) => {
-                // Real-time update during input
-                editor.chain().setNodeSelection(pos).updateInlineMath({ latex: formula }).run()
-              }
-            }
-          })
-          window.dispatchEvent(event)
-          return true
-        }
-      }
-    }
-  },
-
   addCommands() {
     return {
       ...this.parent?.(),
       insertMathPlaceholder:
-        () =>
+        (options: { mathType?: 'block' | 'inline' } = {}) =>
         ({ commands }) => {
           return commands.insertContent({
             type: 'mathPlaceholder',
-            attrs: {}
+            attrs: {
+              mathType: options.mathType || 'block'
+            }
           })
         }
     }
@@ -87,6 +43,18 @@ export const EnhancedMath = Math.extend({
         addOptions() {
           return {
             HTMLAttributes: {}
+          }
+        },
+
+        addAttributes() {
+          return {
+            mathType: {
+              default: 'block',
+              parseHTML: (element) => element.getAttribute('data-math-type'),
+              renderHTML: (attributes) => ({
+                'data-math-type': attributes.mathType
+              })
+            }
           }
         },
 
@@ -115,11 +83,13 @@ export const EnhancedMath = Math.extend({
         addCommands() {
           return {
             insertMathPlaceholder:
-              () =>
+              (options: { mathType?: 'block' | 'inline' } = {}) =>
               ({ commands }) => {
                 return commands.insertContent({
                   type: this.name,
-                  attrs: {}
+                  attrs: {
+                    mathType: options.mathType || 'block'
+                  }
                 })
               }
           }

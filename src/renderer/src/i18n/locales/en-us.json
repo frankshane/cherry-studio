@@ -1746,6 +1746,10 @@
   },
   "richEditor": {
     "commands": {
+      "blockMath": {
+        "description": "Insert mathematical formula",
+        "title": "Math Formula"
+      },
       "blockquote": {
         "description": "Capture a quote",
         "title": "Quote"
@@ -1822,6 +1826,10 @@
         "description": "Add inline code",
         "title": "Inline Code"
       },
+      "inlineMath": {
+        "description": "Insert inline mathematical formulas",
+        "title": "Inline Math"
+      },
       "italic": {
         "description": "Marked as italic",
         "title": "Italic"
@@ -1829,10 +1837,6 @@
       "link": {
         "description": "Add a link",
         "title": "Link"
-      },
-      "math": {
-        "description": "Insert mathematical formula",
-        "title": "Math Formula"
       },
       "noCommandsFound": "No commands found",
       "orderedList": {
@@ -1895,6 +1899,7 @@
     },
     "placeholder": "Write '/' for commands",
     "toolbar": {
+      "blockMath": "Block Math",
       "blockquote": "Quote",
       "bold": "Bold",
       "bulletList": "Bullet List",
@@ -1908,9 +1913,9 @@
       "heading5": "Heading 5",
       "heading6": "Heading 6",
       "image": "Image",
+      "inlineMath": "Inline Equation",
       "italic": "Italic",
       "link": "Link",
-      "math": "Mathematical formulas",
       "orderedList": "Ordered List",
       "paragraph": "Paragraph",
       "redo": "Redo",

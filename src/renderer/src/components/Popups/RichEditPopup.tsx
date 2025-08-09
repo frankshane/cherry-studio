@@ -24,7 +24,7 @@ const PopupContainer: React.FC<Props> = ({
   modalProps,
   resolve,
   children,
-  disableCommands = ['image'] // 默认禁用 image 命令
+  disableCommands = ['image', 'inlineMath'] // 默认禁用 image 命令
 }) => {
   const [open, setOpen] = useState(true)
   const { t } = useTranslation()

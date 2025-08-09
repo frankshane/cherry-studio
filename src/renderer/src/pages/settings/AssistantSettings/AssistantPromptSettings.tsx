@@ -74,7 +74,7 @@ const AssistantPromptSettings: React.FC<Props> = ({ assistant, updateAssistant }
   const promptVarsContent = <pre>{t('agents.add.prompt.variables.tip.content')}</pre>
 
   const handleCommandsReady = (commandAPI: Pick<RichEditorRef, 'unregisterCommand'>) => {
-    const disabledCommands = ['image']
+    const disabledCommands = ['image', 'inlineMath']
     disabledCommands.forEach((commandId) => {
       commandAPI.unregisterCommand(commandId)
     })

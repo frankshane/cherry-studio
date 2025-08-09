@@ -20,6 +20,7 @@ import {
   List,
   ListOrdered,
   Minus,
+  Omega,
   Quote,
   Redo,
   Strikethrough,
@@ -398,18 +399,32 @@ const DEFAULT_COMMANDS: Command[] = [
     }
   },
   {
-    id: 'math',
+    id: 'inlineMath',
+    title: 'Inline Equation',
+    description: 'Insert inline equation',
+    category: CommandCategory.BLOCKS,
+    icon: Omega,
+    keywords: ['inline', 'math', 'formula', 'equation', 'latex'],
+    handler: (editor: Editor) => {
+      editor.chain().focus().insertMathPlaceholder({ mathType: 'inline' }).run()
+    },
+    showInToolbar: true,
+    toolbarGroup: 'blocks',
+    formattingCommand: 'inlineMath'
+  },
+  {
+    id: 'blockMath',
     title: 'Math Formula',
     description: 'Insert mathematical formula',
-    category: CommandCategory.SPECIAL,
+    category: CommandCategory.BLOCKS,
     icon: Calculator,
     keywords: ['math', 'formula', 'equation', 'latex'],
     handler: (editor: Editor) => {
-      editor.chain().focus().insertMathPlaceholder().run()
+      editor.chain().focus().insertMathPlaceholder({ mathType: 'block' }).run()
     },
     showInToolbar: true,
-    toolbarGroup: 'media',
-    formattingCommand: 'math'
+    toolbarGroup: 'blocks',
+    formattingCommand: 'blockMath'
   },
   // History commands
   {

@@ -1746,6 +1746,10 @@
   },
   "richEditor": {
     "commands": {
+      "blockMath": {
+        "description": "数式を挿入します",
+        "title": "数式"
+      },
       "blockquote": {
         "description": "参照されたテキストを挿入します",
         "title": "引用"
@@ -1822,6 +1826,10 @@
         "description": "インラインコードを追加します",
         "title": "インラインコード"
       },
+      "inlineMath": {
+        "description": "行に数式を挿入します",
+        "title": "業界の数式"
+      },
       "italic": {
         "description": "イタリックとしてマークされています",
         "title": "イタリック"
@@ -1829,10 +1837,6 @@
       "link": {
         "description": "リンクを追加します",
         "title": "リンク"
-      },
-      "math": {
-        "description": "数式を挿入します",
-        "title": "数式"
       },
       "noCommandsFound": "コマンドが見つかりません",
       "orderedList": {
@@ -1895,6 +1899,7 @@
     },
     "placeholder": "'/'を入力してコマンドを呼び出します",
     "toolbar": {
+      "blockMath": "数式",
       "blockquote": "引用",
       "bold": "大胆な",
       "bulletList": "順序付けられていないリスト",
@@ -1908,9 +1913,9 @@
       "heading5": "レベル5タイトル",
       "heading6": "CET-6タイトル",
       "image": "写真",
+      "inlineMath": "業界の数式",
       "italic": "イタリック",
       "link": "リンク",
-      "math": "数式",
       "orderedList": "注文リスト",
       "paragraph": "文章",
       "redo": "やり直し",

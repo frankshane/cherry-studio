@@ -1,4 +1,5 @@
 import { Tooltip } from 'antd'
+import type { TFunction } from 'i18next'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -43,7 +44,7 @@ function getToolbarItems(): ToolbarItemInternal[] {
 }
 
 // Function to get tooltip text for toolbar commands
-const getTooltipText = (t: any, command: FormattingCommand): string => {
+const getTooltipText = (t: TFunction, command: FormattingCommand): string => {
   const tooltipMap: Record<FormattingCommand, string> = {
     bold: t('richEditor.toolbar.bold'),
     italic: t('richEditor.toolbar.italic'),
@@ -67,7 +68,8 @@ const getTooltipText = (t: any, command: FormattingCommand): string => {
     redo: t('richEditor.toolbar.redo'),
     table: t('richEditor.toolbar.table'),
     image: t('richEditor.toolbar.image'),
-    math: t('richEditor.toolbar.math')
+    blockMath: t('richEditor.toolbar.blockMath'),
+    inlineMath: t('richEditor.toolbar.inlineMath')
   }
 
   return tooltipMap[command] || command
@@ -121,25 +123,23 @@ export const Toolbar: React.FC<ToolbarProps> = ({ editor, formattingState, onCom
 
   const handleCommand = (command: FormattingCommand) => {
     if (command === 'image') {
-      // Insert image placeholder that will emit event when clicked
       editor.chain().focus().insertImagePlaceholder().run()
-    } else if (command === 'math') {
-      // Insert math placeholder that will emit event when clicked
-      editor.chain().focus().insertMathPlaceholder().run()
+    } else if (command === 'blockMath') {
+      editor.chain().focus().insertMathPlaceholder({ mathType: 'block' }).run()
+    } else if (command === 'inlineMath') {
+      editor.chain().focus().insertMathPlaceholder({ mathType: 'inline' }).run()
     } else {
       onCommand(command)
     }
   }
 
   const handleImageSelect = (imageUrl: string) => {
-    // Insert image into editor
     if (editor) {
       editor.chain().focus().setImage({ src: imageUrl }).run()
     }
     setShowImageUploader(false)
   }
 
-  // Get dynamic toolbar items
   const toolbarItems = getToolbarItems()
 
   return (
@@ -180,7 +180,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({ editor, formattingState, onCom
       <ImageUploader
         visible={showImageUploader}
         onImageSelect={(imageUrl) => {
-          // Handle both toolbar button and placeholder clicks
           if (placeholderCallbacks.onImageSelect) {
             placeholderCallbacks.onImageSelect(imageUrl)
             setPlaceholderCallbacks((prev) => ({ ...prev, onImageSelect: undefined, onImageCancel: undefined }))
@@ -190,7 +189,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({ editor, formattingState, onCom
           setShowImageUploader(false)
         }}
         onClose={() => {
-          // Handle both toolbar button and placeholder clicks
           if (placeholderCallbacks.onImageCancel) {
             placeholderCallbacks.onImageCancel()
             setPlaceholderCallbacks((prev) => ({ ...prev, onImageSelect: undefined, onImageCancel: undefined }))
@@ -202,25 +200,23 @@ export const Toolbar: React.FC<ToolbarProps> = ({ editor, formattingState, onCom
         visible={showMathInput}
         defaultValue={placeholderCallbacks.mathDefaultValue || ''}
         onSubmit={(formula) => {
-          // Handle both toolbar button and enhanced math clicks
           if (placeholderCallbacks.onMathSubmit) {
             placeholderCallbacks.onMathSubmit(formula)
-            setPlaceholderCallbacks((prev) => ({
-              ...prev,
-              onMathSubmit: undefined,
-              onMathCancel: undefined,
-              onMathFormulaChange: undefined,
-              mathDefaultValue: undefined
-            }))
           } else {
-            if (editor) {
+            if (editor && formula.trim()) {
               editor.chain().focus().insertBlockMath({ latex: formula }).run()
             }
           }
+          setPlaceholderCallbacks((prev) => ({
+            ...prev,
+            onMathSubmit: undefined,
+            onMathCancel: undefined,
+            onMathFormulaChange: undefined,
+            mathDefaultValue: undefined
+          }))
           setShowMathInput(false)
         }}
         onCancel={() => {
-          // Handle both toolbar button and enhanced math clicks
           if (placeholderCallbacks.onMathCancel) {
             placeholderCallbacks.onMathCancel()
             setPlaceholderCallbacks((prev) => ({
@@ -234,14 +230,14 @@ export const Toolbar: React.FC<ToolbarProps> = ({ editor, formattingState, onCom
           setShowMathInput(false)
         }}
         onFormulaChange={(formula) => {
-          // Handle real-time updates
           if (placeholderCallbacks.onMathFormulaChange) {
             placeholderCallbacks.onMathFormulaChange(formula)
           } else {
-            // This is from toolbar button - update any existing math node
             if (editor) {
-              const mathNodeType = editor.schema.nodes.math || editor.schema.nodes.mathBlock
-              if (mathNodeType) {
+              const mathNodeType = editor.schema.nodes.inlineMath || editor.schema.nodes.blockMath
+              if (mathNodeType === editor.schema.nodes.inlineMath) {
+                editor.chain().updateInlineMath({ latex: formula }).run()
+              } else if (mathNodeType === editor.schema.nodes.blockMath) {
                 editor.chain().updateBlockMath({ latex: formula }).run()
               }
             }
@@ -290,8 +286,10 @@ function getFormattingState(state: FormattingState, command: FormattingCommand):
       return state?.isLink || false
     case 'table':
       return state?.isTable || false
-    case 'math':
+    case 'blockMath':
       return state?.isMath || false
+    case 'inlineMath':
+      return state?.isInlineMath || false
     default:
       return false
   }
@@ -321,7 +319,9 @@ function getDisabledState(state: FormattingState, command: FormattingCommand): b
       return !state?.canTable
     case 'image':
       return !state?.canImage
-    case 'math':
+    case 'blockMath':
+      return !state?.canMath
+    case 'inlineMath':
       return !state?.canMath
     default:
       return false

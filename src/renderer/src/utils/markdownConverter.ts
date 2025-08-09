@@ -106,8 +106,15 @@ interface BlockStateLike {
   push: (type: string, tag: string, nesting: number) => TokenLike
 }
 
+interface InlineStateLike {
+  src: string
+  pos: number
+  posMax: number
+  push: (type: string, tag: string, nesting: number) => TokenLike & { content?: string }
+}
+
 function tipTapKatexPlugin(md: MarkdownIt) {
-  // 1) Parser: recognize $$ ... $$ as a block math token
+  // 1) Parser: recognize $$$ ... $$$ as a block math token
   md.block.ruler.before(
     'fence',
     'math_block',
@@ -117,9 +124,13 @@ function tipTapKatexPlugin(md: MarkdownIt) {
       const startPos = state.bMarks[startLine] + state.tShift[startLine]
       const maxPos = state.eMarks[startLine]
 
-      // Must begin with $$ at line start (after indentation)
-      if (startPos + 2 > maxPos) return false
-      if (state.src.charCodeAt(startPos) !== 0x24 /* $ */ || state.src.charCodeAt(startPos + 1) !== 0x24 /* $ */) {
+      // Must begin with $$$ at line start (after indentation)
+      if (startPos + 3 > maxPos) return false
+      if (
+        state.src.charCodeAt(startPos) !== 0x24 /* $ */ ||
+        state.src.charCodeAt(startPos + 1) !== 0x24 /* $ */ ||
+        state.src.charCodeAt(startPos + 2) !== 0x24 /* $ */
+      ) {
         return false
       }
 
@@ -130,26 +141,26 @@ function tipTapKatexPlugin(md: MarkdownIt) {
       let nextLine = startLine
       let content = ''
 
-      // Same-line closing? $$ ... $$
-      const sameLineClose = state.src.indexOf('$$', startPos + 2)
-      if (sameLineClose !== -1 && sameLineClose <= maxPos - 2) {
-        content = state.src.slice(startPos + 2, sameLineClose).trim()
+      // Same-line closing? $$$ ... $$$
+      const sameLineClose = state.src.indexOf('$$$', startPos + 3)
+      if (sameLineClose !== -1 && sameLineClose <= maxPos - 3) {
+        content = state.src.slice(startPos + 3, sameLineClose).trim()
         nextLine = startLine
       } else {
-        // Multiline: look for closing $$ anywhere
+        // Multiline: look for closing $$$ anywhere
         for (nextLine = startLine + 1; nextLine < endLine; nextLine++) {
           const lineStart = state.bMarks[nextLine] + state.tShift[nextLine]
           const lineEnd = state.eMarks[nextLine]
           const line = state.src.slice(lineStart, lineEnd)
 
           // Check if this line contains closing $$
-          const closingPos = line.indexOf('$$')
+          const closingPos = line.indexOf('$$$')
           if (closingPos !== -1) {
             // Found closing $$; extract content between opening and closing
             const allLines: string[] = []
 
             // First line: content after opening $$
-            const firstLineStart = state.bMarks[startLine] + state.tShift[startLine] + 2
+            const firstLineStart = state.bMarks[startLine] + state.tShift[startLine] + 3
             const firstLineEnd = state.eMarks[startLine]
             const firstLineContent = state.src.slice(firstLineStart, firstLineEnd)
             if (firstLineContent.trim()) {
@@ -175,12 +186,13 @@ function tipTapKatexPlugin(md: MarkdownIt) {
 
           // Check if line starts with $$ (alternative closing pattern)
           if (
-            lineStart + 2 <= lineEnd &&
+            lineStart + 3 <= lineEnd &&
             state.src.charCodeAt(lineStart) === 0x24 &&
-            state.src.charCodeAt(lineStart + 1) === 0x24
+            state.src.charCodeAt(lineStart + 1) === 0x24 &&
+            state.src.charCodeAt(lineStart + 2) === 0x24
           ) {
             // Extract content between start and this line
-            const firstContentLineStart = state.bMarks[startLine] + state.tShift[startLine] + 2
+            const firstContentLineStart = state.bMarks[startLine] + state.tShift[startLine] + 3
             const lastContentLineEnd = state.bMarks[nextLine]
             content = state.src.slice(firstContentLineStart, lastContentLineEnd).trim()
             break
@@ -208,6 +220,48 @@ function tipTapKatexPlugin(md: MarkdownIt) {
     const latexEscaped = he.encode(content, { useNamedReferences: true })
     return `<div data-latex="${latexEscaped}" data-type="block-math"></div>`
   }
+
+  // 3) Inline parser: recognize $$...$$ on a single line as inline math
+  md.inline.ruler.before('emphasis', 'math_inline', (stateLike: unknown, silent: boolean): boolean => {
+    const state = stateLike as InlineStateLike
+    const start = state.pos
+
+    // Need starting $$
+    if (
+      start + 1 >= state.posMax ||
+      state.src.charCodeAt(start) !== 0x24 /* $ */ ||
+      state.src.charCodeAt(start + 1) !== 0x24 /* $ */
+    ) {
+      return false
+    }
+
+    // Find the next $$ after start+2
+    const close = state.src.indexOf('$$', start + 2)
+    if (close === -1 || close > state.posMax) {
+      return false
+    }
+
+    const content = state.src.slice(start + 2, close)
+    // Inline variant must not contain a newline
+    if (content.indexOf('\n') !== -1) {
+      return false
+    }
+
+    if (!silent) {
+      const token = state.push('math_inline', 'span', 0)
+      token.content = content.trim()
+    }
+
+    state.pos = close + 2
+    return true
+  })
+
+  // 4) Inline renderer: output TipTap-friendly inline container
+  md.renderer.rules.math_inline = (tokens: Array<{ content?: string }>, idx: number): string => {
+    const content = tokens[idx]?.content ?? ''
+    const latexEscaped = he.encode(content, { useNamedReferences: true })
+    return `<span data-latex="${latexEscaped}" data-type="inline-math"></span>`
+  }
 }
 
 md.use(taskListPlugin, {
@@ -228,7 +282,23 @@ const turndownService = new TurndownService({
   blankReplacement: (_content, node) => {
     const el = node as any as HTMLElement
     if (el.nodeName === 'DIV' && el.getAttribute?.('data-type') === 'block-math') {
-      return `$$${el.getAttribute?.('data-latex')}$$`
+      const latex = el.getAttribute?.('data-latex') || ''
+      return `$$$${latex}$$$`
+    }
+    if (el.nodeName === 'SPAN' && el.getAttribute?.('data-type') === 'inline-math') {
+      const latex = el.getAttribute?.('data-latex') || ''
+      return `$$${latex}$$`
+    }
+    if (el.nodeName === 'P' && el.querySelector?.('[data-type="inline-math"]')) {
+      // Handle paragraphs containing math spans
+      const mathSpans = el.querySelectorAll('[data-type="inline-math"]')
+      const mathContent = Array.from(mathSpans)
+        .map((span) => {
+          const latex = span.getAttribute('data-latex') || ''
+          return `$$${latex}$$`
+        })
+        .join(' ')
+      return '\n\n' + mathContent
     }
     return (node as any).isBlock ? '\n\n' : ''
   }
@@ -326,6 +396,7 @@ export const sanitizeHtml = (html: string): string => {
       'h5',
       'h6',
       'div',
+      'span',
       'p',
       'br',
       'hr',

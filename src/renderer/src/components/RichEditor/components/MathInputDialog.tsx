@@ -99,7 +99,7 @@ const MathInputDialog: React.FC<MathInputDialogProps> = ({
           {t('common.cancel')}
         </Button>
         <Button type="primary" size="small" onClick={handleSubmit}>
-          {t('common.add')}
+          {t('common.confirm')}
         </Button>
       </Flex>
     </div>

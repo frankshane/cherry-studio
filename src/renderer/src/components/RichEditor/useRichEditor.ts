@@ -115,7 +115,42 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
         theme: activeShikiTheme,
         defaultLanguage: 'text'
       }),
-      EnhancedMath,
+      EnhancedMath.configure({
+        blockOptions: {
+          onClick: (node, pos) => {
+            const event = new CustomEvent('openMathDialog', {
+              detail: {
+                defaultValue: node.attrs.latex || '',
+                onSubmit: () => {
+                  editor.commands.focus()
+                },
+                onFormulaChange: (formula: string) => {
+                  editor.chain().setNodeSelection(pos).updateBlockMath({ latex: formula }).run()
+                }
+              }
+            })
+            window.dispatchEvent(event)
+            return true
+          }
+        },
+        inlineOptions: {
+          onClick: (node, pos) => {
+            const event = new CustomEvent('openMathDialog', {
+              detail: {
+                defaultValue: node.attrs.latex || '',
+                onSubmit: () => {
+                  editor.commands.focus()
+                },
+                onFormulaChange: (formula: string) => {
+                  editor.chain().setNodeSelection(pos).updateInlineMath({ latex: formula }).run()
+                }
+              }
+            })
+            window.dispatchEvent(event)
+            return true
+          }
+        }
+      }),
       Placeholder.configure({
         placeholder,
         showOnlyWhenEditable: true,
@@ -164,7 +199,6 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     return isMarkdownContent(markdown)
   }, [markdown])
 
-  // Create TipTap editor instance
   const editor = useEditor({
     shouldRerenderOnTransaction: true,
     extensions,
@@ -173,13 +207,11 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     onUpdate: ({ editor }) => {
       const content = editor.getText()
       const htmlContent = editor.getHTML()
-      // Convert HTML to markdown and update state
       try {
         const convertedMarkdown = htmlToMarkdown(htmlContent)
         setMarkdownState(convertedMarkdown)
         onChange?.(convertedMarkdown)
 
-        // Trigger callbacks
         onContentChange?.(content)
         if (onHtmlChange) {
           const safeHtml = sanitizeHtml(htmlContent)
@@ -219,7 +251,6 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     }
   }, [editor, editable])
 
-  // Cleanup editor on unmount to prevent memory leaks
   useEffect(() => {
     return () => {
       if (editor && !editor.isDestroyed) {
@@ -228,7 +259,6 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     }
   }, [editor])
 
-  // Use TipTap's useEditorState hook for reactive formatting state management
   const formattingState = useEditorState({
     editor,
     selector: ({ editor }) => {
@@ -265,6 +295,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
           canTable: false,
           canImage: false,
           isMath: false,
+          isInlineMath: false,
           canMath: false
         }
       }
@@ -300,20 +331,19 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
         isTable: editor.isActive('table') ?? false,
         canTable: editor.can().chain().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run() ?? false,
         canImage: editor.can().chain().setImage({ src: '' }).run() ?? false,
-        isMath: editor.isActive('mathBlock') ?? false,
+        isMath: editor.isActive('blockMath') ?? false,
+        isInlineMath: editor.isActive('inlineMath') ?? false,
         canMath: true
       }
     }
   })
 
-  // Actions
   const setMarkdown = useCallback(
     (content: string) => {
       try {
         setMarkdownState(content)
         onChange?.(content)
 
-        // Also trigger HTML change callback
         if (onHtmlChange && content) {
           const convertedHtml = markdownToSafeHtml(content)
           onHtmlChange(convertedHtml)

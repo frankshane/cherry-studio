@@ -175,6 +175,8 @@ export interface FormattingState {
   canImage: boolean
   /** Whether math is active */
   isMath: boolean
+  /** Whether inline math is active */
+  isInlineMath: boolean
   /** Whether math command can be executed */
   canMath: boolean
 }
@@ -200,13 +202,14 @@ export type FormattingCommand =
   | 'link'
   | 'undo'
   | 'redo'
-  | 'math'
+  | 'blockMath'
+  | 'inlineMath'
   | 'table'
   | 'image'
 
 export interface ToolbarProps {
   /** Editor instance ref */
-  editor: any // TipTap Editor instance
+  editor: Editor
   /** Custom toolbar items */
   items?: ToolbarItem[]
   /** Current formatting state */
