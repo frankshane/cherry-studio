@@ -1,9 +1,12 @@
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { TextSelection } from '@tiptap/pm/state'
-import { addColumnAfter, addRowAfter } from '@tiptap/pm/tables'
+import { addColumnAfter, addRowAfter, CellSelection, TableMap } from '@tiptap/pm/tables'
 import type { EditorView, NodeView, ViewMutationRecord } from '@tiptap/pm/view'
 
 import { getColStyleDeclaration } from './utilities/colStyle.js'
+import { getElementBorderWidth } from './utilities/getBorderWidth.js'
+import { isCellSelection } from './utilities/isCellSelection.js'
+import { getCellSelectionBounds } from './utilities/selectionBounds.js'
 
 export function updateColumns(
   node: ProseMirrorNode,
@@ -69,6 +72,8 @@ export function updateColumns(
   }
 }
 
+// Callbacks are now handled by a decorations plugin; keep type removed here
+
 export class TableView implements NodeView {
   node: ProseMirrorNode
 
@@ -90,10 +95,17 @@ export class TableView implements NodeView {
 
   tableContainer: HTMLDivElement
 
+  // Hover add buttons are kept; overlay endpoints absolute on wrapper
+  private selectionChangeDisposer?: () => void
+  private rowEndpoint?: HTMLButtonElement
+  private colEndpoint?: HTMLButtonElement
+  private overlayUpdateRafId: number | null = null
+
   constructor(node: ProseMirrorNode, cellMinWidth: number, view: EditorView) {
     this.node = node
     this.cellMinWidth = cellMinWidth
     this.view = view
+    // selection triggers handled by decorations plugin
 
     // Create the wrapper with grid layout
     this.dom = document.createElement('div')
@@ -119,6 +131,29 @@ export class TableView implements NodeView {
     this.syncEditableState()
 
     this.setupEventListeners()
+
+    // create overlay endpoints
+    this.rowEndpoint = document.createElement('button')
+    this.rowEndpoint.className = 'row-action-trigger'
+    this.rowEndpoint.type = 'button'
+    this.rowEndpoint.setAttribute('contenteditable', 'false')
+    this.rowEndpoint.style.position = 'absolute'
+    this.rowEndpoint.style.display = 'none'
+    this.rowEndpoint.tabIndex = -1
+
+    this.colEndpoint = document.createElement('button')
+    this.colEndpoint.className = 'column-action-trigger'
+    this.colEndpoint.type = 'button'
+    this.colEndpoint.setAttribute('contenteditable', 'false')
+    this.colEndpoint.style.position = 'absolute'
+    this.colEndpoint.style.display = 'none'
+    this.colEndpoint.tabIndex = -1
+
+    this.dom.appendChild(this.rowEndpoint)
+    this.dom.appendChild(this.colEndpoint)
+
+    this.bindOverlayHandlers()
+    this.startSelectionWatcher()
   }
 
   update(node: ProseMirrorNode) {
@@ -136,7 +171,12 @@ export class TableView implements NodeView {
   }
 
   ignoreMutation(mutation: ViewMutationRecord) {
-    return mutation.type === 'attributes' && (mutation.target === this.table || this.colgroup.contains(mutation.target))
+    return (
+      (mutation.type === 'attributes' && (mutation.target === this.table || this.colgroup.contains(mutation.target))) ||
+      // Ignore mutations on our action buttons
+      (mutation.target as Element)?.classList?.contains('row-action-trigger') ||
+      (mutation.target as Element)?.classList?.contains('column-action-trigger')
+    )
   }
 
   private isEditable(): boolean {
@@ -197,6 +237,103 @@ export class TableView implements NodeView {
     })
   }
 
+  private bindOverlayHandlers() {
+    if (!this.rowEndpoint || !this.colEndpoint) return
+    this.rowEndpoint.addEventListener('mousedown', (e) => e.preventDefault())
+    this.colEndpoint.addEventListener('mousedown', (e) => e.preventDefault())
+    this.rowEndpoint.addEventListener('click', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      const bounds = getCellSelectionBounds(this.view, this.node)
+      if (!bounds) return
+      this.selectRow(bounds.maxRow)
+      this.view.dom.dispatchEvent(
+        new CustomEvent('table:rowAction', { detail: { rowIndex: bounds.maxRow, view: this.view }, bubbles: true })
+      )
+      this.scheduleOverlayUpdate()
+    })
+    this.colEndpoint.addEventListener('click', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      const bounds = getCellSelectionBounds(this.view, this.node)
+      if (!bounds) return
+      this.selectColumn(bounds.maxCol)
+      this.view.dom.dispatchEvent(
+        new CustomEvent('table:columnAction', { detail: { colIndex: bounds.maxCol, view: this.view }, bubbles: true })
+      )
+      this.scheduleOverlayUpdate()
+    })
+  }
+
+  private startSelectionWatcher() {
+    const owner = this.view.dom.ownerDocument || document
+    const handler = () => this.scheduleOverlayUpdate()
+    owner.addEventListener('selectionchange', handler)
+    this.selectionChangeDisposer = () => owner.removeEventListener('selectionchange', handler)
+    this.scheduleOverlayUpdate()
+  }
+
+  private scheduleOverlayUpdate() {
+    if (this.overlayUpdateRafId !== null) {
+      cancelAnimationFrame(this.overlayUpdateRafId)
+    }
+    this.overlayUpdateRafId = requestAnimationFrame(() => {
+      this.overlayUpdateRafId = null
+      this.updateOverlayPositions()
+    })
+  }
+
+  private updateOverlayPositions() {
+    if (!this.rowEndpoint || !this.colEndpoint) return
+    const bounds = getCellSelectionBounds(this.view, this.node)
+    console.debug('[updateOverlayPositions] bounds', bounds)
+    if (!bounds) {
+      this.rowEndpoint.style.display = 'none'
+      this.colEndpoint.style.display = 'none'
+      return
+    }
+
+    const { map, tableStart, maxRow, maxCol } = bounds
+
+    const getCellDomAndRect = (row: number, col: number) => {
+      const cellIndex = row * map.width + col
+      const cellPos = tableStart + map.map[cellIndex]
+      const cellDom = this.view.nodeDOM(cellPos) as HTMLElement | null
+      return {
+        dom: cellDom,
+        rect: cellDom?.getBoundingClientRect()
+      }
+    }
+
+    // Position row endpoint (left side)
+    const bottomLeft = getCellDomAndRect(maxRow, 0)
+    const topLeft = getCellDomAndRect(0, 0)
+
+    if (bottomLeft.dom && bottomLeft.rect && topLeft.rect) {
+      const midY = (bottomLeft.rect.top + bottomLeft.rect.bottom) / 2
+      this.rowEndpoint.style.display = 'flex'
+      const borderWidth = getElementBorderWidth(this.rowEndpoint)
+      this.rowEndpoint.style.left = `${bottomLeft.rect.left - topLeft.rect.left - this.rowEndpoint.getBoundingClientRect().width / 2 + borderWidth.left / 2}px`
+      this.rowEndpoint.style.top = `${midY - topLeft.rect.top - this.rowEndpoint.getBoundingClientRect().height / 2}px`
+    } else {
+      this.rowEndpoint.style.display = 'none'
+    }
+
+    // Position column endpoint (top side)
+    const topRight = getCellDomAndRect(0, maxCol)
+    const topLeftForCol = getCellDomAndRect(0, 0)
+
+    if (topRight.dom && topRight.rect && topLeftForCol.rect) {
+      const midX = topRight.rect.left + topRight.rect.width / 2
+      const borderWidth = getElementBorderWidth(this.colEndpoint)
+      this.colEndpoint.style.display = 'flex'
+      this.colEndpoint.style.left = `${midX - topLeftForCol.rect.left - this.colEndpoint.getBoundingClientRect().width / 2}px`
+      this.colEndpoint.style.top = `${topRight.rect.top - topLeftForCol.rect.top - this.colEndpoint.getBoundingClientRect().height / 2 + borderWidth.top / 2}px`
+    } else {
+      this.colEndpoint.style.display = 'none'
+    }
+  }
+
   setSelectionToTable() {
     const { state } = this.view
 
@@ -217,8 +354,99 @@ export class TableView implements NodeView {
     }
   }
 
+  // selection triggers moved to decorations plugin
+
+  hasTableCellSelection(): boolean {
+    const selection = this.view.state.selection
+    return isCellSelection(selection)
+  }
+
+  // Removed unused method causing linter error
+
+  handleRowActionClick(rowIndex: number) {
+    // Focus the entire row first
+    this.selectRow(rowIndex)
+
+    // Dispatch custom event for the main project to handle
+    const event = new CustomEvent('table:rowAction', {
+      detail: { rowIndex, view: this.view },
+      bubbles: true
+    })
+    this.view.dom.dispatchEvent(event)
+  }
+
+  handleColumnActionClick(colIndex: number) {
+    // Focus the entire column first
+    this.selectColumn(colIndex)
+
+    // Dispatch custom event for the main project to handle
+    const event = new CustomEvent('table:columnAction', {
+      detail: { colIndex, view: this.view },
+      bubbles: true
+    })
+    this.view.dom.dispatchEvent(event)
+  }
+
+  selectRow(rowIndex: number) {
+    const { state, dispatch } = this.view
+
+    // Find the table position
+    let tablePos = -1
+    state.doc.descendants((node: ProseMirrorNode, pos: number) => {
+      if (node.type.name === 'table' && node === this.node) {
+        tablePos = pos
+        return false
+      }
+      return true
+    })
+
+    if (tablePos >= 0) {
+      const map = TableMap.get(this.node)
+      const firstCellInRow = map.map[rowIndex * map.width]
+      const lastCellInRow = map.map[rowIndex * map.width + map.width - 1]
+
+      const firstCellPos = tablePos + 1 + firstCellInRow
+      const lastCellPos = tablePos + 1 + lastCellInRow
+
+      const selection = CellSelection.create(state.doc, firstCellPos, lastCellPos)
+      const tr = state.tr.setSelection(selection)
+      dispatch(tr)
+    }
+  }
+
+  selectColumn(colIndex: number) {
+    const { state, dispatch } = this.view
+
+    // Find the table position
+    let tablePos = -1
+    state.doc.descendants((node: ProseMirrorNode, pos: number) => {
+      if (node.type.name === 'table' && node === this.node) {
+        tablePos = pos
+        return false
+      }
+      return true
+    })
+
+    if (tablePos >= 0) {
+      const map = TableMap.get(this.node)
+      const firstCellInCol = map.map[colIndex]
+      const lastCellInCol = map.map[(map.height - 1) * map.width + colIndex]
+
+      const firstCellPos = tablePos + 1 + firstCellInCol
+      const lastCellPos = tablePos + 1 + lastCellInCol
+
+      const selection = CellSelection.create(state.doc, firstCellPos, lastCellPos)
+      const tr = state.tr.setSelection(selection)
+      dispatch(tr)
+    }
+  }
+
   destroy() {
     this.addRowButton?.remove()
     this.addColumnButton?.remove()
+    if (this.rowEndpoint) this.rowEndpoint.remove()
+    if (this.colEndpoint) this.colEndpoint.remove()
+    if (this.selectionChangeDisposer) this.selectionChangeDisposer()
+    if (this.overlayUpdateRafId !== null) cancelAnimationFrame(this.overlayUpdateRafId)
   }
 }

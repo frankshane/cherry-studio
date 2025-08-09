@@ -22,7 +22,7 @@ import {
   toggleHeader,
   toggleHeaderCell
 } from '@tiptap/pm/tables'
-import type { EditorView, NodeView } from '@tiptap/pm/view'
+import { type EditorView, type NodeView } from '@tiptap/pm/view'
 
 import { TableView } from './TableView.js'
 import { createColGroup } from './utilities/createColGroup.js'
@@ -77,6 +77,12 @@ export interface TableOptions {
    * @example true
    */
   allowTableNodeSelection: boolean
+
+  /**
+   * Optional callbacks for row/column action triggers
+   */
+  onRowActionClick?: (args: { rowIndex: number; view: EditorView }) => void
+  onColumnActionClick?: (args: { colIndex: number; view: EditorView }) => void
 }
 
 declare module '@tiptap/core' {
@@ -440,6 +446,9 @@ export const Table = Node.create<TableOptions>({
 
   addProseMirrorPlugins() {
     const isResizable = this.options.resizable && this.editor.isEditable
+
+    // kept for potential future plugins; currently unused after overlay migration
+    // const actionPluginKey = new PluginKey('tableActionTriggers')
 
     return [
       ...(isResizable

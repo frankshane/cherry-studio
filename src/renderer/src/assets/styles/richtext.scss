@@ -155,7 +155,8 @@
   table {
     border-collapse: collapse;
     margin: 0;
-    overflow: hidden;
+    /* Allow action endpoints (rendered as decorations) to slightly overflow table edges */
+    overflow: visible;
     table-layout: fixed;
     width: 100%;
 
@@ -190,7 +191,7 @@
       inset: 0;
       pointer-events: none;
       border: 0 solid var(--color-primary);
-      border-radius: 0; // 如有需要
+      border-radius: 0;
     }
     .selectedCell.selection-top::after {
       border-top-width: 2px;
@@ -213,6 +214,93 @@
       right: -2px;
       top: 0;
       width: 4px;
+    }
+
+    // Row action buttons - positioned on left border of first column cells
+    .row-action-button {
+      position: absolute;
+      left: -15px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 12px;
+      height: 12px;
+      border: 1px solid var(--color-border);
+      background: var(--color-bg-base);
+      border-radius: 2px;
+      font-size: 8px;
+      line-height: 1;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-secondary);
+      z-index: 10;
+      transition: all 0.2s ease;
+      pointer-events: auto;
+
+      &:hover {
+        background: var(--color-primary);
+        color: white;
+        border-color: var(--color-primary);
+        transform: translateY(-50%) scale(1.1);
+      }
+
+      &:active {
+        transform: translateY(-50%) scale(0.95);
+      }
+    }
+
+    // Column action buttons - positioned on right border of first row cells
+    .column-action-button {
+      position: absolute;
+      right: -15px;
+      top: 6px;
+      width: 12px;
+      height: 12px;
+      border: 1px solid var(--color-border);
+      background: var(--color-bg-base);
+      border-radius: 2px;
+      font-size: 8px;
+      line-height: 1;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-secondary);
+      z-index: 10;
+      transition: all 0.2s ease;
+      pointer-events: auto;
+
+      &:hover {
+        background: var(--color-primary);
+        color: white;
+        border-color: var(--color-primary);
+        transform: scale(1.1);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+
+    // Temporarily disabled to fix infinite recursion
+    // &:has(.selectedCell) {
+    //   .row-action-button,
+    //   .column-action-button {
+    //     display: flex;
+    //   }
+    // }
+
+    // Position row action buttons relative to first column cells
+    tbody tr td:first-child,
+    tbody tr th:first-child {
+      position: relative;
+    }
+
+    // Position column action buttons relative to first row cells
+    tbody tr:first-child td,
+    tbody tr:first-child th {
+      position: relative;
     }
   }
 
@@ -301,6 +389,29 @@
     .add-row-button:hover,
     .add-column-button:hover {
       display: flex !important;
+    }
+
+    /* Row/Column action triggers (visible on cell selection) */
+    .row-action-trigger,
+    .column-action-trigger {
+      position: absolute;
+      height: 20px;
+      border-radius: 8px;
+      background: var(--color-primary);
+      color: #fff;
+      border: 1px solid var(--color-primary);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      line-height: 1;
+      z-index: 30;
+      pointer-events: auto;
+    }
+
+    .row-action-trigger::before,
+    .column-action-trigger::before {
+      content: '•••';
     }
   }
 

@@ -251,6 +251,68 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     }
   }, [editor, editable])
 
+  // Show action menu for table rows/columns
+  const showTableActionMenu = useCallback(
+    (type: 'row' | 'column', index: number) => {
+      if (!editor) return
+
+      const actions = [
+        {
+          label: `Insert ${type === 'row' ? 'Row' : 'Column'} Before`,
+          action: () => {
+            // Use setTimeout to avoid immediate re-triggering of events
+            setTimeout(() => {
+              if (type === 'row') {
+                editor.chain().focus().addRowBefore().run()
+              } else {
+                editor.chain().focus().addColumnBefore().run()
+              }
+            }, 10)
+          }
+        },
+        {
+          label: `Insert ${type === 'row' ? 'Row' : 'Column'} After`,
+          action: () => {
+            setTimeout(() => {
+              if (type === 'row') {
+                editor.chain().focus().addRowAfter().run()
+              } else {
+                editor.chain().focus().addColumnAfter().run()
+              }
+            }, 10)
+          }
+        },
+        {
+          label: `Delete ${type === 'row' ? 'Row' : 'Column'}`,
+          action: () => {
+            setTimeout(() => {
+              if (type === 'row') {
+                editor.chain().focus().deleteRow().run()
+              } else {
+                editor.chain().focus().deleteColumn().run()
+              }
+            }, 10)
+          }
+        }
+      ]
+
+      // For now, dispatch a custom event that can be handled by the parent component
+      // In a real implementation, you might want to show a context menu
+      const menuEvent = new CustomEvent('table:showActionMenu', {
+        detail: { type, index, actions },
+        bubbles: true
+      })
+      editor.view.dom.dispatchEvent(menuEvent)
+    },
+    [editor]
+  )
+
+  // Setup table action event listeners
+  useEffect(() => {
+    // Temporarily disable to fix infinite recursion
+    return () => {}
+  }, [editor, showTableActionMenu])
+
   useEffect(() => {
     return () => {
       if (editor && !editor.isDestroyed) {

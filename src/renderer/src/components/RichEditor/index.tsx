@@ -1,7 +1,7 @@
 import DragHandle from '@tiptap/extension-drag-handle-react'
 import { EditorContent } from '@tiptap/react'
 import { t } from 'i18next'
-import React, { useEffect, useImperativeHandle, useRef } from 'react'
+import React, { useEffect, useImperativeHandle, useRef, useState } from 'react'
 
 import { MdiDragHandle } from '../Icons/SVGIcon'
 import {
@@ -13,6 +13,7 @@ import {
   unregisterCommand,
   unregisterToolbarCommand
 } from './command'
+import { type TableAction, TableActionMenu } from './components/TableActionMenu'
 import { EditorContent as StyledEditorContent, RichEditorWrapper } from './styles'
 import { Toolbar } from './toolbar'
 import type { FormattingCommand, RichEditorProps, RichEditorRef } from './types'
@@ -48,6 +49,17 @@ const RichEditor = ({
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null)
 
+  // Table action menu state
+  const [tableActionMenu, setTableActionMenu] = useState<{
+    show: boolean
+    position: { x: number; y: number }
+    actions: TableAction[]
+  }>({
+    show: false,
+    position: { x: 0, y: 0 },
+    actions: []
+  })
+
   // Register initial commands on mount
   useEffect(() => {
     if (initialCommands) {
@@ -74,6 +86,44 @@ const RichEditor = ({
       onCommandsReady(commandAPI)
     }
   }, [editor, onCommandsReady])
+
+  // Setup table action menu event listener
+  useEffect(() => {
+    if (!editor) return
+
+    const handleShowActionMenu = (event: CustomEvent) => {
+      const { detail } = event
+      const { actions } = detail
+
+      // Get mouse position for menu placement
+      // For simplicity, just show at a fixed position near the cursor
+      // In a real implementation, you might want to get the actual button position
+      const rect = editor.view.dom.getBoundingClientRect()
+      setTableActionMenu({
+        show: true,
+        position: {
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2
+        },
+        actions
+      })
+    }
+
+    const editorDOM = editor.view.dom
+    editorDOM.addEventListener('table:showActionMenu', handleShowActionMenu as EventListener)
+
+    return () => {
+      editorDOM.removeEventListener('table:showActionMenu', handleShowActionMenu as EventListener)
+    }
+  }, [editor])
+
+  const closeTableActionMenu = () => {
+    setTableActionMenu({
+      show: false,
+      position: { x: 0, y: 0 },
+      actions: []
+    })
+  }
 
   const handleCommand = (command: FormattingCommand) => {
     if (!editor) return
@@ -245,6 +295,12 @@ const RichEditor = ({
         </DragHandle>
         <EditorContent editor={editor} />
       </StyledEditorContent>
+      <TableActionMenu
+        show={tableActionMenu.show}
+        position={tableActionMenu.position}
+        actions={tableActionMenu.actions}
+        onClose={closeTableActionMenu}
+      />
     </RichEditorWrapper>
   )
 }
