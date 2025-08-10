@@ -211,26 +211,6 @@ export class NotesService {
     }
   }
 
-  /**
-   * 读取笔记内容
-   */
-  static async readNote(node: NotesTreeNode): Promise<string> {
-    if (node.type !== 'file' || !node.fileId) {
-      throw new Error('Invalid note node')
-    }
-
-    try {
-      const fileMetadata = await FileManager.getFile(node.fileId)
-      if (!fileMetadata) {
-        throw new Error('Note file not found in database')
-      }
-
-      return await window.api.file.read(fileMetadata.id + fileMetadata.ext)
-    } catch (error) {
-      logger.error('Failed to read note:', error as Error)
-      throw error
-    }
-  }
 
   /**
    * 更新笔记内容

@@ -25,7 +25,6 @@ const NotesPage: FC = () => {
   const { showWorkspace } = useSettings()
   const [notesTree, setNotesTree] = useState<NotesTreeNode[]>([])
   const [activeNodeId, setActiveNodeId] = useState<string | undefined>(undefined)
-  const [isLoading, setIsLoading] = useState(false)
   const [currentContent, setCurrentContent] = useState<string>('')
   const [tokenCount, setTokenCount] = useState(0)
   const [showPreview, setShowPreview] = useState(false)
@@ -104,18 +103,26 @@ const NotesPage: FC = () => {
     const loadNoteContent = async () => {
       if (activeNodeId && notesTree.length > 0) {
         try {
-          setIsLoading(true)
           const activeNode = findNodeById(notesTree, activeNodeId)
-          if (activeNode && activeNode.type === 'file') {
-            const content = await NotesService.readNote(activeNode)
-            setCurrentContent(content)
-            setShowPreview(content.length > 0)
+          logger.debug('Active node:', activeNode)
+          if (activeNode && activeNode.type === 'file' && activeNode.fileId) {
+            try {
+              const fileMetadata = await FileManager.getFile(activeNode.fileId)
+              logger.debug('File metadata:', fileMetadata)
+              if (fileMetadata) {
+                const content = await window.api.file.read(fileMetadata.id + fileMetadata.ext)
+                logger.debug(content)
+                setCurrentContent(content)
+                setShowPreview(content.length > 0)
+              }
+            } catch (error) {
+              logger.error('Failed to read file:', error as Error)
+              setCurrentContent('')
+            }
           }
         } catch (error) {
           logger.error('Failed to load note content:', error as Error)
           setCurrentContent('')
-        } finally {
-          setIsLoading(false)
         }
       } else if (!activeNodeId) {
         setCurrentContent('')
@@ -129,22 +136,17 @@ const NotesPage: FC = () => {
   // 创建文件夹
   const handleCreateFolder = async (name: string, parentId?: string) => {
     try {
-      setIsLoading(true)
       await NotesService.createFolder(name, parentId)
       const updatedTree = await NotesService.getNotesTree()
       setNotesTree(updatedTree)
     } catch (error) {
       logger.error('Failed to create folder:', error as Error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
   // 创建笔记
   const handleCreateNote = async (name: string, parentId?: string) => {
     try {
-      setIsLoading(true)
-
       let noteName = name
       if (!noteName.toLowerCase().endsWith('.md')) {
         noteName += '.md'
@@ -158,8 +160,6 @@ const NotesPage: FC = () => {
       setActiveNodeId(newNote.id)
     } catch (error) {
       logger.error('Failed to create note:', error as Error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -167,7 +167,6 @@ const NotesPage: FC = () => {
   const handleSelectNode = async (node: NotesTreeNode) => {
     if (node.type === 'file') {
       try {
-        setIsLoading(true)
         setActiveNodeId(node.id)
 
         if (node.fileId) {
@@ -184,8 +183,6 @@ const NotesPage: FC = () => {
         }
       } catch (error) {
         logger.error('Failed to load note:', error as Error)
-      } finally {
-        setIsLoading(false)
       }
     } else if (node.type === 'folder') {
       // 切换文件夹展开状态
@@ -196,7 +193,6 @@ const NotesPage: FC = () => {
   // 删除节点
   const handleDeleteNode = async (nodeId: string) => {
     try {
-      setIsLoading(true)
       await NotesService.deleteNode(nodeId)
       const updatedTree = await NotesService.getNotesTree()
       setNotesTree(updatedTree)
@@ -211,22 +207,17 @@ const NotesPage: FC = () => {
       }
     } catch (error) {
       logger.error('Failed to delete node:', error as Error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
   // 重命名节点
   const handleRenameNode = async (nodeId: string, newName: string) => {
     try {
-      setIsLoading(true)
       await NotesService.renameNode(nodeId, newName)
       const updatedTree = await NotesService.getNotesTree()
       setNotesTree(updatedTree)
     } catch (error) {
       logger.error('Failed to rename node:', error as Error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -244,14 +235,11 @@ const NotesPage: FC = () => {
   // 移动节点
   const handleMoveNode = async (nodeId: string, targetParentId?: string) => {
     try {
-      setIsLoading(true)
       await NotesService.moveNode(nodeId, targetParentId)
       const updatedTree = await NotesService.getNotesTree()
       setNotesTree(updatedTree)
     } catch (error) {
       logger.error('Failed to move node:', error as Error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -273,11 +261,6 @@ const NotesPage: FC = () => {
           />
         )}
         <EditorWrapper>
-          {isLoading && (
-            <LoadingOverlay>
-              <LoadingText>{t('common.loading')}</LoadingText>
-            </LoadingOverlay>
-          )}
           {activeNodeId ? (
             <EditorContainer>
               <RichEditorContainer>
@@ -337,25 +320,6 @@ const ContentContainer = styled.div`
   flex: 1;
   flex-direction: row;
   overflow: hidden;
-`
-
-const LoadingOverlay = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(2px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-`
-
-const LoadingText = styled.div`
-  color: var(--color-text-2);
-  font-size: 14px;
 `
 
 const EditorWrapper = styled.div`
