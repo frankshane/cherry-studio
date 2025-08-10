@@ -25,7 +25,8 @@ export interface KnowledgeBase {
   id: string
   name: string
   model: Model
-  dimensions?: number
+  dimensions: number
+  userDims?: boolean
   description?: string
   items: KnowledgeItem[]
   created_at: number
@@ -69,7 +70,9 @@ export interface OcrProvider {
 
 export type KnowledgeBaseParams = {
   id: string
-  dimensions?: number
+  dimensions: number
+  /** 是否为用户设置的维度。如果维度是用户设置的，就应该在嵌入请求时传入 dimensions 参数。 */
+  userDims?: boolean
   chunkSize?: number
   chunkOverlap?: number
   embedApiClient: ApiClient
