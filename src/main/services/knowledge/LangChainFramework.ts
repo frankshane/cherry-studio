@@ -80,7 +80,7 @@ export class LangChainFramework implements IKnowledgeFramework {
   private async getVectorStore(base: KnowledgeBaseParams): Promise<LibSQLVectorStore> {
     const embeddings = new Embeddings({
       embedApiClient: base.embedApiClient,
-      dimensions: base.dimensions
+      dimensions: base.userDims ? base.dimensions : undefined
     })
     const client = createClient({
       url: `file:${path.join(this.storageDir, base.id)}`
