@@ -61,6 +61,8 @@ export class LangChainFramework implements IKnowledgeFramework {
       url: `file:${path.join(this.storageDir, base.id)}`
     })
 
+    await client.execute('PRAGMA auto_vacuum = FULL;')
+
     await client.batch(
       [
         `CREATE TABLE IF NOT EXISTS Knowledge
