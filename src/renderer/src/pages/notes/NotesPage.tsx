@@ -56,7 +56,7 @@ const NotesPage: FC = () => {
   // 保存当前笔记内容
   const saveCurrentNote = useCallback(
     async (content: string) => {
-      if (!activeNodeId) return
+      if (!activeNodeId || content === currentContent) return
 
       try {
         const activeNode = findNodeById(notesTree, activeNodeId)
