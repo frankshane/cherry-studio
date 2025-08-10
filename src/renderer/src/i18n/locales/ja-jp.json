@@ -892,11 +892,12 @@
     "delete_confirm": "このナレッジベースを削除してもよろしいですか？",
     "dimensions": "埋め込み次元",
     "dimensions_auto_set": "埋め込み次元を自動設定",
-    "dimensions_default": "[to be translated]:模型将使用默认嵌入维度。选择此选项后，知识库会使用模型默认的嵌入维度创建向量数据库，同时不会在嵌入请求中传入 dimensions 参数。",
+    "dimensions_default": "モデルはデフォルトの埋め込み次元を使用します。このオプションを選択すると、ナレッジベースはモデルのデフォルトの埋め込み次元を使用してベクトルデータベースを作成し、埋め込みリクエストにはdimensionsパラメータを送信しません。",
     "dimensions_error_invalid": "無効な埋め込み次元",
+    "dimensions_getting": "埋め込み次元を取得中...",
     "dimensions_set_right": "⚠️ モデルが設定した埋め込み次元のサイズをサポートしていることを確認してください",
     "dimensions_size_too_large": "埋め込み次元はモデルのコンテキスト制限（{{max_context}}）を超えてはなりません。",
-    "dimensions_size_tooltip": "[to be translated]:嵌入维度大小，数值越大消耗的 Token 也越多。",
+    "dimensions_size_tooltip": "埋め込み次元のサイズ。数値が大きいほど消費されるトークンも増える。",
     "directories": "ディレクトリ",
     "directory_placeholder": "ディレクトリパスを入力",
     "document_count": "要求されたドキュメント分段数",
@@ -911,7 +912,7 @@
     "error": {
       "failed_to_create": "ナレッジベースの作成に失敗しました",
       "failed_to_edit": "ナレッジベースの編集に失敗しました",
-      "get_embedding_dimensions": "[to be translated]:获取嵌入维度失败",
+      "get_embedding_dimensions": "埋め込み次元の取得に失敗しました",
       "model_invalid": "モデルが選択されていません"
     },
     "file_hint": "{{file_types}} 形式をサポート",
@@ -1065,6 +1066,9 @@
     "embedding_model": "埋め込みモデル",
     "enable_global_memory_first": "最初にグローバルメモリを有効にしてください",
     "end_date": "終了日",
+    "error": {
+      "update_settings": "更新设置失败"
+    },
     "global_memory": "グローバルメモリ",
     "global_memory_description": "メモリ機能を使用するには、アシスタント設定でグローバルメモリを有効にしてください。",
     "global_memory_disabled_desc": "メモリ機能を使用するには、まずアシスタント設定でグローバルメモリを有効にしてください。",
