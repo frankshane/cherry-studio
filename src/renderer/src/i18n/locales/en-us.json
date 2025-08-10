@@ -183,10 +183,11 @@
       "prompt": "Prompt Settings",
       "reasoning_effort": {
         "default": "Default",
-        "high": "Think harder",
+        "high": "High",
         "label": "Reasoning effort",
-        "low": "Think less",
-        "medium": "Think normally",
+        "low": "Low",
+        "medium": "Medium",
+        "minimal": "Minimal",
         "off": "Off"
       },
       "regular_phrases": {
@@ -876,6 +877,7 @@
     "add_note": "Add Note",
     "add_sitemap": "Website Map",
     "add_url": "Add URL",
+    "add_video": "Add video",
     "cancel_index": "Cancel Indexing",
     "chunk_overlap": "Chunk Overlap",
     "chunk_overlap_placeholder": "Default (not recommended to change)",
@@ -928,6 +930,10 @@
       },
       "error": {
         "failed": "Migration failed"
+      },
+      "migrate_to_langchain": {
+        "content": "The knowledge base migration does not delete the old knowledge base but creates a copy and reprocesses all entries, which may consume a significant number of tokens. Please proceed with caution.",
+        "info": "The knowledge base architecture has been updated. Click to migrate to the new architecture."
       },
       "source_dimensions": "Source Dimensions",
       "source_model": "Source Model",
@@ -985,7 +991,8 @@
     "topN_tooltip": "The number of matching results returned; the larger the value, the more matching results, but also the more tokens consumed.",
     "url_added": "URL added",
     "url_placeholder": "Enter URL, multiple URLs separated by Enter",
-    "urls": "URLs"
+    "urls": "URLs",
+    "videos": "video"
   },
   "languages": {
     "arabic": "Arabic",
@@ -3125,7 +3132,14 @@
         "tip": "A summary of the reasoning performed by the model",
         "title": "Summary Mode"
       },
-      "title": "OpenAI Settings"
+      "title": "OpenAI Settings",
+      "verbosity": {
+        "high": "High",
+        "low": "Low",
+        "medium": "Medium",
+        "tip": "Control the level of detail in the model's output",
+        "title": "Level of detail"
+      }
     },
     "privacy": {
       "enable_privacy_mode": "Anonymous reporting of errors and statistics",

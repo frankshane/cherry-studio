@@ -187,6 +187,7 @@
         "label": "Comprimento da Cadeia de Raciocínio",
         "low": "Curto",
         "medium": "Médio",
+        "minimal": "mínimo",
         "off": "Desligado"
       },
       "regular_phrases": {
@@ -876,6 +877,7 @@
     "add_note": "Adicionar nota",
     "add_sitemap": "Adicionar mapa do site",
     "add_url": "Adicionar URL",
+    "add_video": "[to be translated]:添加视频",
     "cancel_index": "Cancelar índice",
     "chunk_overlap": "Sobreposição de bloco",
     "chunk_overlap_placeholder": "Valor padrão (não recomendado alterar)",
@@ -928,6 +930,10 @@
       },
       "error": {
         "failed": "Falha na migração"
+      },
+      "migrate_to_langchain": {
+        "content": "[to be translated]:知识库迁移不会删除旧知识库，而是创建一个副本之后重新处理所有知识库条目，可能消耗大量 tokens，请谨慎操作。",
+        "info": "[to be translated]:知识库架构已更新，点击迁移到新架构"
       },
       "source_dimensions": "Dimensões de origem",
       "source_model": "Modelo de origem",
@@ -985,7 +991,8 @@
     "topN_tooltip": "Número de resultados correspondentes retornados, quanto maior o valor, mais resultados correspondentes, mas mais tokens são consumidos",
     "url_added": "URL adicionada",
     "url_placeholder": "Digite a URL, várias URLs separadas por enter",
-    "urls": "URLs"
+    "urls": "URLs",
+    "videos": "[to be translated]:视频"
   },
   "languages": {
     "arabic": "Árabe",
@@ -3125,7 +3132,14 @@
         "tip": "Resumo do raciocínio executado pelo modelo",
         "title": "Modo de Resumo"
       },
-      "title": "Configurações do OpenAI"
+      "title": "Configurações do OpenAI",
+      "verbosity": {
+        "high": "alto",
+        "low": "baixo",
+        "medium": "médio",
+        "tip": "Controlar o nível de detalhe da saída do modelo",
+        "title": "nível de detalhe"
+      }
     },
     "privacy": {
       "enable_privacy_mode": "Enviar relatórios de erro e estatísticas de forma anônima",

@@ -187,6 +187,7 @@
         "label": "思維鏈長度",
         "low": "稍微思考",
         "medium": "正常思考",
+        "minimal": "最少思考",
         "off": "關閉"
       },
       "regular_phrases": {
@@ -876,6 +877,7 @@
     "add_note": "新增筆記",
     "add_sitemap": "網站地圖",
     "add_url": "新增網址",
+    "add_video": "新增影片",
     "cancel_index": "取消索引",
     "chunk_overlap": "重疊大小",
     "chunk_overlap_placeholder": "預設值（不建議修改）",
@@ -928,6 +930,10 @@
       },
       "error": {
         "failed": "遷移失敗"
+      },
+      "migrate_to_langchain": {
+        "content": "知識庫遷移不會刪除舊知識庫，而是建立一個副本後重新處理所有知識庫條目，可能消耗大量 tokens，請謹慎操作。",
+        "info": "知識庫架構已更新，點擊遷移到新架構"
       },
       "source_dimensions": "源維度",
       "source_model": "源模型",
@@ -985,7 +991,8 @@
     "topN_tooltip": "返回的匹配結果數量，數值越大，匹配結果越多，但消耗的 Token 也越多",
     "url_added": "網址已新增",
     "url_placeholder": "請輸入網址，多個網址用換行符號分隔",
-    "urls": "網址"
+    "urls": "網址",
+    "videos": "影片"
   },
   "languages": {
     "arabic": "阿拉伯文",
@@ -3125,7 +3132,14 @@
         "tip": "模型所執行的推理摘要",
         "title": "摘要模式"
       },
-      "title": "OpenAI 設定"
+      "title": "OpenAI 設定",
+      "verbosity": {
+        "high": "高",
+        "low": "低",
+        "medium": "中",
+        "tip": "控制模型輸出的詳細程度",
+        "title": "詳細程度"
+      }
     },
     "privacy": {
       "enable_privacy_mode": "匿名發送錯誤報告和資料統計",

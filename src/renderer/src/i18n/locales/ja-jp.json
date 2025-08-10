@@ -187,6 +187,7 @@
         "label": "思考連鎖の長さ",
         "low": "少しの思考",
         "medium": "普通の思考",
+        "minimal": "最小限の思考",
         "off": "オフ"
       },
       "regular_phrases": {
@@ -876,6 +877,7 @@
     "add_note": "ノートを追加",
     "add_sitemap": "サイトマップを追加",
     "add_url": "URLを追加",
+    "add_video": "動画を追加",
     "cancel_index": "インデックスをキャンセル",
     "chunk_overlap": "チャンクの重なり",
     "chunk_overlap_placeholder": "デフォルト（変更しないでください）",
@@ -928,6 +930,10 @@
       },
       "error": {
         "failed": "移行が失敗しました"
+      },
+      "migrate_to_langchain": {
+        "content": "ナレッジベースの移行は旧ナレッジベースを削除せず、すべてのエントリーを再処理したコピーを作成します。大量のトークンを消費する可能性があるため、操作には十分注意してください。",
+        "info": "ナレッジベースのアーキテクチャが更新されました、新しいアーキテクチャに移行するにはクリックしてください"
       },
       "source_dimensions": "ソース次元",
       "source_model": "ソースモデル",
@@ -985,7 +991,8 @@
     "topN_tooltip": "返されるマッチ結果の数は、数値が大きいほどマッチ結果が多くなりますが、消費されるトークンも増えます。",
     "url_added": "URLが追加されました",
     "url_placeholder": "URLを入力, 複数のURLはEnterで区切る",
-    "urls": "URL"
+    "urls": "URL",
+    "videos": "動画"
   },
   "languages": {
     "arabic": "アラビア語",
@@ -3125,7 +3132,14 @@
         "tip": "モデルが行った推論の要約",
         "title": "要約モード"
       },
-      "title": "OpenAIの設定"
+      "title": "OpenAIの設定",
+      "verbosity": {
+        "high": "高",
+        "low": "低",
+        "medium": "中",
+        "tip": "制御モデル出力の詳細さ",
+        "title": "詳細度"
+      }
     },
     "privacy": {
       "enable_privacy_mode": "匿名エラーレポートとデータ統計の送信",

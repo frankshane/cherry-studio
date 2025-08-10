@@ -263,17 +263,19 @@ const httpMessageKeyMap = {
 } as const
 
 export const getHttpMessageLabel = (key: string): string => {
-  return getLabel(key, httpMessageKeyMap)
+  const labelMap = {
+    '400': t('error.http.400'),
+    '401': t('error.http.401'),
+    '403': t('error.http.403'),
+    '404': t('error.http.404'),
+    '429': t('error.http.429'),
+    '500': t('error.http.500'),
+    '502': t('error.http.502'),
+    '503': t('error.http.503'),
+    '504': t('error.http.504')
+  } as const
+  return labelMap[key] ?? key
 }
-
-const reasoningEffortOptionsKeyMap = {
-  auto: 'assistants.settings.reasoning_effort.default',
-  high: 'assistants.settings.reasoning_effort.high',
-  label: 'assistants.settings.reasoning_effort.label',
-  low: 'assistants.settings.reasoning_effort.low',
-  medium: 'assistants.settings.reasoning_effort.medium',
-  off: 'assistants.settings.reasoning_effort.off'
-} as const
 
 export const getReasoningEffortOptionsLabel = (key: string): string => {
   return getLabel(key, reasoningEffortOptionsKeyMap)

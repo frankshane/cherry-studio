@@ -142,6 +142,21 @@ const GeneralSettingsPanel: React.FC<GeneralSettingsPanelProps> = ({
 
       <SettingsItem>
         <div className="settings-label">
+          {t('settings.tool.preprocess.title')}
+          <InfoTooltip title={t('settings.tool.preprocess.tooltip')} placement="right" />
+        </div>
+        <Select
+          value={selectedDocPreprocessProvider?.id}
+          style={{ width: '100%' }}
+          onChange={handleDocPreprocessChange}
+          placeholder={t('settings.tool.preprocess.provider_placeholder')}
+          options={docPreprocessSelectOptions}
+          allowClear
+        />
+      </SettingsItem>
+
+      <SettingsItem>
+        <div className="settings-label">
           {t('knowledge.document_count')}
           <InfoTooltip title={t('knowledge.document_count_help')} placement="right" />
         </div>
