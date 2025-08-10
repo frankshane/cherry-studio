@@ -76,6 +76,62 @@
     },
     "title": "Agente"
   },
+  "apiServer": {
+    "actions": {
+      "copy": "Copiar",
+      "regenerate": "Regenerar",
+      "restart": {
+        "button": "Reiniciar",
+        "tooltip": "Reiniciar Servidor"
+      },
+      "start": "iniciar",
+      "stop": "parar"
+    },
+    "authHeader": {
+      "title": "Cabeçalho de autorização"
+    },
+    "authHeaderText": "Usar no cabeçalho de autorização:",
+    "configuration": "Configuração",
+    "description": "Expõe as capacidades de IA do Cherry Studio através de APIs HTTP compatíveis com OpenAI",
+    "documentation": {
+      "title": "Documentação API"
+    },
+    "fields": {
+      "apiKey": {
+        "copyTooltip": "Copiar Chave API",
+        "description": "Token de autenticação seguro para acesso à API",
+        "label": "Chave API",
+        "placeholder": "A chave API será gerada automaticamente"
+      },
+      "port": {
+        "description": "Número de porta TCP do servidor HTTP (1000-65535)",
+        "helpText": "Pare o servidor para alterar a porta",
+        "label": "Porta"
+      },
+      "url": {
+        "copyTooltip": "Copiar URL",
+        "label": "URL"
+      }
+    },
+    "messages": {
+      "apiKeyCopied": "Chave API copiada para a área de transferência",
+      "apiKeyRegenerated": "Chave API regenerada",
+      "operationFailed": "Operação do Servidor API falhou: ",
+      "restartError": "Falha ao reiniciar o Servidor API: ",
+      "restartFailed": "Reinício do Servidor API falhou: ",
+      "restartSuccess": "Servidor API reiniciado com sucesso",
+      "startError": "Falha ao iniciar o Servidor API: ",
+      "startSuccess": "Servidor API iniciado com sucesso",
+      "stopError": "Falha ao parar o Servidor API: ",
+      "stopSuccess": "Servidor API parado com sucesso",
+      "urlCopied": "URL do servidor copiada para a área de transferência"
+    },
+    "status": {
+      "running": "A executar",
+      "stopped": "Parado"
+    },
+    "title": "Servidor API"
+  },
   "assistants": {
     "abbr": "Assistente",
     "clear": {
@@ -327,6 +383,15 @@
         "settings": "Configurações de Pesquisa na Web"
       }
     },
+    "mcp": {
+      "error": {
+        "parse_tool_call": "Não é possível converter para um formato de chamada de ferramenta válido: {{toolCall}}"
+      },
+      "warning": {
+        "multiple_tools": "Existem várias ferramentas MCP correspondentes, a ferramenta {{tool}} foi selecionada",
+        "no_tool": "Nenhuma ferramenta MCP necessária correspondente encontrada {{tool}}"
+      }
+    },
     "message": {
       "new": {
         "branch": {
@@ -418,7 +483,32 @@
         },
         "title": "Salvar na Base de Conhecimento"
       },
-      "label": "Salvar"
+      "label": "Salvar",
+      "topic": {
+        "knowledge": {
+          "content": {
+            "maintext": {
+              "description": "Incluir o título do tópico e todo o conteúdo principal das mensagens"
+            }
+          },
+          "empty": {
+            "no_content": "Este tópico não tem conteúdo que possa ser guardado"
+          },
+          "error": {
+            "save_failed": "Falha ao guardar o tópico, verifique a configuração da base de conhecimento"
+          },
+          "loading": "A analisar o conteúdo do tópico...",
+          "select": {
+            "content": {
+              "label": "Selecionar o tipo de conteúdo a guardar",
+              "selected_tip": "Selecionadas {{count}} itens de conteúdo, provenientes de {{messages}} mensagens",
+              "tip": "O tópico será guardado na base de conhecimento com o contexto completo da conversa."
+            }
+          },
+          "success": "O tópico foi guardado com sucesso na base de conhecimento ({{count}} itens de conteúdo)",
+          "title": "Guardar tópico na base de conhecimento"
+        }
+      }
     },
     "settings": {
       "code": {
@@ -440,6 +530,7 @@
         "tip": "A barra de ferramentas de blocos de código executáveis exibirá um botão de execução; atenção para não executar códigos perigosos!",
         "title": "Execução de Código"
       },
+      "code_image_tools": "Ativar ferramenta de pré-visualização",
       "code_wrappable": "Bloco de código com quebra de linha",
       "context_count": {
         "label": "Número de contexto",
@@ -540,7 +631,7 @@
       "list": "Lista de tópicos",
       "move_to": "Mover para",
       "new": "Começar nova conversa",
-      "pinned": "Fixar tópico",
+      "pin": "Fixar tópico",
       "prompt": {
         "edit": {
           "title": "Editar prompt do tópico"
@@ -549,7 +640,7 @@
         "tips": "Prompt do tópico: fornecer prompts adicionais para o tópico atual"
       },
       "title": "Tópicos",
-      "unpinned": "Desfixar"
+      "unpin": "Desfixar"
     },
     "translate": "Traduzir"
   },
@@ -583,15 +674,6 @@
     },
     "expand": "Expandir",
     "more": "Mais",
-    "preview": {
-      "copy": {
-        "image": "Copiar como imagem"
-      },
-      "label": "Pré-visualizar",
-      "source": "Ver código-fonte",
-      "zoom_in": "Ampliar",
-      "zoom_out": "Reduzir"
-    },
     "run": "Executar código",
     "split": {
       "label": "Dividir visualização",
@@ -647,6 +729,7 @@
     "no_results": "Nenhum resultado",
     "open": "Abrir",
     "paste": "Colar",
+    "preview": "Pré-visualização",
     "prompt": "Prompt",
     "provider": "Fornecedor",
     "reasoning_content": "Pensamento profundo concluído",
@@ -655,6 +738,7 @@
     "rename": "Renomear",
     "reset": "Redefinir",
     "save": "Salvar",
+    "saved": "Guardado",
     "search": "Pesquisar",
     "select": "Selecionar",
     "selectedItems": "{{count}} itens selecionados",
@@ -689,6 +773,9 @@
       "file_format": "Formato do arquivo de backup está incorreto"
     },
     "chat": {
+      "chunk": {
+        "non_json": "Devolveu um formato de dados inválido"
+      },
       "response": "Ocorreu um erro, se a chave da API não foi configurada, por favor vá para Configurações > Provedores de Modelo para configurar a chave"
     },
     "http": {
@@ -822,7 +909,8 @@
     "empty": "Sem repositório de conhecimento",
     "error": {
       "failed_to_create": "Falha ao criar o repositório de conhecimento",
-      "failed_to_edit": "Falha ao editar o repositório de conhecimento"
+      "failed_to_edit": "Falha ao editar o repositório de conhecimento",
+      "model_invalid": "Modelo não selecionado ou eliminado"
     },
     "file_hint": "Formatos suportados: {{file_types}}",
     "index_all": "Índice total",
@@ -917,6 +1005,8 @@
     "spanish": "Espanhol",
     "thai": "Tailandês",
     "turkish": "Turco",
+    "ukrainian": "ucraniano",
+    "unknown": "desconhecido",
     "urdu": "Urdu",
     "vietnamese": "Vietnamita"
   },
@@ -1094,6 +1184,9 @@
       },
       "failed": "Falha ao excluir",
       "success": "Excluído com sucesso"
+    },
+    "dialog": {
+      "failed": "A pré-visualização falhou"
     },
     "download": {
       "failed": "Falha no download",
@@ -1399,7 +1492,7 @@
       "function_calling": "chamada de função",
       "reasoning": "raciocínio",
       "rerank": "Reclassificar",
-      "select": "selecione o tipo de modelo",
+      "select": "Tipos de modelo",
       "text": "texto",
       "vision": "imagem",
       "websearch": "Procurar na web"
@@ -1452,6 +1545,7 @@
         "image": "Nova Imagem"
       }
     },
+    "custom_size": "Dimensão personalizada",
     "edit": {
       "image_file": "Imagem editada",
       "magic_prompt_option_tip": "Otimização inteligente da palavra-chave de edição",
@@ -1496,6 +1590,7 @@
     "mode": {
       "edit": "Editar",
       "generate": "Gerar imagem",
+      "merge": "fundir",
       "remix": "Misturar",
       "upscale": "Aumentar"
     },
@@ -1574,6 +1669,7 @@
     },
     "text_desc_required": "Por favor, insira a descrição da imagem primeiro",
     "title": "Imagem",
+    "top_up": "carregar",
     "translating": "Traduzindo...",
     "uploaded_input": "Entrada enviada",
     "upscale": {
@@ -1587,6 +1683,22 @@
       "seed_tip": "Controla a aleatoriedade do resultado de ampliação"
     }
   },
+  "preview": {
+    "copy": {
+      "image": "Copiar como imagem"
+    },
+    "dialog": "Abrir janela de pré-visualização",
+    "label": "Pré-visualização",
+    "pan": "mover",
+    "pan_down": "mover para baixo",
+    "pan_left": "Deslocar para a esquerda",
+    "pan_right": "Deslocar para a direita",
+    "pan_up": "Mover para cima",
+    "reset": "repor",
+    "source": "Ver código-fonte",
+    "zoom_in": "ampliar",
+    "zoom_out": "reduzir"
+  },
   "prompts": {
     "explanation": "Ajude-me a explicar este conceito",
     "summarize": "Ajude-me a resumir este parágrafo",
@@ -1597,6 +1709,7 @@
     "aihubmix": "AiHubMix",
     "alayanew": "Alaya NeW",
     "anthropic": "Antropológico",
+    "aws-bedrock": "AWS Bedrock",
     "azure-openai": "Azure OpenAI",
     "baichuan": "BaiChuan",
     "baidu-cloud": "Nuvem Baidu",
@@ -1633,6 +1746,7 @@
     "openrouter": "OpenRouter",
     "perplexity": "Perplexidade",
     "ph8": "Plataforma Aberta de Grandes Modelos PH8",
+    "poe": "Poe",
     "ppio": "PPIO Nuvem Piao",
     "qiniu": "Qiniu AI",
     "qwenlm": "QwenLM",
@@ -1657,6 +1771,7 @@
     "progress": {
       "completed": "Restauração concluída",
       "copying_files": "Copiando arquivos... {{progress}}%",
+      "extracted": "Descompressão bem-sucedida",
       "extracting": "Descompactando backup...",
       "preparing": "Preparando restauração...",
       "reading_data": "Lendo dados...",
@@ -2084,6 +2199,10 @@
         "title": "Backup local"
       },
       "markdown_export": {
+        "exclude_citations": {
+          "help": "Quando ativado, o conteúdo das citações será excluído ao exportar para Markdown.",
+          "title": "Excluir conteúdo de citações"
+        },
         "force_dollar_math": {
           "help": "Ao ativar, a exportação para Markdown forçará o uso de $$ para marcar fórmulas LaTeX. Nota: isso também afetará todas as formas de exportação via Markdown, como Notion, Yuque, etc.",
           "title": "Forçar o uso de $$ para marcar fórmulas LaTeX"
@@ -2099,6 +2218,10 @@
         "show_model_provider": {
           "help": "Exibe o fornecedor do modelo ao exportar para Markdown, como OpenAI, Gemini, etc.",
           "title": "Exibir fornecedor do modelo"
+        },
+        "standardize_citations": {
+          "help": "Ao ativar, as citações serão convertidas para o formato padrão do Markdown e a lista de citações será formatada",
+          "title": "Formatar citações"
         },
         "title": "Exportação Markdown"
       },
@@ -2134,7 +2257,13 @@
       },
       "nutstore": {
         "backup": {
-          "button": "Fazer backup para o Nutstore"
+          "button": "Fazer backup para o Nutstore",
+          "modal": {
+            "filename": {
+              "placeholder": "Por favor, introduza o nome do ficheiro de cópia de segurança"
+            },
+            "title": "Fazer backup para o Nutstore"
+          }
         },
         "checkConnection": {
           "fail": "Falha na conexão com o Nutstore",
@@ -2168,7 +2297,11 @@
           "title": "Caminho de armazenamento do Nutstore"
         },
         "restore": {
-          "button": "Restaurar do Nutstore"
+          "button": "Restaurar do Nutstore",
+          "confirm": {
+            "content": "Restaurar a partir da Nutstore irá substituir os dados atuais. Deseja continuar?",
+            "title": "Restaurar a partir do Nutstore"
+          }
         },
         "title": "Configuração do Nutstore",
         "username": "Nome de usuário do Nutstore"
@@ -2433,6 +2566,7 @@
     },
     "developer": {
       "enable_developer_mode": "Ativar modo de desenvolvedor",
+      "help": "Após ativar o modo de programador, será possível utilizar a função de rastreamento de chamadas para visualizar o fluxo de dados durante o processo de chamada do modelo.",
       "title": "Modo de Desenvolvedor"
     },
     "display": {
@@ -2591,6 +2725,17 @@
       "argsTooltip": "Cada argumento em uma linha",
       "baseUrlTooltip": "Endereço de URL remoto",
       "builtinServers": "Servidores integrados",
+      "builtinServersDescriptions": {
+        "brave_search": "uma implementação de servidor MCP integrada com a API de pesquisa Brave, fornecendo funcionalidades de pesquisa web e local. Requer a configuração da variável de ambiente BRAVE_API_KEY",
+        "dify_knowledge": "Implementação do servidor MCP do Dify, que fornece uma API simples para interagir com o Dify. Requer a configuração da chave Dify",
+        "fetch": "servidor MCP para obter o conteúdo da página web do URL",
+        "filesystem": "Servidor Node.js do protocolo de contexto de modelo (MCP) para implementar operações de sistema de ficheiros. Requer configuração do diretório permitido para acesso",
+        "mcp_auto_install": "Instalação automática do serviço MCP (beta)",
+        "memory": "Implementação base de memória persistente baseada em grafos de conhecimento locais. Isso permite que o modelo lembre informações relevantes do utilizador entre diferentes conversas. É necessário configurar a variável de ambiente MEMORY_FILE_PATH.",
+        "no": "sem descrição",
+        "python": "Executar código Python num ambiente sandbox seguro. Utilizar Pyodide para executar Python, suportando a maioria das bibliotecas padrão e pacotes de computação científica",
+        "sequentialthinking": "Uma implementação de servidor MCP que fornece ferramentas para resolução dinâmica e reflexiva de problemas através de um processo de pensamento estruturado"
+      },
       "command": "Comando",
       "config_description": "Configurar modelo de protocolo de contexto do servidor",
       "customRegistryPlaceholder": "Por favor, insira o endereço do repositório privado, por exemplo: https://npm.company.com",
@@ -2628,6 +2773,8 @@
       "jsonSaveError": "Falha ao salvar configuração JSON",
       "jsonSaveSuccess": "Configuração JSON salva com sucesso",
       "logoUrl": "URL do Logotipo",
+      "longRunning": "Modo de execução prolongada",
+      "longRunningTooltip": "Ativado, o servidor suporta tarefas de longa duração, reiniciando o temporizador de tempo limite ao receber notificações de progresso e prolongando o tempo máximo de tempo limite para 10 minutos.",
       "missingDependencies": "Ausente, instale para continuar",
       "more": {
         "awesome": "Lista selecionada de servidores MCP",
@@ -2872,6 +3019,10 @@
           "label": "Nome do modelo",
           "placeholder": "Exemplo: GPT-3.5",
           "tooltip": "Por exemplo, GPT-4"
+        },
+        "supported_text_delta": {
+          "label": "saída de texto incremental",
+          "tooltip": "Quando o modelo não for suportado, desative este botão"
         }
       },
       "api_key": "Chave API",
@@ -2896,6 +3047,7 @@
         "select_api_key": "Selecione a chave API a ser usada:",
         "single": "Individual",
         "start": "Começar",
+        "timeout": "tempo expirado",
         "title": "Verificação de saúde do modelo",
         "use_all_keys": "Use chaves"
       },
@@ -2909,6 +3061,7 @@
           "label": "Adicionar modelo da lista"
         },
         "add_whole_group": "Adicionar todo o grupo",
+        "refetch_list": "Obter novamente a lista de modelos",
         "remove_listed": "Remover modelo da lista",
         "remove_model": "Remover Modelo",
         "remove_whole_group": "Remover todo o grupo"
@@ -2926,7 +3079,6 @@
       "provider_name": "Nome do Provedor",
       "quick_assistant_default_tag": "Padrão",
       "quick_assistant_model": "Modelo do Assistente Rápido",
-      "quick_assistant_model_description": "Modelo padrão usado pelo assistente rápido",
       "quick_assistant_selection": "Selecionar Assistente",
       "topic_naming_model": "Modelo de nomenclatura de tópicos",
       "topic_naming_model_description": "Modelo usado para nomear tópicos automaticamente",
@@ -2959,6 +3111,9 @@
         "auto": "Automático",
         "default": "Padrão",
         "flex": "Flexível",
+        "on_demand": "sob demanda",
+        "performance": "desempenho",
+        "priority": "prioridade",
         "tip": "Especifique o nível de latência usado para processar a solicitação",
         "title": "Nível de Serviço"
       },
@@ -3002,6 +3157,29 @@
             "placeholder": "Insira uma ou mais chaves"
           }
         },
+        "options": {
+          "array_content": {
+            "help": "O fornecedor suporta que o campo content da mensagem seja do tipo array?",
+            "label": "suporta o formato de matriz do conteúdo da mensagem"
+          },
+          "developer_role": {
+            "help": "O fornecedor suporta mensagens com role: \"developer\"?",
+            "label": "Mensagem de suporte ao programador"
+          },
+          "enable_thinking": {
+            "help": "O fornecedor suporta o controlo do pensamento de modelos como o Qwen3 através do parâmetro enable_thinking?",
+            "label": "Apoiar enable_thinking"
+          },
+          "label": "Definições da API",
+          "service_tier": {
+            "help": "Se o fornecedor suporta a configuração do parâmetro service_tier. Quando ativado, este parâmetro pode ser ajustado nas definições do nível de serviço na página de conversa. (Apenas para modelos OpenAI)",
+            "label": "Suporta service_tier"
+          },
+          "stream_options": {
+            "help": "O fornecedor suporta o parâmetro stream_options?",
+            "label": "suporta stream_options"
+          }
+        },
         "url": {
           "preview": "Pré-visualização: {{url}}",
           "reset": "Redefinir",
@@ -3014,6 +3192,16 @@
         "tip": "Use vírgula para separar várias chaves"
       },
       "api_version": "Versão da API",
+      "aws-bedrock": {
+        "access_key_id": "ID da chave de acesso da AWS",
+        "access_key_id_help": "O seu ID da chave de acesso AWS, utilizado para aceder ao serviço AWS Bedrock",
+        "description": "A AWS Bedrock é um serviço de modelos fundamentais totalmente gerido fornecido pela Amazon, que suporta diversos modelos avançados de linguagem.",
+        "region": "Região da AWS",
+        "region_help": "A sua região de serviço da AWS, por exemplo, us-east-1",
+        "secret_access_key": "Chaves de acesso AWS",
+        "secret_access_key_help": "A sua chave de acesso AWS, mantenha-a em segurança",
+        "title": "Configuração do AWS Bedrock"
+      },
       "azure": {
         "apiversion": {
           "tip": "Versão da API do Azure OpenAI. Se desejar usar a API de Resposta, insira a versão de visualização"
@@ -3082,7 +3270,7 @@
       "docs_check": "Verificar",
       "docs_more_details": "Obter mais detalhes",
       "get_api_key": "Clique aqui para obter a chave",
-      "is_not_support_array_content": "Ativar modo compatível",
+      "misc": "outro",
       "no_models_for_check": "Não há modelos disponíveis para verificação (por exemplo, modelos de conversa)",
       "not_checked": "Não verificado",
       "notes": {
@@ -3105,7 +3293,7 @@
       "search_placeholder": "Procurar ID ou nome do modelo",
       "title": "Serviços de Modelos",
       "vertex_ai": {
-        "api_host_help": "[to be translated]:Vertex AI 的 API 地址，不建议填写，通常适用于反向代理",
+        "api_host_help": "O endereço da API do Vertex AI, não é recomendado preencher, normalmente aplicável a proxy reverso",
         "documentation": "Consulte a documentação oficial para obter mais detalhes de configuração:",
         "learn_more": "Saiba mais",
         "location": "Região",
@@ -3129,6 +3317,7 @@
     },
     "proxy": {
       "address": "Endereço do proxy",
+      "bypass": "Regras de Contorno",
       "mode": {
         "custom": "Proxy Personalizado",
         "none": "Não Usar Proxy",
@@ -3212,25 +3401,10 @@
     },
     "title": "Configurações",
     "tool": {
-      "ocr": {
-        "mac_system_ocr_options": {
-          "min_confidence": "Confiança Mínima",
-          "mode": {
-            "accurate": "preciso",
-            "fast": "rápido",
-            "title": "Modo de Reconhecimento"
-          }
-        },
-        "provider": "Provedor OCR",
-        "provider_placeholder": "Selecione um provedor OCR",
-        "title": "Reconhecimento de Texto OCR"
-      },
       "preprocess": {
-        "provider": "Prestador de serviços de pré-processamento de documentos",
-        "provider_placeholder": "Selecione um prestador de serviços de pré-processamento de documentos",
-        "title": "Pré-processamento de Documentos"
-      },
-      "preprocessOrOcr": {
+        "provider": "prestador de serviços de pré-processamento de documentos",
+        "provider_placeholder": "Escolha um fornecedor de pré-processamento de documentos",
+        "title": "Pré-processamento de documentos",
         "tooltip": "Configure o provedor de pré-processamento de documentos ou OCR em Configurações -> Ferramentas. O pré-processamento de documentos pode melhorar significativamente a eficácia da busca em documentos com formatos complexos ou versões escaneadas. O OCR só consegue reconhecer texto em imagens ou PDFs escaneados."
       },
       "title": "Configurações de Ferramentas",
@@ -3374,6 +3548,7 @@
     },
     "close": "Fechar",
     "closed": "A tradução foi desativada",
+    "complete": "Tradução concluída",
     "confirm": {
       "content": "A tradução substituirá o texto original, deseja continuar?",
       "title": "Confirmação de Tradução"
@@ -3385,13 +3560,17 @@
     "empty": "O conteúdo de tradução está vazio",
     "error": {
       "failed": "Tradução falhou",
-      "not_configured": "Modelo de tradução não configurado"
+      "not_configured": "Modelo de tradução não configurado",
+      "unknown": "Ocorreu um erro desconhecido durante a tradução"
     },
     "history": {
       "clear": "Limpar Histórico",
       "clear_description": "Limpar histórico irá deletar todos os registros de tradução. Deseja continuar?",
       "delete": "Excluir",
       "empty": "Nenhum histórico de tradução disponível",
+      "error": {
+        "save": "Falha ao guardar o histórico de traduções"
+      },
       "title": "Histórico de Tradução"
     },
     "input": {
@@ -3439,6 +3618,9 @@
     "message": "Nova versão {{version}} disponível, deseja instalar agora?",
     "noReleaseNotes": "Sem notas de versão",
     "title": "Atualização"
+  },
+  "warning": {
+    "missing_provider": "O fornecedor não existe; foi revertido para o fornecedor predefinido {{provider}}. Isto pode causar problemas."
   },
   "words": {
     "knowledgeGraph": "Gráfico de Conhecimento",

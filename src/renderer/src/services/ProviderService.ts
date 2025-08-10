@@ -1,6 +1,6 @@
-import { getProviderLabel } from '@renderer/i18n/label'
 import store from '@renderer/store'
 import { Provider } from '@renderer/types'
+import { getFancyProviderName } from '@renderer/utils'
 
 export function getProviderName(id: string) {
   const provider = store.getState().llm.providers.find((p) => p.id === id)
@@ -8,19 +8,15 @@ export function getProviderName(id: string) {
     return ''
   }
 
-  if (provider.isSystem) {
-    return getProviderLabel(provider.id) ?? provider.name
-  }
-
-  return provider?.name
+  return getFancyProviderName(provider)
 }
 
 export function isProviderSupportAuth(provider: Provider) {
-  const supportProviders = ['silicon', 'aihubmix', 'ppio', 'tokenflux']
+  const supportProviders = ['302ai', 'silicon', 'aihubmix', 'ppio', 'tokenflux']
   return supportProviders.includes(provider.id)
 }
 
 export function isProviderSupportCharge(provider: Provider) {
-  const supportProviders = ['silicon', 'aihubmix', 'ppio']
+  const supportProviders = ['302ai', 'silicon', 'aihubmix', 'ppio']
   return supportProviders.includes(provider.id)
 }

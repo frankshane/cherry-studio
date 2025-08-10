@@ -76,6 +76,62 @@
     },
     "title": "Agents"
   },
+  "apiServer": {
+    "actions": {
+      "copy": "Copy",
+      "regenerate": "Regenerate",
+      "restart": {
+        "button": "Restart",
+        "tooltip": "Restart Server"
+      },
+      "start": "Start",
+      "stop": "Stop"
+    },
+    "authHeader": {
+      "title": "Authorization Header"
+    },
+    "authHeaderText": "Use in Authorization header:",
+    "configuration": "Configuration",
+    "description": "Expose Cherry Studio's AI capabilities through OpenAI-compatible HTTP APIs",
+    "documentation": {
+      "title": "API Documentation"
+    },
+    "fields": {
+      "apiKey": {
+        "copyTooltip": "Copy API Key",
+        "description": "Secure authentication token for API access",
+        "label": "API Key",
+        "placeholder": "API key will be auto-generated"
+      },
+      "port": {
+        "description": "TCP port number for the HTTP server (1000-65535)",
+        "helpText": "Stop server to change port",
+        "label": "Port"
+      },
+      "url": {
+        "copyTooltip": "Copy URL",
+        "label": "URL"
+      }
+    },
+    "messages": {
+      "apiKeyCopied": "API Key copied to clipboard",
+      "apiKeyRegenerated": "API Key regenerated",
+      "operationFailed": "API Server operation failed: ",
+      "restartError": "Failed to restart API Server: ",
+      "restartFailed": "API Server restart failed: ",
+      "restartSuccess": "API Server restarted successfully",
+      "startError": "Failed to start API Server: ",
+      "startSuccess": "API Server started successfully",
+      "stopError": "Failed to stop API Server: ",
+      "stopSuccess": "API Server stopped successfully",
+      "urlCopied": "Server URL copied to clipboard"
+    },
+    "status": {
+      "running": "Running",
+      "stopped": "Stopped"
+    },
+    "title": "API Server"
+  },
   "assistants": {
     "abbr": "Assistants",
     "clear": {
@@ -327,6 +383,15 @@
         "settings": "Web Search Settings"
       }
     },
+    "mcp": {
+      "error": {
+        "parse_tool_call": "Unable to convert to a valid tool call format: {{toolCall}}"
+      },
+      "warning": {
+        "multiple_tools": "Multiple matching MCP tools exist, {{tool}} has been selected",
+        "no_tool": "No matching MCP tool found for {{tool}}"
+      }
+    },
     "message": {
       "new": {
         "branch": {
@@ -418,7 +483,32 @@
         },
         "title": "Save to Knowledge Base"
       },
-      "label": "Save"
+      "label": "Save",
+      "topic": {
+        "knowledge": {
+          "content": {
+            "maintext": {
+              "description": "Includes topic title and main text content from all messages"
+            }
+          },
+          "empty": {
+            "no_content": "This topic has no saveable content"
+          },
+          "error": {
+            "save_failed": "Failed to save topic, please check knowledge base configuration"
+          },
+          "loading": "Analyzing topic content...",
+          "select": {
+            "content": {
+              "label": "Select content types to save",
+              "selected_tip": "Selected {{count}} items from {{messages}} messages",
+              "tip": "Topic will be saved to knowledge base with complete conversation context"
+            }
+          },
+          "success": "Topic successfully saved to knowledge base ({{count}} items)",
+          "title": "Save Topic to Knowledge Base"
+        }
+      }
     },
     "settings": {
       "code": {
@@ -440,6 +530,7 @@
         "tip": "The run button will be displayed in the toolbar of executable code blocks, please do not execute dangerous code!",
         "title": "Code Execution"
       },
+      "code_image_tools": "Enable preview tools",
       "code_wrappable": "Code block wrappable",
       "context_count": {
         "label": "Context",
@@ -540,7 +631,7 @@
       "list": "Topic List",
       "move_to": "Move to",
       "new": "New Topic",
-      "pinned": "Pinned Topics",
+      "pin": "Pin Topic",
       "prompt": {
         "edit": {
           "title": "Edit Topic Prompts"
@@ -549,7 +640,7 @@
         "tips": "Topic Prompts: Additional supplementary prompts provided for the current topic"
       },
       "title": "Topics",
-      "unpinned": "Unpinned Topics"
+      "unpin": "Unpin Topic"
     },
     "translate": "Translate"
   },
@@ -583,15 +674,6 @@
     },
     "expand": "Expand",
     "more": "More",
-    "preview": {
-      "copy": {
-        "image": "Copy as image"
-      },
-      "label": "Preview",
-      "source": "View Source Code",
-      "zoom_in": "Zoom In",
-      "zoom_out": "Zoom Out"
-    },
     "run": "Run",
     "split": {
       "label": "Split View",
@@ -647,6 +729,7 @@
     "no_results": "No results",
     "open": "Open",
     "paste": "Paste",
+    "preview": "Preview",
     "prompt": "Prompt",
     "provider": "Provider",
     "reasoning_content": "Deep reasoning",
@@ -655,6 +738,7 @@
     "rename": "Rename",
     "reset": "Reset",
     "save": "Save",
+    "saved": "Saved",
     "search": "Search",
     "select": "Select",
     "selectedItems": "Selected {{count}} items",
@@ -689,6 +773,9 @@
       "file_format": "Backup file format error"
     },
     "chat": {
+      "chunk": {
+        "non_json": "Returned an invalid data format"
+      },
       "response": "Something went wrong. Please check if you have set your API key in the Settings > Providers"
     },
     "http": {
@@ -822,7 +909,8 @@
     "empty": "No knowledge base found",
     "error": {
       "failed_to_create": "Knowledge base creation failed",
-      "failed_to_edit": "Knowledge base editing failed"
+      "failed_to_edit": "Knowledge base editing failed",
+      "model_invalid": "No model selected"
     },
     "file_hint": "Support {{file_types}}",
     "index_all": "Index All",
@@ -869,7 +957,7 @@
     "search_placeholder": "Enter text to search",
     "settings": {
       "preprocessing": "Preprocessing",
-      "preprocessing_tooltip": "Preprocess uploaded files with OCR",
+      "preprocessing_tooltip": "Preprocess uploaded files",
       "title": "Knowledge Base Settings"
     },
     "sitemap_added": "Added successfully",
@@ -917,6 +1005,8 @@
     "spanish": "Spanish",
     "thai": "Thai",
     "turkish": "Turkish",
+    "ukrainian": "Ukrainian",
+    "unknown": "unknown",
     "urdu": "Urdu",
     "vietnamese": "Vietnamese"
   },
@@ -1094,6 +1184,9 @@
       },
       "failed": "Delete Failed",
       "success": "Delete Successful"
+    },
+    "dialog": {
+      "failed": "Preview failed"
     },
     "download": {
       "failed": "Download failed",
@@ -1399,7 +1492,7 @@
       "function_calling": "Tool",
       "reasoning": "Reasoning",
       "rerank": "Reranker",
-      "select": "Select Model Types",
+      "select": "Model Types",
       "text": "Text",
       "vision": "Vision",
       "websearch": "WebSearch"
@@ -1452,6 +1545,7 @@
         "image": "New Image"
       }
     },
+    "custom_size": "Custom Size",
     "edit": {
       "image_file": "Edited Image",
       "magic_prompt_option_tip": "Intelligently enhances editing prompts",
@@ -1496,6 +1590,7 @@
     "mode": {
       "edit": "Edit",
       "generate": "Draw",
+      "merge": "Merge",
       "remix": "Remix",
       "upscale": "Upscale"
     },
@@ -1574,6 +1669,7 @@
     },
     "text_desc_required": "Please enter image description first",
     "title": "Images",
+    "top_up": "Top up ",
     "translating": "Translating...",
     "uploaded_input": "Uploaded input",
     "upscale": {
@@ -1587,6 +1683,22 @@
       "seed_tip": "Controls upscaling randomness"
     }
   },
+  "preview": {
+    "copy": {
+      "image": "Copy as image"
+    },
+    "dialog": "Open Dialog",
+    "label": "Preview",
+    "pan": "Pan",
+    "pan_down": "Pan Down",
+    "pan_left": "Pan Left",
+    "pan_right": "Pan Right",
+    "pan_up": "Pan Up",
+    "reset": "Reset",
+    "source": "View Source Code",
+    "zoom_in": "Zoom In",
+    "zoom_out": "Zoom Out"
+  },
   "prompts": {
     "explanation": "Explain this concept to me",
     "summarize": "Summarize this text",
@@ -1597,6 +1709,7 @@
     "aihubmix": "AiHubMix",
     "alayanew": "Alaya NeW",
     "anthropic": "Anthropic",
+    "aws-bedrock": "AWS Bedrock",
     "azure-openai": "Azure OpenAI",
     "baichuan": "Baichuan",
     "baidu-cloud": "Baidu Cloud",
@@ -1633,6 +1746,7 @@
     "openrouter": "OpenRouter",
     "perplexity": "Perplexity",
     "ph8": "PH8",
+    "poe": "Poe",
     "ppio": "PPIO",
     "qiniu": "Qiniu AI",
     "qwenlm": "QwenLM",
@@ -1657,6 +1771,7 @@
     "progress": {
       "completed": "Restore completed",
       "copying_files": "Copying files... {{progress}}%",
+      "extracted": "Extraction successful",
       "extracting": "Extracting backup...",
       "preparing": "Preparing restore...",
       "reading_data": "Reading data...",
@@ -2084,6 +2199,10 @@
         "title": "Local Backup"
       },
       "markdown_export": {
+        "exclude_citations": {
+          "help": "Exclude citations and references when exporting to Markdown, keeping only the main content",
+          "title": "Exclude Citations"
+        },
         "force_dollar_math": {
           "help": "When enabled, $$ will be forcibly used to mark LaTeX formulas when exporting to Markdown. Note: This option also affects all export methods through Markdown, such as Notion, Yuque, etc.",
           "title": "Force $$ for LaTeX formulas"
@@ -2099,6 +2218,10 @@
         "show_model_provider": {
           "help": "Display the model provider (e.g., OpenAI, Gemini) when exporting to Markdown",
           "title": "Show Model Provider"
+        },
+        "standardize_citations": {
+          "help": "When enabled, citation markers will be converted to standard Markdown footnote format [^1] and citation lists will be formatted.",
+          "title": "Standardize Citation Format"
         },
         "title": "Markdown Export"
       },
@@ -2134,7 +2257,13 @@
       },
       "nutstore": {
         "backup": {
-          "button": "Backup to Nutstore"
+          "button": "Backup to Nutstore",
+          "modal": {
+            "filename": {
+              "placeholder": "Enter backup filename"
+            },
+            "title": "Backup to Nutstore"
+          }
         },
         "checkConnection": {
           "fail": "Nutstore connection failed",
@@ -2168,7 +2297,11 @@
           "title": "Nutstore Storage Path"
         },
         "restore": {
-          "button": "Restore from Nutstore"
+          "button": "Restore from Nutstore",
+          "confirm": {
+            "content": "Restoring from Nutstore will overwrite current data. Do you want to continue?",
+            "title": "Restore from Nutstore"
+          }
         },
         "title": "Nutstore Configuration",
         "username": "Nutstore Username"
@@ -2433,6 +2566,7 @@
     },
     "developer": {
       "enable_developer_mode": "Enable Developer Mode",
+      "help": "After enabling developer mode, you can use the trace feature to view the data flow during model invocation.",
       "title": "Developer Mode"
     },
     "display": {
@@ -2591,6 +2725,17 @@
       "argsTooltip": "Each argument on a new line",
       "baseUrlTooltip": "Remote server base URL",
       "builtinServers": "Builtin Servers",
+      "builtinServersDescriptions": {
+        "brave_search": "An MCP server implementation integrating the Brave Search API, providing both web and local search functionalities. Requires configuring the BRAVE_API_KEY environment variable",
+        "dify_knowledge": "Dify's MCP server implementation provides a simple API to interact with Dify. Requires configuring the Dify Key",
+        "fetch": "MCP server for retrieving URL web content",
+        "filesystem": "A Node.js server implementing the Model Context Protocol (MCP) for file system operations. Requires configuration of directories allowed for access.",
+        "mcp_auto_install": "Automatically install MCP service (beta)",
+        "memory": "Persistent memory implementation based on a local knowledge graph. This enables the model to remember user-related information across different conversations. Requires configuring the MEMORY_FILE_PATH environment variable.",
+        "no": "No description",
+        "python": "Execute Python code in a secure sandbox environment. Run Python with Pyodide, supporting most standard libraries and scientific computing packages",
+        "sequentialthinking": "A MCP server implementation that provides tools for dynamic and reflective problem solving through structured thinking processes"
+      },
       "command": "Command",
       "config_description": "Configure Model Context Protocol servers",
       "customRegistryPlaceholder": "Enter private registry URL, e.g.: https://npm.company.com",
@@ -2628,6 +2773,8 @@
       "jsonSaveError": "Failed to save JSON configuration.",
       "jsonSaveSuccess": "JSON configuration has been saved.",
       "logoUrl": "Logo URL",
+      "longRunning": "Long Running Mode",
+      "longRunningTooltip": "When enabled, the server supports long-running tasks. When receiving progress notifications, the timeout will be reset and the maximum execution time will be extended to 10 minutes.",
       "missingDependencies": "is Missing, please install it to continue.",
       "more": {
         "awesome": "Curated MCP Server List",
@@ -2872,6 +3019,10 @@
           "label": "Model Name",
           "placeholder": "Optional e.g. GPT-4",
           "tooltip": "Optional e.g. GPT-4"
+        },
+        "supported_text_delta": {
+          "label": "Support incremental text output",
+          "tooltip": "The model returns text incrementally, rather than all at once. Enabled by default, if the model does not support it, please disable this option"
         }
       },
       "api_key": "API Key",
@@ -2896,6 +3047,7 @@
         "select_api_key": "Select the API key to use:",
         "single": "Single",
         "start": "Start",
+        "timeout": "Timeout",
         "title": "Model health check",
         "use_all_keys": "Key(s)"
       },
@@ -2909,6 +3061,7 @@
           "label": "Add models to the list"
         },
         "add_whole_group": "Add the whole group",
+        "refetch_list": "Refetch model list",
         "remove_listed": "Remove models from the list",
         "remove_model": "Remove model",
         "remove_whole_group": "Remove the whole group"
@@ -2926,7 +3079,6 @@
       "provider_name": "Provider Name",
       "quick_assistant_default_tag": "Default",
       "quick_assistant_model": "Quick Assistant Model",
-      "quick_assistant_model_description": "Default model used by Quick Assistant",
       "quick_assistant_selection": "Select Assistant",
       "topic_naming_model": "Topic Naming Model",
       "topic_naming_model_description": "Model used when automatically naming a new topic",
@@ -2959,6 +3111,9 @@
         "auto": "auto",
         "default": "default",
         "flex": "flex",
+        "on_demand": "on demand",
+        "performance": "performance",
+        "priority": "priority",
         "tip": "Specifies the latency tier to use for processing the request",
         "title": "Service Tier"
       },
@@ -3002,6 +3157,29 @@
             "placeholder": "Enter one or more keys"
           }
         },
+        "options": {
+          "array_content": {
+            "help": "Does the provider support the content field of the message being of array type?",
+            "label": "Supports array format message content"
+          },
+          "developer_role": {
+            "help": "Does the provider support messages with role: \"developer\"?",
+            "label": "Support Developer Message"
+          },
+          "enable_thinking": {
+            "help": "Does the provider support controlling the reasoning of models like Qwen3 via the enable_thinking parameter?",
+            "label": "Support enable_thinking"
+          },
+          "label": "API Settings",
+          "service_tier": {
+            "help": "Whether the provider supports configuring the service_tier parameter. When enabled, this parameter can be adjusted in the service tier settings on the chat page. (OpenAI models only)",
+            "label": "Supports service_tier"
+          },
+          "stream_options": {
+            "help": "Does the provider support the stream_options parameter?",
+            "label": "Support stream_options"
+          }
+        },
         "url": {
           "preview": "Preview: {{url}}",
           "reset": "Reset",
@@ -3014,6 +3192,16 @@
         "tip": "Multiple keys separated by commas or spaces"
       },
       "api_version": "API Version",
+      "aws-bedrock": {
+        "access_key_id": "AWS Access Key ID",
+        "access_key_id_help": "Your AWS Access Key ID for accessing AWS Bedrock services",
+        "description": "AWS Bedrock is Amazon's fully managed foundation model service that supports various advanced large language models",
+        "region": "AWS Region",
+        "region_help": "Your AWS service region, e.g., us-east-1",
+        "secret_access_key": "AWS Secret Access Key",
+        "secret_access_key_help": "Your AWS Secret Access Key, please keep it secure",
+        "title": "AWS Bedrock Configuration"
+      },
       "azure": {
         "apiversion": {
           "tip": "The API version of Azure OpenAI, if you want to use Response API, please enter the preview version"
@@ -3082,7 +3270,7 @@
       "docs_check": "Check",
       "docs_more_details": "for more details",
       "get_api_key": "Get API Key",
-      "is_not_support_array_content": "Enable compatible mode",
+      "misc": "Other",
       "no_models_for_check": "No models available for checking (e.g. chat models)",
       "not_checked": "Not Checked",
       "notes": {
@@ -3129,6 +3317,7 @@
     },
     "proxy": {
       "address": "Proxy Address",
+      "bypass": "Bypass Rules",
       "mode": {
         "custom": "Custom Proxy",
         "none": "No Proxy",
@@ -3212,28 +3401,13 @@
     },
     "title": "Settings",
     "tool": {
-      "ocr": {
-        "mac_system_ocr_options": {
-          "min_confidence": "Minimum Confidence",
-          "mode": {
-            "accurate": "Accurate",
-            "fast": "Fast",
-            "title": "Recognition Mode"
-          }
-        },
-        "provider": "OCR Provider",
-        "provider_placeholder": "Choose an OCR provider",
-        "title": "OCR Settings"
-      },
       "preprocess": {
         "provider": "Pre Process Provider",
         "provider_placeholder": "Choose a Pre Process provider",
-        "title": "Pre Process"
+        "title": "Pre Process",
+        "tooltip": "In Settings -> Tools, set a document preprocessing service provider. Document preprocessing can effectively improve the retrieval performance of complex format documents and scanned documents."
       },
-      "preprocessOrOcr": {
-        "tooltip": "In Settings -> Tools, set a document preprocessing service provider or OCR. Document preprocessing can effectively improve the retrieval performance of complex format documents and scanned documents. OCR can only recognize text within images in documents or scanned PDF text."
-      },
-      "title": "Tools Settings",
+      "title": "Other Settings",
       "websearch": {
         "apikey": "API key",
         "blacklist": "Blacklist",
@@ -3374,6 +3548,7 @@
     },
     "close": "Close",
     "closed": "Translation closed",
+    "complete": "Translation completed",
     "confirm": {
       "content": "Translation will replace the original text, continue?",
       "title": "Translation Confirmation"
@@ -3385,13 +3560,17 @@
     "empty": "Translation content is empty",
     "error": {
       "failed": "Translation failed",
-      "not_configured": "Translation model is not configured"
+      "not_configured": "Translation model is not configured",
+      "unknown": "An unknown error occurred during translation"
     },
     "history": {
       "clear": "Clear History",
       "clear_description": "Clear history will delete all translation history, continue?",
       "delete": "Delete",
       "empty": "No translation history",
+      "error": {
+        "save": "Failed to save translation history"
+      },
       "title": "Translation History"
     },
     "input": {
@@ -3439,6 +3618,9 @@
     "message": "New version {{version}} is ready, do you want to install it now?",
     "noReleaseNotes": "No release notes",
     "title": "Update"
+  },
+  "warning": {
+    "missing_provider": "The supplier does not exist; reverted to the default supplier {{provider}}. This may cause issues."
   },
   "words": {
     "knowledgeGraph": "Knowledge Graph",

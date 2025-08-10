@@ -38,9 +38,9 @@ export interface KnowledgeBase {
   rerankModel?: Model
   // topN?: number
   // preprocessing?: boolean
-  preprocessOrOcrProvider?: {
-    type: 'preprocess' | 'ocr'
-    provider: PreprocessProvider | OcrProvider
+  preprocessProvider?: {
+    type: 'preprocess'
+    provider: PreprocessProvider
   }
   framework: 'embedjs' | 'langchain'
   // default is vector
@@ -76,9 +76,9 @@ export type KnowledgeBaseParams = {
   rerankApiClient?: ApiClient
   documentCount?: number
   // preprocessing?: boolean
-  preprocessOrOcrProvider?: {
-    type: 'preprocess' | 'ocr'
-    provider: PreprocessProvider | OcrProvider
+  preprocessProvider?: {
+    type: 'preprocess'
+    provider: PreprocessProvider
   }
   framework: 'embedjs' | 'langchain'
   retriever?: 'vector' | 'bm25' | 'hybrid'

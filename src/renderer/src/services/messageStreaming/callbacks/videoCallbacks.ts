@@ -18,14 +18,19 @@ export const createVideoCallbacks = (deps: VideoCallbacksDependencies) => {
   let videoBlockId: string | null = null
 
   return {
-    onVideoSearched: async (video: { type: 'url' | 'path'; content: string }, metadata: Record<string, any>) => {
+    onVideoSearched: async (video?: { type: 'url' | 'path'; content: string }, metadata?: Record<string, any>) => {
+      if (!video) {
+        logger.warn('onVideoSearched called without video data')
+        return
+      }
+
       logger.debug(`onVideoSearched video: ${JSON.stringify(video)}, metadata: ${JSON.stringify(metadata)}`)
       if (!videoBlockId) {
         const videoBlock = createVideoBlock(assistantMsgId, {
           status: MessageBlockStatus.SUCCESS,
           url: video.type === 'url' ? video.content : undefined,
           filePath: video.type === 'path' ? video.content : undefined,
-          metadata: metadata
+          metadata: metadata || {}
         })
         videoBlockId = videoBlock.id
         await blockManager.handleBlockTransition(videoBlock, MessageBlockType.VIDEO)
