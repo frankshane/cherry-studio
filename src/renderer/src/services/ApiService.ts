@@ -337,31 +337,7 @@ async function fetchExternalTool(
 
     if (shouldKnowledgeSearch) {
       knowledgeReferencesFromSearch = await searchKnowledgeBase(extractResults, parentSpanId, assistant.model?.name)
-    }
-
-    // 处理知识库附带metadata
-    if (knowledgeReferencesFromSearch) {
-      knowledgeReferencesFromSearch.forEach((ref) => {
-        if (ref.metadata?.type === 'youtube' && ref.metadata?.source) {
-          onChunkReceived({
-            type: ChunkType.VIDEO_SEARCHED,
-            video: {
-              type: 'url',
-              content: ref.metadata.source
-            },
-            metadata: ref.metadata
-          })
-        } else if (ref.metadata?.type === 'video' && ref.metadata?.source) {
-          onChunkReceived({
-            type: ChunkType.VIDEO_SEARCHED,
-            video: {
-              type: 'path',
-              content: ref.metadata.source
-            },
-            metadata: ref.metadata
-          })
-        }
-      })
+      processKnowledgeReferences(knowledgeReferencesFromSearch, onChunkReceived)
     }
 
     if (shouldSearchMemory) {
@@ -442,6 +418,41 @@ async function fetchExternalTool(
     }
 
     return { mcpTools: [] }
+  }
+}
+
+/**
+ * 处理知识库搜索结果中的引用
+ * @param references 知识库引用
+ * @param onChunkReceived Chunk接收回调
+ */
+function processKnowledgeReferences(
+  references: KnowledgeReference[] | undefined,
+  onChunkReceived: (chunk: Chunk) => void
+) {
+  if (!references) {
+    return
+  }
+
+  for (const ref of references) {
+    const { metadata } = ref
+    if (!metadata?.source) {
+      continue
+    }
+
+    const isYoutube = metadata.type === 'youtube'
+    const isVideoFile = metadata.type === 'video'
+
+    if (isYoutube || isVideoFile) {
+      onChunkReceived({
+        type: ChunkType.VIDEO_SEARCHED,
+        video: {
+          type: isYoutube ? 'url' : 'path',
+          content: metadata.source
+        },
+        metadata
+      })
+    }
   }
 }
 
