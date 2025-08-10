@@ -187,6 +187,7 @@
         "label": "思维链长度",
         "low": "浮想",
         "medium": "斟酌",
+        "minimal": "微念",
         "off": "关闭"
       },
       "regular_phrases": {
@@ -483,7 +484,32 @@
         },
         "title": "保存到知识库"
       },
-      "label": "保存"
+      "label": "保存",
+      "topic": {
+        "knowledge": {
+          "content": {
+            "maintext": {
+              "description": "包括话题标题和所有消息的主要文本内容"
+            }
+          },
+          "empty": {
+            "no_content": "此话题没有可保存的内容"
+          },
+          "error": {
+            "save_failed": "保存话题失败，请检查知识库配置"
+          },
+          "loading": "正在分析话题内容...",
+          "select": {
+            "content": {
+              "label": "选择要保存的内容类型",
+              "selected_tip": "已选择 {{count}} 项内容，来自 {{messages}} 条消息",
+              "tip": "话题将以包含完整对话上下文的形式保存到知识库"
+            }
+          },
+          "success": "话题已成功保存到知识库（{{count}} 项内容）",
+          "title": "保存话题到知识库"
+        }
+      }
     },
     "settings": {
       "code": {
@@ -505,6 +531,7 @@
         "tip": "可执行的代码块工具栏中会显示运行按钮，注意不要执行危险代码！",
         "title": "代码执行"
       },
+      "code_image_tools": "启用预览工具",
       "code_wrappable": "代码块可换行",
       "context_count": {
         "label": "上下文数",
@@ -649,15 +676,6 @@
     },
     "expand": "展开",
     "more": "更多",
-    "preview": {
-      "copy": {
-        "image": "复制为图片"
-      },
-      "label": "预览",
-      "source": "查看源代码",
-      "zoom_in": "放大",
-      "zoom_out": "缩小"
-    },
     "run": "运行代码",
     "split": {
       "label": "分割视图",
@@ -757,6 +775,9 @@
       "file_format": "备份文件格式错误"
     },
     "chat": {
+      "chunk": {
+        "non_json": "返回了无效的数据格式"
+      },
       "response": "出错了，如果没有配置 API 密钥，请前往设置 > 模型提供商中配置密钥"
     },
     "http": {
@@ -1159,6 +1180,9 @@
       },
       "failed": "删除失败",
       "success": "删除成功"
+    },
+    "dialog": {
+      "failed": "预览失败"
     },
     "download": {
       "failed": "下载失败",
@@ -1680,6 +1704,22 @@
       "seed_tip": "控制放大结果的随机性"
     }
   },
+  "preview": {
+    "copy": {
+      "image": "复制为图片"
+    },
+    "dialog": "打开预览窗口",
+    "label": "预览",
+    "pan": "移动",
+    "pan_down": "下移",
+    "pan_left": "左移",
+    "pan_right": "右移",
+    "pan_up": "上移",
+    "reset": "重置",
+    "source": "查看源代码",
+    "zoom_in": "放大",
+    "zoom_out": "缩小"
+  },
   "prompts": {
     "explanation": "帮我解释一下这个概念",
     "summarize": "帮我总结一下这段话",
@@ -1727,6 +1767,7 @@
     "openrouter": "OpenRouter",
     "perplexity": "Perplexity",
     "ph8": "PH8 大模型开放平台",
+    "poe": "Poe",
     "ppio": "PPIO 派欧云",
     "qiniu": "七牛云 AI 推理",
     "qwenlm": "QwenLM",
@@ -1758,6 +1799,197 @@
       "title": "恢复进度"
     },
     "title": "数据恢复"
+  },
+  "richEditor": {
+    "action": {
+      "table": {
+        "deleteColumn": "删除列",
+        "deleteRow": "删除行",
+        "insertColumnAfter": "在右侧插入",
+        "insertColumnBefore": "在左侧插入",
+        "insertRowAfter": "在下方插入",
+        "insertRowBefore": "在上方插入"
+      }
+    },
+    "commands": {
+      "blockMath": {
+        "description": "插入数学公式",
+        "title": "数学公式"
+      },
+      "blockquote": {
+        "description": "插入引用文本",
+        "title": "引用"
+      },
+      "bold": {
+        "description": "标记为粗体",
+        "title": "粗体"
+      },
+      "bulletList": {
+        "description": "创建简单的项目符号列表",
+        "title": "无序列表"
+      },
+      "calloutInfo": {
+        "description": "添加信息提示框",
+        "title": "信息提示框"
+      },
+      "calloutWarning": {
+        "description": "添加警告提示框",
+        "title": "警告提示框"
+      },
+      "code": {
+        "description": "插入代码片段",
+        "title": "代码"
+      },
+      "codeBlock": {
+        "description": "插入代码片段",
+        "title": "代码块"
+      },
+      "columns": {
+        "description": "创建分栏布局",
+        "title": "分栏"
+      },
+      "date": {
+        "description": "插入当前日期",
+        "title": "日期"
+      },
+      "divider": {
+        "description": "添加水平分割线",
+        "title": "分割线"
+      },
+      "hardBreak": {
+        "description": "插入换行符",
+        "title": "换行符"
+      },
+      "heading1": {
+        "description": "大段落标题",
+        "title": "一级标题"
+      },
+      "heading2": {
+        "description": "中段落标题",
+        "title": "二级标题"
+      },
+      "heading3": {
+        "description": "小段落标题",
+        "title": "三级标题"
+      },
+      "heading4": {
+        "description": "较小的段落标题",
+        "title": "四级标题"
+      },
+      "heading5": {
+        "description": "更小的段落标题",
+        "title": "五级标题"
+      },
+      "heading6": {
+        "description": "最小的段落标题",
+        "title": "六级标题"
+      },
+      "image": {
+        "description": "插入图片",
+        "title": "图片"
+      },
+      "inlineCode": {
+        "description": "添加行内代码",
+        "title": "行内代码"
+      },
+      "inlineMath": {
+        "description": "插入行内数学公式",
+        "title": "行内数学公式"
+      },
+      "italic": {
+        "description": "标记为斜体",
+        "title": "斜体"
+      },
+      "link": {
+        "description": "添加链接",
+        "title": "链接"
+      },
+      "noCommandsFound": "未找到命令",
+      "orderedList": {
+        "description": "创建带编号的列表",
+        "title": "有序列表"
+      },
+      "paragraph": {
+        "description": "开始编写普通文本",
+        "title": "正文"
+      },
+      "redo": {
+        "description": "重做上一步操作",
+        "title": "重做"
+      },
+      "strike": {
+        "description": "标记为删除线",
+        "title": "删除线"
+      },
+      "table": {
+        "description": "插入表格",
+        "title": "表格"
+      },
+      "taskList": {
+        "description": "创建待办事项清单",
+        "title": "任务列表"
+      },
+      "underline": {
+        "description": "标记为下划线",
+        "title": "下划线"
+      },
+      "undo": {
+        "description": "撤销上一步操作",
+        "title": "撤销"
+      }
+    },
+    "image": {
+      "placeholder": "添加图片"
+    },
+    "imageUploader": {
+      "embedImage": "嵌入图片",
+      "embedLink": "嵌入链接",
+      "embedSuccess": "图片嵌入成功",
+      "invalidType": "请选择图片文件",
+      "invalidUrl": "无效的图片链接",
+      "processing": "正在处理图片...",
+      "title": "添加图片",
+      "tooLarge": "图片大小不能超过 10MB",
+      "upload": "上传",
+      "uploadError": "图片上传失败",
+      "uploadFile": "上传文件",
+      "uploadHint": "支持 JPG、PNG、GIF 等格式，最大 10MB",
+      "uploadSuccess": "图片上传成功",
+      "uploadText": "点击或拖拽图片到此处上传",
+      "uploading": "正在上传图片",
+      "urlPlaceholder": "粘贴图片链接地址",
+      "urlRequired": "请输入图片链接地址"
+    },
+    "math": {
+      "placeholder": "输入 LaTeX 公式"
+    },
+    "placeholder": "输入'/'调用命令",
+    "toolbar": {
+      "blockMath": "数学公式块",
+      "blockquote": "引用",
+      "bold": "粗体",
+      "bulletList": "无序列表",
+      "clearMarks": "清除格式",
+      "code": "行内代码",
+      "codeBlock": "代码块",
+      "heading1": "一级标题",
+      "heading2": "二级标题",
+      "heading3": "三级标题",
+      "heading4": "四级标题",
+      "heading5": "五级标题",
+      "heading6": "六级标题",
+      "image": "图片",
+      "inlineMath": "行内数学公式",
+      "italic": "斜体",
+      "link": "链接",
+      "orderedList": "有序列表",
+      "paragraph": "正文",
+      "redo": "重做",
+      "strike": "删除线",
+      "table": "表格",
+      "underline": "下划线",
+      "undo": "撤销"
+    }
   },
   "selection": {
     "action": {
@@ -2238,7 +2470,13 @@
       },
       "nutstore": {
         "backup": {
-          "button": "备份到坚果云"
+          "button": "备份到坚果云",
+          "modal": {
+            "filename": {
+              "placeholder": "请输入备份文件名"
+            },
+            "title": "备份到坚果云"
+          }
         },
         "checkConnection": {
           "fail": "坚果云连接失败",
@@ -2272,7 +2510,11 @@
           "title": "坚果云存储路径"
         },
         "restore": {
-          "button": "从坚果云恢复"
+          "button": "从坚果云恢复",
+          "confirm": {
+            "content": "从坚果云恢复将会覆盖当前数据，是否继续？",
+            "title": "从坚果云恢复"
+          }
         },
         "title": "坚果云配置",
         "username": "坚果云用户名"
@@ -2537,6 +2779,7 @@
     },
     "developer": {
       "enable_developer_mode": "启用开发者模式",
+      "help": "启用开发者模式后，将可以使用调用链功能查看模型调用过程的数据流。",
       "title": "开发者模式"
     },
     "display": {
@@ -3064,7 +3307,7 @@
     "moresetting": {
       "check": {
         "confirm": "确认勾选",
-        "warn": "请慎重勾选此选项，勾选错误会导致模型无法正常使用！！！"
+        "warn": "请慎重更改模型类型，选择错误的类型会导致模型无法正常使用！"
       },
       "label": "更多设置",
       "warn": "风险警告"
@@ -3081,6 +3324,9 @@
         "auto": "自动",
         "default": "默认",
         "flex": "灵活",
+        "on_demand": "按需",
+        "performance": "性能",
+        "priority": "优先",
         "tip": "指定用于处理请求的延迟层级",
         "title": "服务层级"
       },
@@ -3092,7 +3338,14 @@
         "tip": "模型执行的推理摘要",
         "title": "摘要模式"
       },
-      "title": "OpenAI 设置"
+      "title": "OpenAI 设置",
+      "verbosity": {
+        "high": "高",
+        "low": "低",
+        "medium": "中",
+        "tip": "控制模型输出的详细程度",
+        "title": "详细程度"
+      }
     },
     "privacy": {
       "enable_privacy_mode": "匿名发送错误报告和数据统计",
@@ -3133,7 +3386,15 @@
             "help": "该提供商是否支持 role: \"developer\" 的消息",
             "label": "支持 Developer Message"
           },
+          "enable_thinking": {
+            "help": "该提供商是否支持通过 enable_thinking 参数控制 Qwen3 等模型的思考",
+            "label": "支持 enable_thinking"
+          },
           "label": "API 设置",
+          "service_tier": {
+            "help": "该提供商是否支持配置 service_tier 参数。开启后，可在对话页面的服务层级设置中调整该参数。（仅限OpenAI模型）",
+            "label": "支持 service_tier"
+          },
           "stream_options": {
             "help": "该提供商是否支持 stream_options 参数",
             "label": "支持 stream_options"
@@ -3578,6 +3839,9 @@
     "message": "发现新版本 {{version}}，是否立即安装？",
     "noReleaseNotes": "暂无更新日志",
     "title": "更新提示"
+  },
+  "warning": {
+    "missing_provider": "供应商不存在，已回退到默认供应商 {{provider}}。这可能导致问题。"
   },
   "words": {
     "knowledgeGraph": "知识图谱",
