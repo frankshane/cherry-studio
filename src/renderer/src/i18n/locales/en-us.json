@@ -1745,6 +1745,16 @@
     "title": "Data Restore"
   },
   "richEditor": {
+    "action": {
+      "table": {
+        "deleteColumn": "Delete columns",
+        "deleteRow": "Delete rows",
+        "insertColumnAfter": "Insert After",
+        "insertColumnBefore": "Insert Before",
+        "insertRowAfter": "Insert Below",
+        "insertRowBefore": "Insert Above"
+      }
+    },
     "commands": {
       "blockMath": {
         "description": "Insert mathematical formula",

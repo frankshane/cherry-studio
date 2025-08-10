@@ -1745,6 +1745,16 @@
     "title": "数据恢复"
   },
   "richEditor": {
+    "action": {
+      "table": {
+        "deleteColumn": "删除列",
+        "deleteRow": "删除行",
+        "insertColumnAfter": "在右侧插入",
+        "insertColumnBefore": "在左侧插入",
+        "insertRowAfter": "在下方插入",
+        "insertRowBefore": "在上方插入"
+      }
+    },
     "commands": {
       "blockMath": {
         "description": "插入数学公式",

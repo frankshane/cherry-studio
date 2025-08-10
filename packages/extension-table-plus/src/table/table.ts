@@ -81,8 +81,8 @@ export interface TableOptions {
   /**
    * Optional callbacks for row/column action triggers
    */
-  onRowActionClick?: (args: { rowIndex: number; view: EditorView }) => void
-  onColumnActionClick?: (args: { colIndex: number; view: EditorView }) => void
+  onRowActionClick?: (args: { rowIndex: number; view: EditorView; position?: { x: number; y: number } }) => void
+  onColumnActionClick?: (args: { colIndex: number; view: EditorView; position?: { x: number; y: number } }) => void
 }
 
 declare module '@tiptap/core' {
@@ -419,7 +419,14 @@ export const Table = Node.create<TableOptions>({
   addNodeView() {
     return (props) => {
       const { node, view } = props
-      return new (this.options.View || TableView)(node, this.options.cellMinWidth, view)
+      const ViewClass = this.options.View || TableView
+      if (ViewClass === TableView) {
+        return new TableView(node, this.options.cellMinWidth, view, {
+          onRowActionClick: this.options.onRowActionClick,
+          onColumnActionClick: this.options.onColumnActionClick
+        })
+      }
+      return new ViewClass(node, this.options.cellMinWidth, view)
     }
   },
 
@@ -446,9 +453,6 @@ export const Table = Node.create<TableOptions>({
 
   addProseMirrorPlugins() {
     const isResizable = this.options.resizable && this.editor.isEditable
-
-    // kept for potential future plugins; currently unused after overlay migration
-    // const actionPluginKey = new PluginKey('tableActionTriggers')
 
     return [
       ...(isResizable

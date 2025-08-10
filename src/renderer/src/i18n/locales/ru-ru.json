@@ -1745,6 +1745,16 @@
     "title": "Восстановление данных"
   },
   "richEditor": {
+    "action": {
+      "table": {
+        "deleteColumn": "Удалить столбцы",
+        "deleteRow": "Удалить ряды",
+        "insertColumnAfter": "Вставить справа",
+        "insertColumnBefore": "Вставить слева",
+        "insertRowAfter": "Вставьте ниже",
+        "insertRowBefore": "Вставьте выше"
+      }
+    },
     "commands": {
       "blockMath": {
         "description": "Вставьте математические формулы",

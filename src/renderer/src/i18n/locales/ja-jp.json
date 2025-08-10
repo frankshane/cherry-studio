@@ -1745,6 +1745,16 @@
     "title": "データ復元"
   },
   "richEditor": {
+    "action": {
+      "table": {
+        "deleteColumn": "列を削除",
+        "deleteRow": "行を削除",
+        "insertColumnAfter": "右に挿入",
+        "insertColumnBefore": "左に挿入",
+        "insertRowAfter": "下に挿入",
+        "insertRowBefore": "上に挿入"
+      }
+    },
     "commands": {
       "blockMath": {
         "description": "数式を挿入します",

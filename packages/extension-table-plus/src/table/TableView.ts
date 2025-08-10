@@ -74,6 +74,10 @@ export function updateColumns(
 
 // Callbacks are now handled by a decorations plugin; keep type removed here
 
+type ButtonPosition = { x: number; y: number }
+type RowActionCallback = (args: { rowIndex: number; view: EditorView; position?: ButtonPosition }) => void
+type ColumnActionCallback = (args: { colIndex: number; view: EditorView; position?: ButtonPosition }) => void
+
 export class TableView implements NodeView {
   node: ProseMirrorNode
 
@@ -100,11 +104,21 @@ export class TableView implements NodeView {
   private rowEndpoint?: HTMLButtonElement
   private colEndpoint?: HTMLButtonElement
   private overlayUpdateRafId: number | null = null
+  private actionCallbacks?: {
+    onRowActionClick?: RowActionCallback
+    onColumnActionClick?: ColumnActionCallback
+  }
 
-  constructor(node: ProseMirrorNode, cellMinWidth: number, view: EditorView) {
+  constructor(
+    node: ProseMirrorNode,
+    cellMinWidth: number,
+    view: EditorView,
+    actionCallbacks?: { onRowActionClick?: RowActionCallback; onColumnActionClick?: ColumnActionCallback }
+  ) {
     this.node = node
     this.cellMinWidth = cellMinWidth
     this.view = view
+    this.actionCallbacks = actionCallbacks
     // selection triggers handled by decorations plugin
 
     // Create the wrapper with grid layout
@@ -166,6 +180,9 @@ export class TableView implements NodeView {
 
     // Keep buttons' disabled state in sync during updates
     this.syncEditableState()
+
+    // Recalculate overlay positions after node/table mutations so triggers follow the updated layout
+    this.scheduleOverlayUpdate()
 
     return true
   }
@@ -247,9 +264,9 @@ export class TableView implements NodeView {
       const bounds = getCellSelectionBounds(this.view, this.node)
       if (!bounds) return
       this.selectRow(bounds.maxRow)
-      this.view.dom.dispatchEvent(
-        new CustomEvent('table:rowAction', { detail: { rowIndex: bounds.maxRow, view: this.view }, bubbles: true })
-      )
+      const rect = this.rowEndpoint!.getBoundingClientRect()
+      const position = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+      this.actionCallbacks?.onRowActionClick?.({ rowIndex: bounds.maxRow, view: this.view, position })
       this.scheduleOverlayUpdate()
     })
     this.colEndpoint.addEventListener('click', (e) => {
@@ -258,9 +275,9 @@ export class TableView implements NodeView {
       const bounds = getCellSelectionBounds(this.view, this.node)
       if (!bounds) return
       this.selectColumn(bounds.maxCol)
-      this.view.dom.dispatchEvent(
-        new CustomEvent('table:columnAction', { detail: { colIndex: bounds.maxCol, view: this.view }, bubbles: true })
-      )
+      const rect = this.colEndpoint!.getBoundingClientRect()
+      const position = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+      this.actionCallbacks?.onColumnActionClick?.({ colIndex: bounds.maxCol, view: this.view, position })
       this.scheduleOverlayUpdate()
     })
   }
@@ -286,7 +303,6 @@ export class TableView implements NodeView {
   private updateOverlayPositions() {
     if (!this.rowEndpoint || !this.colEndpoint) return
     const bounds = getCellSelectionBounds(this.view, this.node)
-    console.debug('[updateOverlayPositions] bounds', bounds)
     if (!bounds) {
       this.rowEndpoint.style.display = 'none'
       this.colEndpoint.style.display = 'none'
@@ -359,32 +375,6 @@ export class TableView implements NodeView {
   hasTableCellSelection(): boolean {
     const selection = this.view.state.selection
     return isCellSelection(selection)
-  }
-
-  // Removed unused method causing linter error
-
-  handleRowActionClick(rowIndex: number) {
-    // Focus the entire row first
-    this.selectRow(rowIndex)
-
-    // Dispatch custom event for the main project to handle
-    const event = new CustomEvent('table:rowAction', {
-      detail: { rowIndex, view: this.view },
-      bubbles: true
-    })
-    this.view.dom.dispatchEvent(event)
-  }
-
-  handleColumnActionClick(colIndex: number) {
-    // Focus the entire column first
-    this.selectColumn(colIndex)
-
-    // Dispatch custom event for the main project to handle
-    const event = new CustomEvent('table:columnAction', {
-      detail: { colIndex, view: this.view },
-      bubbles: true
-    })
-    this.view.dom.dispatchEvent(event)
   }
 
   selectRow(rowIndex: number) {

@@ -1,6 +1,7 @@
 import DragHandle from '@tiptap/extension-drag-handle-react'
 import { EditorContent } from '@tiptap/react'
 import { t } from 'i18next'
+import { ArrowLeft, ArrowRight, Trash2 } from 'lucide-react'
 import React, { useEffect, useImperativeHandle, useRef, useState } from 'react'
 
 import { MdiDragHandle } from '../Icons/SVGIcon'
@@ -13,7 +14,7 @@ import {
   unregisterCommand,
   unregisterToolbarCommand
 } from './command'
-import { type TableAction, TableActionMenu } from './components/TableActionMenu'
+import { ActionMenu, type ActionMenuItem } from './components/ActionMenu'
 import { EditorContent as StyledEditorContent, RichEditorWrapper } from './styles'
 import { Toolbar } from './toolbar'
 import type { FormattingCommand, RichEditorProps, RichEditorRef } from './types'
@@ -44,7 +45,25 @@ const RichEditor = ({
     onContentChange,
     onBlur,
     placeholder,
-    editable
+    editable,
+    onShowTableActionMenu: ({ position, actions }) => {
+      const iconMap: Record<string, React.ReactNode> = {
+        insertRowBefore: <ArrowLeft size={16} />,
+        insertColumnBefore: <ArrowLeft size={16} />,
+        insertRowAfter: <ArrowRight size={16} />,
+        insertColumnAfter: <ArrowRight size={16} />,
+        deleteRow: <Trash2 size={16} />,
+        deleteColumn: <Trash2 size={16} />
+      }
+
+      const items: ActionMenuItem[] = actions.map((a, idx) => ({
+        key: String(idx),
+        label: a.label,
+        icon: iconMap[a.id],
+        onClick: a.action
+      }))
+      setTableActionMenu({ show: true, position, items })
+    }
   })
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null)
@@ -53,11 +72,11 @@ const RichEditor = ({
   const [tableActionMenu, setTableActionMenu] = useState<{
     show: boolean
     position: { x: number; y: number }
-    actions: TableAction[]
+    items: ActionMenuItem[]
   }>({
     show: false,
     position: { x: 0, y: 0 },
-    actions: []
+    items: []
   })
 
   // Register initial commands on mount
@@ -87,41 +106,13 @@ const RichEditor = ({
     }
   }, [editor, onCommandsReady])
 
-  // Setup table action menu event listener
-  useEffect(() => {
-    if (!editor) return
-
-    const handleShowActionMenu = (event: CustomEvent) => {
-      const { detail } = event
-      const { actions } = detail
-
-      // Get mouse position for menu placement
-      // For simplicity, just show at a fixed position near the cursor
-      // In a real implementation, you might want to get the actual button position
-      const rect = editor.view.dom.getBoundingClientRect()
-      setTableActionMenu({
-        show: true,
-        position: {
-          x: rect.left + rect.width / 2,
-          y: rect.top + rect.height / 2
-        },
-        actions
-      })
-    }
-
-    const editorDOM = editor.view.dom
-    editorDOM.addEventListener('table:showActionMenu', handleShowActionMenu as EventListener)
-
-    return () => {
-      editorDOM.removeEventListener('table:showActionMenu', handleShowActionMenu as EventListener)
-    }
-  }, [editor])
+  // Event listener removed; ActionMenu is triggered via hook callback
 
   const closeTableActionMenu = () => {
     setTableActionMenu({
       show: false,
       position: { x: 0, y: 0 },
-      actions: []
+      items: []
     })
   }
 
@@ -295,10 +286,10 @@ const RichEditor = ({
         </DragHandle>
         <EditorContent editor={editor} />
       </StyledEditorContent>
-      <TableActionMenu
+      <ActionMenu
         show={tableActionMenu.show}
         position={tableActionMenu.position}
-        actions={tableActionMenu.actions}
+        items={tableActionMenu.items}
         onClose={closeTableActionMenu}
       />
     </RichEditorWrapper>

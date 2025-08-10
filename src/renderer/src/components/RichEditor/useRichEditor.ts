@@ -19,6 +19,7 @@ import Mention from '@tiptap/extension-mention'
 import Typography from '@tiptap/extension-typography'
 import { useEditor, useEditorState } from '@tiptap/react'
 import { StarterKit } from '@tiptap/starter-kit'
+import { t } from 'i18next'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { commandSuggestion } from './command'
@@ -46,6 +47,13 @@ export interface UseRichEditorOptions {
   placeholder?: string
   /** Whether the editor is editable */
   editable?: boolean
+  /** Show table action menu (row/column) with concrete actions and position */
+  onShowTableActionMenu?: (payload: {
+    type: 'row' | 'column'
+    index: number
+    position: { x: number; y: number }
+    actions: { id: string; label: string; action: () => void }[]
+  }) => void
 }
 
 export interface UseRichEditorReturn {
@@ -94,7 +102,8 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     onBlur,
     previewLength = 50,
     placeholder = '',
-    editable = true
+    editable = true,
+    onShowTableActionMenu
   } = options
 
   const [markdown, setMarkdownState] = useState<string>(initialContent)
@@ -167,8 +176,13 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
       EnhancedImage,
       TableKit.configure({
         table: {
-          resizable: true,
-          allowTableNodeSelection: true
+          allowTableNodeSelection: true,
+          onRowActionClick: ({ rowIndex, position }) => {
+            showTableActionMenu('row', rowIndex, position)
+          },
+          onColumnActionClick: ({ colIndex, position }) => {
+            showTableActionMenu('column', colIndex, position)
+          }
         },
         tableRow: {},
         tableHeader: {},
@@ -253,58 +267,61 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
 
   // Show action menu for table rows/columns
   const showTableActionMenu = useCallback(
-    (type: 'row' | 'column', index: number) => {
+    (type: 'row' | 'column', index: number, position?: { x: number; y: number }) => {
       if (!editor) return
 
       const actions = [
         {
-          label: `Insert ${type === 'row' ? 'Row' : 'Column'} Before`,
+          id: type === 'row' ? 'insertRowBefore' : 'insertColumnBefore',
+          label:
+            type === 'row'
+              ? t('richEditor.action.table.insertRowBefore')
+              : t('richEditor.action.table.insertColumnBefore'),
           action: () => {
-            // Use setTimeout to avoid immediate re-triggering of events
-            setTimeout(() => {
-              if (type === 'row') {
-                editor.chain().focus().addRowBefore().run()
-              } else {
-                editor.chain().focus().addColumnBefore().run()
-              }
-            }, 10)
+            if (type === 'row') {
+              editor.chain().focus().addRowBefore().run()
+            } else {
+              editor.chain().focus().addColumnBefore().run()
+            }
           }
         },
         {
-          label: `Insert ${type === 'row' ? 'Row' : 'Column'} After`,
+          id: type === 'row' ? 'insertRowAfter' : 'insertColumnAfter',
+          label:
+            type === 'row'
+              ? t('richEditor.action.table.insertRowAfter')
+              : t('richEditor.action.table.insertColumnAfter'),
           action: () => {
-            setTimeout(() => {
-              if (type === 'row') {
-                editor.chain().focus().addRowAfter().run()
-              } else {
-                editor.chain().focus().addColumnAfter().run()
-              }
-            }, 10)
+            if (type === 'row') {
+              editor.chain().focus().addRowAfter().run()
+            } else {
+              editor.chain().focus().addColumnAfter().run()
+            }
           }
         },
         {
-          label: `Delete ${type === 'row' ? 'Row' : 'Column'}`,
+          id: type === 'row' ? 'deleteRow' : 'deleteColumn',
+          label: type === 'row' ? t('richEditor.action.table.deleteRow') : t('richEditor.action.table.deleteColumn'),
           action: () => {
-            setTimeout(() => {
-              if (type === 'row') {
-                editor.chain().focus().deleteRow().run()
-              } else {
-                editor.chain().focus().deleteColumn().run()
-              }
-            }, 10)
+            if (type === 'row') {
+              editor.chain().focus().deleteRow().run()
+            } else {
+              editor.chain().focus().deleteColumn().run()
+            }
           }
         }
       ]
 
-      // For now, dispatch a custom event that can be handled by the parent component
-      // In a real implementation, you might want to show a context menu
-      const menuEvent = new CustomEvent('table:showActionMenu', {
-        detail: { type, index, actions },
-        bubbles: true
-      })
-      editor.view.dom.dispatchEvent(menuEvent)
+      // Compute fallback position if not provided
+      let finalPosition = position
+      if (!finalPosition) {
+        const rect = editor.view.dom.getBoundingClientRect()
+        finalPosition = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+      }
+
+      onShowTableActionMenu?.({ type, index, position: finalPosition!, actions })
     },
-    [editor]
+    [editor, onShowTableActionMenu]
   )
 
   // Setup table action event listeners
