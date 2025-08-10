@@ -720,10 +720,9 @@ export class MemoryService {
           throw new Error('Embedder provider not configured')
         }
 
-        this.embeddings = new Embeddings({
-          embedApiClient: this.config.embedderApiClient,
-          dimensions: this.config.embedderDimensions
-        })
+        const dimensions = this.config.isAutoDimensions ? undefined : this.config.embedderDimensions
+        this.embeddings = new Embeddings({ embedApiClient: this.config.embedderApiClient, dimensions })
+
         await this.embeddings.init()
       }
 
