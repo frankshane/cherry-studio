@@ -41,6 +41,8 @@ export interface UseRichEditorOptions {
   onContentChange?: (content: string) => void
   /** Callback when editor loses focus */
   onBlur?: () => void
+  /** Callback when paste event occurs */
+  onPaste?: (html: string) => void
   /** Maximum length for preview text */
   previewLength?: number
   /** Placeholder text when editor is empty */
@@ -100,6 +102,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     onHtmlChange,
     onContentChange,
     onBlur,
+    onPaste,
     previewLength = 50,
     placeholder = '',
     editable = true,
@@ -160,6 +163,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
           }
         }
       }),
+      EnhancedImage,
       Placeholder.configure({
         placeholder,
         showOnlyWhenEditable: true,
@@ -219,6 +223,19 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     extensions,
     content: html || '',
     editable: editable,
+    editorProps: {
+      handlePaste: (view, event) => {
+        const text = event.clipboardData?.getData('text/plain') ?? ''
+        const html = markdownToHtml(text)
+        if (html) {
+          view.dispatch(view.state.tr.deleteSelection())
+          editor.commands.insertContent(html)
+          onPaste?.(html)
+          return true
+        }
+        return false
+      }
+    },
     onUpdate: ({ editor }) => {
       const content = editor.getText()
       const htmlContent = editor.getHTML()
