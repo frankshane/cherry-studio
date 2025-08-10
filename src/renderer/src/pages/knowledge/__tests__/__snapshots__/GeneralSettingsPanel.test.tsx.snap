@@ -153,17 +153,17 @@ exports[`GeneralSettingsPanel > basic rendering > should match snapshot 1`] = `
       style="width: 100%;"
     >
       <button
-        data-active="false"
+        data-active="true"
         data-testid="segmented-option-hybrid"
-        style="background-color: rgb(255, 255, 255); color: rgb(0, 0, 0);"
+        style="background-color: rgb(22, 119, 255); color: rgb(255, 255, 255);"
         type="button"
       >
         knowledge.retriever_hybrid
       </button>
       <button
-        data-active="true"
+        data-active="false"
         data-testid="segmented-option-vector"
-        style="background-color: rgb(22, 119, 255); color: rgb(255, 255, 255);"
+        style="background-color: rgb(255, 255, 255); color: rgb(0, 0, 0);"
         type="button"
       >
         knowledge.retriever_vector
@@ -176,6 +176,11 @@ exports[`GeneralSettingsPanel > basic rendering > should match snapshot 1`] = `
       >
         knowledge.retriever_bm25
       </button>
+    </div>
+    <div
+      style="margin-top: 8px; font-size: 12px; color: var(--color-text-3);"
+    >
+      knowledge.retriever_hybrid_desc
     </div>
   </div>
   <div

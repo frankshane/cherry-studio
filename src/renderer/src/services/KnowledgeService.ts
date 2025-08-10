@@ -65,7 +65,7 @@ export const getKnowledgeBaseParams = (base: KnowledgeBase): KnowledgeBaseParams
     preprocessProvider: base.preprocessProvider,
     documentCount: base.documentCount,
     framework: base.framework,
-    retriever: base.retriever || 'vector'
+    retriever: base.retriever || 'hybrid'
   }
 }
 
