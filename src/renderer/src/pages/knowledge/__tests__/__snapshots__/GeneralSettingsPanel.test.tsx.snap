@@ -76,6 +76,46 @@ exports[`GeneralSettingsPanel > basic rendering > should match snapshot 1`] = `
     class="c1"
   >
     <div
+      class="ant-flex css-dev-only-do-not-override-1vjf2v5 ant-flex-justify-space-between"
+    >
+      <div
+        class="settings-label"
+      >
+        knowledge.dimensions_auto_set
+        <span
+          data-placement="right"
+          data-testid="info-tooltip"
+          title="knowledge.dimensions_default"
+        >
+          ℹ️
+        </span>
+      </div>
+      <button
+        aria-checked="false"
+        class="ant-switch css-dev-only-do-not-override-1vjf2v5"
+        role="switch"
+        type="button"
+      >
+        <div
+          class="ant-switch-handle"
+        />
+        <span
+          class="ant-switch-inner"
+        >
+          <span
+            class="ant-switch-inner-checked"
+          />
+          <span
+            class="ant-switch-inner-unchecked"
+          />
+        </span>
+      </button>
+    </div>
+  </div>
+  <div
+    class="c1"
+  >
+    <div
       class="settings-label"
     >
       knowledge.dimensions
@@ -91,7 +131,7 @@ exports[`GeneralSettingsPanel > basic rendering > should match snapshot 1`] = `
       data-model="text-embedding-3-small"
       data-testid="embedding-dimension-input"
       type="number"
-      value=""
+      value="1024"
     />
   </div>
   <div
