@@ -892,12 +892,11 @@
     "delete_confirm": "確定要刪除此知識庫嗎？",
     "dimensions": "嵌入維度",
     "dimensions_auto_set": "自動設定嵌入維度",
-    "dimensions_default": "模型將使用預設嵌入維度",
+    "dimensions_default": "[to be translated]:模型将使用默认嵌入维度。选择此选项后，知识库会使用模型默认的嵌入维度创建向量数据库，同时不会在嵌入请求中传入 dimensions 参数。",
     "dimensions_error_invalid": "無效的嵌入維度",
     "dimensions_set_right": "⚠️ 請確保模型支援所設置的嵌入維度大小",
-    "dimensions_size_placeholder": "留空表示不設置",
     "dimensions_size_too_large": "嵌入維度不能超過模型上下文限制（{{max_context}}）",
-    "dimensions_size_tooltip": "嵌入維度大小，數值越大消耗的 Token 也越多。留空則不傳遞 dimensions 參數。",
+    "dimensions_size_tooltip": "[to be translated]:嵌入维度大小，数值越大消耗的 Token 也越多。",
     "directories": "目錄",
     "directory_placeholder": "請輸入目錄路徑",
     "document_count": "請求文件片段數量",
@@ -912,6 +911,7 @@
     "error": {
       "failed_to_create": "知識庫創建失敗",
       "failed_to_edit": "知識庫編輯失敗",
+      "get_embedding_dimensions": "[to be translated]:获取嵌入维度失败",
       "model_invalid": "未選擇模型"
     },
     "file_hint": "支援 {{file_types}} 格式",
@@ -1215,7 +1215,6 @@
         "name": "請先輸入知識庫名稱"
       },
       "fetchTopicName": "話題命名失敗",
-      "get_embedding_dimensions": "取得嵌入維度失敗",
       "invalid": {
         "api": {
           "host": "無效的 API 位址",

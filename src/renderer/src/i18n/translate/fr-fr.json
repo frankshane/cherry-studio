@@ -892,12 +892,11 @@
     "delete_confirm": "Êtes-vous sûr de vouloir supprimer cette base de connaissances ?",
     "dimensions": "Размерность встраивания",
     "dimensions_auto_set": "Réglage automatique des dimensions d'incorporation",
-    "dimensions_default": "Le modèle utilisera les dimensions d'incorporation par défaut",
+    "dimensions_default": "[to be translated]:模型将使用默认嵌入维度。选择此选项后，知识库会使用模型默认的嵌入维度创建向量数据库，同时不会在嵌入请求中传入 dimensions 参数。",
     "dimensions_error_invalid": "Veuillez saisir la taille de dimension d'incorporation",
     "dimensions_set_right": "⚠️ Assurez-vous que le modèle prend en charge la taille de dimension d'incorporation définie",
-    "dimensions_size_placeholder": " Taille de dimension d'incorporation, ex. 1024",
     "dimensions_size_too_large": "Размерность встраивания не может превышать ограничение контекста модели ({{max_context}})",
-    "dimensions_size_tooltip": "Размерность встраивания. Чем больше значение, тем выше размерность, но тем больше токенов требуется",
+    "dimensions_size_tooltip": "[to be translated]:嵌入维度大小，数值越大消耗的 Token 也越多。",
     "directories": "Répertoires",
     "directory_placeholder": "Entrez le chemin du répertoire",
     "document_count": "Nombre de fragments de documents demandés",
@@ -912,6 +911,7 @@
     "error": {
       "failed_to_create": "Erreur lors de la création de la base de connaissances",
       "failed_to_edit": "Erreur lors de la modification de la base de connaissances",
+      "get_embedding_dimensions": "[to be translated]:获取嵌入维度失败",
       "model_invalid": "Aucun modèle sélectionné ou modèle supprimé"
     },
     "file_hint": "Format supporté : {{file_types}}",
@@ -1215,7 +1215,6 @@
         "name": "Veuillez entrer le nom de la base de connaissances"
       },
       "fetchTopicName": "Échec de la nomination du sujet",
-      "get_embedding_dimensions": "Impossible d'obtenir les dimensions d'encodage",
       "invalid": {
         "api": {
           "host": "Adresse API invalide",

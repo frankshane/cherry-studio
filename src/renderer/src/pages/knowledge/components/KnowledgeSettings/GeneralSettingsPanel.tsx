@@ -6,7 +6,7 @@ import { isEmbeddingModel, isRerankModel } from '@renderer/config/models'
 import { useProviders } from '@renderer/hooks/useProvider'
 import { getModelUniqId } from '@renderer/services/ModelService'
 import { KnowledgeBase, PreprocessProvider } from '@renderer/types'
-import { Input, Segmented, Select, SelectProps, Slider } from 'antd'
+import { Flex, Input, Segmented, Select, SelectProps, Slider, Switch } from 'antd'
 import { useTranslation } from 'react-i18next'
 
 import { SettingsItem, SettingsPanel } from './styles'
@@ -63,17 +63,32 @@ const GeneralSettingsPanel: React.FC<GeneralSettingsPanelProps> = ({
       </SettingsItem>
 
       <SettingsItem>
-        <div className="settings-label">
-          {t('knowledge.dimensions')}
-          <InfoTooltip title={t('knowledge.dimensions_size_tooltip')} placement="right" />
-        </div>
-        <InputEmbeddingDimension
-          value={newBase.dimensions}
-          onChange={handleDimensionChange}
-          model={newBase.model}
-          disabled={!newBase.model}
-        />
+        <Flex justify="space-between">
+          <div className="settings-label">
+            {t('knowledge.dimensions_auto_set')}
+            <InfoTooltip title={t('knowledge.dimensions_default')} placement="right" />
+          </div>
+          <Switch
+            checked={!newBase.userDims}
+            onChange={(checked: boolean) => setNewBase((prev) => ({ ...prev, userDims: !checked }))}
+          />
+        </Flex>
       </SettingsItem>
+
+      {newBase.userDims && (
+        <SettingsItem>
+          <div className="settings-label">
+            {t('knowledge.dimensions')}
+            <InfoTooltip title={t('knowledge.dimensions_size_tooltip')} placement="right" />
+          </div>
+          <InputEmbeddingDimension
+            value={newBase.dimensions}
+            onChange={handleDimensionChange}
+            model={newBase.model}
+            disabled={!newBase.model}
+          />
+        </SettingsItem>
+      )}
 
       <SettingsItem>
         <div className="settings-label">
