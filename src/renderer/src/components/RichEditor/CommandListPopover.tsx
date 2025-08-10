@@ -29,6 +29,7 @@ const CommandListPopover = ({
   const [internalSelectedIndex, setInternalSelectedIndex] = useState(0)
   const listRef = useRef<HTMLDivElement>(null)
   const virtualListRef = useRef<DynamicVirtualListRef>(null)
+  const shouldAutoScrollRef = useRef<boolean>(true)
   const { t } = useTranslation()
 
   // Helper function to get translated text with fallback
@@ -43,12 +44,13 @@ const CommandListPopover = ({
 
   // Reset selected index when items change
   useEffect(() => {
+    shouldAutoScrollRef.current = true
     setInternalSelectedIndex(0)
   }, [items])
 
   // Auto scroll to selected item using virtual list
   useEffect(() => {
-    if (virtualListRef.current && items.length > 0) {
+    if (virtualListRef.current && items.length > 0 && shouldAutoScrollRef.current) {
       virtualListRef.current.scrollToIndex(internalSelectedIndex, {
         align: 'auto'
       })
@@ -74,11 +76,13 @@ const CommandListPopover = ({
       switch (event.key) {
         case 'ArrowUp':
           event.preventDefault()
+          shouldAutoScrollRef.current = true
           setInternalSelectedIndex((prev) => (prev === 0 ? items.length - 1 : prev - 1))
           return true
 
         case 'ArrowDown':
           event.preventDefault()
+          shouldAutoScrollRef.current = true
           setInternalSelectedIndex((prev) => (prev === items.length - 1 ? 0 : prev + 1))
           return true
 
@@ -105,7 +109,10 @@ const CommandListPopover = ({
     ref,
     () => ({
       ...props,
-      updateSelectedIndex: (index: number) => setInternalSelectedIndex(index),
+      updateSelectedIndex: (index: number) => {
+        shouldAutoScrollRef.current = true
+        setInternalSelectedIndex(index)
+      },
       selectCurrent: () => selectItem(internalSelectedIndex),
       onKeyDown: handleKeyDown
     }),
@@ -128,6 +135,7 @@ const CommandListPopover = ({
 
   // Handle mouse enter for hover effect
   const handleItemMouseEnter = useCallback((index: number) => {
+    shouldAutoScrollRef.current = false
     setInternalSelectedIndex(index)
   }, [])
 
