@@ -1067,7 +1067,7 @@
     "enable_global_memory_first": "最初にグローバルメモリを有効にしてください",
     "end_date": "終了日",
     "error": {
-      "update_settings": "更新设置失败"
+      "update_settings": "設定の更新に失敗しました"
     },
     "global_memory": "グローバルメモリ",
     "global_memory_description": "メモリ機能を使用するには、アシスタント設定でグローバルメモリを有効にしてください。",
