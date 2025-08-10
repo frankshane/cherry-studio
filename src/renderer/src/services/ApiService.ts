@@ -36,7 +36,7 @@ import {
 import { type Chunk, ChunkType } from '@renderer/types/chunk'
 import { Message } from '@renderer/types/newMessage'
 import { SdkModel } from '@renderer/types/sdk'
-import { removeSpecialCharactersForTopicName, uuid } from '@renderer/utils'
+import { getErrorMessage, removeSpecialCharactersForTopicName, uuid } from '@renderer/utils'
 import {
   abortCompletion,
   addAbortController,
@@ -52,6 +52,7 @@ import {
   containsSupportedVariables,
   replacePromptVariables
 } from '@renderer/utils/prompt'
+import { t } from 'i18next'
 import { findLast, isEmpty, takeRight } from 'lodash'
 
 import AiProvider from '../aiCore'
@@ -793,6 +794,16 @@ function getFirstEmbeddingModel() {
   }
 
   return undefined
+}
+
+export const fetchDimensions = async (model: Model) => {
+  try {
+    const aiProvider = new AiProvider(getProviderByModel(model))
+    return await aiProvider.getEmbeddingDimensions(model)
+  } catch (error) {
+    logger.error(t('knowledge.error.get_embedding_dimensions'), error as Error)
+    throw new Error(t('knowledge.error.get_embedding_dimensions') + '\n' + getErrorMessage(error))
+  }
 }
 
 export async function fetchModels(provider: Provider): Promise<SdkModel[]> {
