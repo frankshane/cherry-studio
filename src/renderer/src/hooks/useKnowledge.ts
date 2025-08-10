@@ -1,5 +1,7 @@
+import { loggerService } from '@logger'
 import { db } from '@renderer/databases'
 import KnowledgeQueue from '@renderer/queue/KnowledgeQueue'
+import { fetchDimensions } from '@renderer/services/ApiService'
 import { getKnowledgeBaseParams } from '@renderer/services/KnowledgeService'
 import { RootState, useAppDispatch } from '@renderer/store'
 import {
@@ -18,13 +20,17 @@ import {
 import { addFilesThunk, addItemThunk, addNoteThunk, addVedioThunk } from '@renderer/store/thunk/knowledgeThunk'
 import { FileMetadata, KnowledgeBase, KnowledgeItem, MigrationModeEnum, ProcessingStatus } from '@renderer/types'
 import { runAsyncFunction } from '@renderer/utils'
+import { formatErrorMessage } from '@renderer/utils/error'
 import dayjs from 'dayjs'
+import { t } from 'i18next'
 import { cloneDeep } from 'lodash'
 import { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useAgents } from './useAgents'
 import { useAssistants } from './useAssistant'
+
+const logger = loggerService.withContext('useKnowledge')
 
 export const useKnowledge = (baseId: string) => {
   const dispatch = useAppDispatch()
@@ -201,6 +207,17 @@ export const useKnowledge = (baseId: string) => {
 
     const timestamp = dayjs().format('YYMMDDHHmmss')
     const newName = `${newBase.name || base.name}-${timestamp}`
+
+    if (base.dimensions === undefined) {
+      try {
+        const dimensions = await fetchDimensions(base.model)
+        newBase.dimensions = dimensions
+      } catch (e) {
+        logger.error('Failed to fetch dimensions.')
+        window.message.error(t('knowledge.migrate.error.failed') + formatErrorMessage(e))
+        return
+      }
+    }
 
     const migratedBase = {
       ...cloneDeep(base), // 深拷贝原始知识库
