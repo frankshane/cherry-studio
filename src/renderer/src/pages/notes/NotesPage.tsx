@@ -1,18 +1,18 @@
-import 'vditor/dist/index.css'
-
 import { loggerService } from '@logger'
+import { HSpaceBetweenStack } from '@renderer/components/Layout'
+import RichEditor from '@renderer/components/RichEditor'
+import { RichEditorRef } from '@renderer/components/RichEditor/types'
 import Scrollbar from '@renderer/components/Scrollbar'
-import { useTheme } from '@renderer/context/ThemeProvider'
 import { useSettings } from '@renderer/hooks/useSettings'
 import NotesNavbar from '@renderer/pages/notes/NotesNavbar'
 import FileManager from '@renderer/services/FileManager'
-import { ThemeMode } from '@renderer/types'
+import { estimateTextTokens } from '@renderer/services/TokenService'
 import { NotesTreeNode } from '@renderer/types/note'
-import { Empty } from 'antd'
+import { Button, Empty } from 'antd'
+import { Edit, Save } from 'lucide-react'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
-import Vditor from 'vditor'
 
 import NotesSidebar from './NotesSidebar'
 import { NotesService } from './utils/NotesService'
@@ -20,14 +20,25 @@ import { NotesService } from './utils/NotesService'
 const logger = loggerService.withContext('NotesPage')
 
 const NotesPage: FC = () => {
-  const editorRef = useRef<HTMLDivElement>(null)
-  const [vditor, setVditor] = useState<Vditor | null>(null)
-  const { theme } = useTheme()
+  const editorRef = useRef<RichEditorRef>(null)
   const { t } = useTranslation()
   const { showWorkspace } = useSettings()
   const [notesTree, setNotesTree] = useState<NotesTreeNode[]>([])
   const [activeNodeId, setActiveNodeId] = useState<string | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(false)
+  const [currentContent, setCurrentContent] = useState<string>('')
+  const [tokenCount, setTokenCount] = useState(0)
+  const [showPreview, setShowPreview] = useState(false)
+
+  // 估算 token 数量
+  useEffect(() => {
+    const updateTokenCount = async () => {
+      const textContent = editorRef.current?.getContent() || currentContent
+      const count = await estimateTextTokens(textContent)
+      setTokenCount(count)
+    }
+    updateTokenCount()
+  }, [currentContent])
 
   // 查找树节点 by ID
   const findNodeById = useCallback((tree: NotesTreeNode[], nodeId: string): NotesTreeNode | null => {
@@ -60,6 +71,20 @@ const NotesPage: FC = () => {
     [activeNodeId, findNodeById, notesTree]
   )
 
+  // 内容变更时保存笔记
+  const handleMarkdownChange = (newMarkdown: string) => {
+    setCurrentContent(newMarkdown)
+    saveCurrentNote(newMarkdown)
+  }
+
+  const handleCommandsReady = (commandAPI: Pick<RichEditorRef, 'unregisterCommand'>) => {
+    const disabledCommands = ['image', 'inlineMath']
+    disabledCommands.forEach((commandId) => {
+      commandAPI.unregisterCommand(commandId)
+    })
+  }
+
+  // 初始化加载笔记树
   useEffect(() => {
     const loadNotesTree = async () => {
       try {
@@ -73,90 +98,32 @@ const NotesPage: FC = () => {
     loadNotesTree()
   }, [])
 
+  // 加载笔记内容
   useEffect(() => {
-    const initEditor = async () => {
-      if (editorRef.current && !vditor && activeNodeId) {
-        const editor = new Vditor(editorRef.current, {
-          height: '100%',
-          mode: 'ir',
-          theme: theme === ThemeMode.dark ? 'dark' : 'classic',
-          toolbar: [
-            'headings',
-            'bold',
-            'italic',
-            'strike',
-            'link',
-            '|',
-            'list',
-            'ordered-list',
-            'check',
-            'outdent',
-            'indent',
-            '|',
-            'quote',
-            'line',
-            'code',
-            'inline-code',
-            '|',
-            'upload',
-            'table',
-            '|',
-            'undo',
-            'redo',
-            '|',
-            'fullscreen',
-            'preview'
-          ],
-          placeholder: t('notes.content_placeholder'),
-          cache: {
-            enable: false
-          },
-          after: async () => {
-            setVditor(editor)
-
-            // 编辑器初始化完成后，加载笔记内容
-            if (activeNodeId) {
-              try {
-                const activeNode = findNodeById(notesTree, activeNodeId)
-                if (activeNode && activeNode.type === 'file') {
-                  const content = await NotesService.readNote(activeNode)
-                  editor.setValue(content)
-                }
-              } catch (error) {
-                logger.error('Failed to load note content after editor init:', error as Error)
-              }
-            }
-          },
-          input: (value) => {
-            // 自动保存当前笔记
-            if (activeNodeId) {
-              saveCurrentNote(value)
-            }
+    const loadNoteContent = async () => {
+      if (activeNodeId && notesTree.length > 0) {
+        try {
+          setIsLoading(true)
+          const activeNode = findNodeById(notesTree, activeNodeId)
+          if (activeNode && activeNode.type === 'file') {
+            const content = await NotesService.readNote(activeNode)
+            setCurrentContent(content)
+            setShowPreview(content.length > 0)
           }
-        })
+        } catch (error) {
+          logger.error('Failed to load note content:', error as Error)
+          setCurrentContent('')
+        } finally {
+          setIsLoading(false)
+        }
+      } else if (!activeNodeId) {
+        setCurrentContent('')
+        setShowPreview(false)
       }
     }
 
-    initEditor()
-
-    return () => {
-      if (vditor) {
-        vditor.destroy()
-        setVditor(null)
-      }
-    }
-  }, [theme, activeNodeId, t, notesTree, vditor, findNodeById, saveCurrentNote])
-
-  // 监听主题变化，更新编辑器样式
-  useEffect(() => {
-    if (vditor) {
-      vditor.setTheme(
-        theme === ThemeMode.dark ? 'dark' : 'classic',
-        theme === ThemeMode.dark ? 'dark' : 'classic',
-        theme === ThemeMode.dark ? 'dark' : 'classic'
-      )
-    }
-  }, [theme, vditor])
+    loadNoteContent()
+  }, [activeNodeId, notesTree.length, findNodeById, notesTree])
 
   // 创建文件夹
   const handleCreateFolder = async (name: string, parentId?: string) => {
@@ -214,11 +181,6 @@ const NotesPage: FC = () => {
             }
           }
         }
-
-        const content = await NotesService.readNote(node)
-        if (vditor) {
-          vditor.setValue(content)
-        }
       } catch (error) {
         logger.error('Failed to load note:', error as Error)
       } finally {
@@ -241,9 +203,9 @@ const NotesPage: FC = () => {
       // 如果删除的是当前活动节点，清空编辑器
       if (nodeId === activeNodeId) {
         setActiveNodeId(undefined)
-        if (vditor) {
-          vditor.destroy()
-          setVditor(null)
+        setCurrentContent('')
+        if (editorRef.current) {
+          editorRef.current.clear()
         }
       }
     } catch (error) {
@@ -264,17 +226,6 @@ const NotesPage: FC = () => {
       logger.error('Failed to rename node:', error as Error)
     } finally {
       setIsLoading(false)
-    }
-  }
-
-  // 切换收藏状态
-  const handleToggleStarred = async (nodeId: string) => {
-    try {
-      await NotesService.toggleStarred(nodeId)
-      const updatedTree = await NotesService.getNotesTree()
-      setNotesTree(updatedTree)
-    } catch (error) {
-      logger.error('Failed to toggle starred:', error as Error)
     }
   }
 
@@ -316,20 +267,52 @@ const NotesPage: FC = () => {
             onCreateNote={handleCreateNote}
             onDeleteNode={handleDeleteNode}
             onRenameNode={handleRenameNode}
-            onToggleStarred={handleToggleStarred}
             onToggleExpanded={handleToggleExpanded}
             onMoveNode={handleMoveNode}
           />
         )}
-        {isLoading && (
-          <LoadingOverlay>
-            <LoadingText>{t('common.loading')}</LoadingText>
-          </LoadingOverlay>
-        )}
-
         <EditorWrapper>
+          {isLoading && (
+            <LoadingOverlay>
+              <LoadingText>{t('common.loading')}</LoadingText>
+            </LoadingOverlay>
+          )}
           {activeNodeId ? (
-            <EditorContainer ref={editorRef} />
+            <EditorContainer>
+              <RichEditorContainer>
+                <RichEditor
+                  key={`${activeNodeId}-${showPreview ? 'preview' : 'edit'}`}
+                  ref={editorRef}
+                  initialContent={currentContent}
+                  onMarkdownChange={handleMarkdownChange}
+                  onCommandsReady={handleCommandsReady}
+                  showToolbar={!showPreview}
+                  editable={!showPreview}
+                  className="notes-rich-editor"
+                />
+              </RichEditorContainer>
+              <BottomPanel>
+                <HSpaceBetweenStack width="100%" justifyContent="space-between" alignItems="center">
+                  <TokenCount>Tokens: {tokenCount}</TokenCount>
+                  <Button
+                    type="primary"
+                    size="small"
+                    icon={showPreview ? <Edit size={14} /> : <Save size={14} />}
+                    onClick={() => {
+                      const currentScrollTop = editorRef.current?.getScrollTop?.() || 0
+                      if (showPreview) {
+                        setShowPreview(false)
+                        requestAnimationFrame(() => editorRef.current?.setScrollTop?.(currentScrollTop))
+                      } else {
+                        setShowPreview(true)
+                        requestAnimationFrame(() => editorRef.current?.setScrollTop?.(currentScrollTop))
+                      }
+                    }}>
+                    {showPreview ? t('common.edit') : t('common.save')}
+                  </Button>
+                </HSpaceBetweenStack>
+              </BottomPanel>
+            </EditorContainer>
           ) : (
             <MainContent>
               <Empty description={t('notes.empty')} image={Empty.PRESENTED_IMAGE_SIMPLE} />
@@ -360,7 +343,8 @@ const LoadingOverlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(var(--color-background-rgb), 0.8);
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -375,19 +359,58 @@ const LoadingText = styled.div`
 const EditorWrapper = styled.div`
   flex: 1;
   display: flex;
+  position: relative;
   overflow: hidden;
 `
 
 const EditorContainer = styled.div`
   flex: 1;
-  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  margin: 16px;
+  border: 0.5px solid var(--color-border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--color-background);
+`
+
+const RichEditorContainer = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 
-  .vditor {
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    height: 100%;
+  .notes-rich-editor {
+    border: none;
+    flex: 1;
+    background: transparent;
+
+    .rich-editor-wrapper {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .rich-editor-content {
+      flex: 1;
+      overflow: auto;
+      padding: 16px;
+    }
   }
+`
+
+const BottomPanel = styled.div`
+  padding: 8px 16px;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-background-soft);
+  flex-shrink: 0;
+`
+
+const TokenCount = styled.div`
+  font-size: 12px;
+  color: var(--color-text-3);
+  user-select: none;
+  line-height: 1;
 `
 
 const MainContent = styled(Scrollbar)`

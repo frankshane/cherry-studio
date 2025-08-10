@@ -1,18 +1,7 @@
 import Scrollbar from '@renderer/components/Scrollbar'
 import { NotesTreeNode } from '@renderer/types/note'
 import { Input, Tooltip } from 'antd'
-import {
-  ChevronDown,
-  ChevronRight,
-  Edit3,
-  File,
-  FilePlus,
-  Folder,
-  FolderOpen,
-  FolderPlus,
-  Star,
-  Trash2
-} from 'lucide-react'
+import { ChevronDown, ChevronRight, Edit3, File, FilePlus, Folder, FolderOpen, FolderPlus, Trash2 } from 'lucide-react'
 import { FC, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
@@ -23,7 +12,6 @@ interface NotesSidebarProps {
   onSelectNode: (node: NotesTreeNode) => void
   onDeleteNode: (nodeId: string) => void
   onRenameNode: (nodeId: string, newName: string) => void
-  onToggleStarred: (nodeId: string) => void
   onToggleExpanded: (nodeId: string) => void
   onMoveNode: (nodeId: string, targetParentId?: string) => void
   activeNodeId?: string
@@ -36,7 +24,6 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
   onSelectNode,
   onDeleteNode,
   onRenameNode,
-  onToggleStarred,
   onToggleExpanded,
   onMoveNode,
   activeNodeId,
@@ -128,6 +115,9 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
     setDragOverNodeId(null)
   }, [])
 
+  // TODO 实现右键菜单
+  // const getMenuItems = useCallback(
+
   const renderTreeNode = useCallback(
     (node: NotesTreeNode, depth: number = 0) => {
       const isActive = node.id === activeNodeId
@@ -192,25 +182,9 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
               ) : (
                 <NodeName>{node.name}</NodeName>
               )}
-
-              {node.is_starred && (
-                <StarIcon>
-                  <Star size={12} fill="var(--color-primary)" />
-                </StarIcon>
-              )}
             </TreeNodeContent>
 
             <NodeActions className="node-actions">
-              <Tooltip title={node.is_starred ? t('notes.unstar') : t('notes.star')}>
-                <ActionButton
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onToggleStarred(node.id)
-                  }}>
-                  <Star size={14} fill={node.is_starred ? 'var(--color-primary)' : 'none'} />
-                </ActionButton>
-              </Tooltip>
-
               <Tooltip title={t('notes.rename')}>
                 <ActionButton
                   onClick={(e) => {
@@ -247,7 +221,6 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
       dragOverNodeId,
       onSelectNode,
       onToggleExpanded,
-      onToggleStarred,
       handleStartEdit,
       handleDeleteNode,
       handleFinishEdit,
@@ -396,13 +369,6 @@ const NodeName = styled.div`
   text-overflow: ellipsis;
   font-size: 13px;
   color: var(--color-text);
-`
-
-const StarIcon = styled.div`
-  display: flex;
-  align-items: center;
-  margin-left: 4px;
-  color: var(--color-primary);
 `
 
 const EditInput = styled(Input)`

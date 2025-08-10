@@ -11,6 +11,8 @@ export interface RichEditorProps {
   onMarkdownChange?: (markdown: string) => void
   /** Callback when editor loses focus */
   onBlur?: () => void
+  /** Callback when paste event occurs */
+  onPaste?: (event: ClipboardEvent) => string
   /** Whether the editor is editable */
   editable?: boolean
   /** Custom CSS class name */
