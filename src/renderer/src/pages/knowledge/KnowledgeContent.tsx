@@ -71,42 +71,48 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
       title: t('files.title'),
       icon: activeKey === 'files' ? <Book size={16} color="var(--color-primary)" /> : <Book size={16} />,
       items: fileItems,
-      content: <KnowledgeFiles selectedBase={selectedBase} progressMap={progressMap} preprocessMap={preprocessMap} />
+      content: <KnowledgeFiles selectedBase={selectedBase} progressMap={progressMap} preprocessMap={preprocessMap} />,
+      show: true
     },
     {
       key: 'notes',
       title: t('knowledge.notes'),
       icon: activeKey === 'notes' ? <Notebook size={16} color="var(--color-primary)" /> : <Notebook size={16} />,
       items: noteItems,
-      content: <KnowledgeNotes selectedBase={selectedBase} />
+      content: <KnowledgeNotes selectedBase={selectedBase} />,
+      show: true
     },
     {
       key: 'directories',
       title: t('knowledge.directories'),
       icon: activeKey === 'directories' ? <Folder size={16} color="var(--color-primary)" /> : <Folder size={16} />,
       items: directoryItems,
-      content: <KnowledgeDirectories selectedBase={selectedBase} progressMap={progressMap} />
+      content: <KnowledgeDirectories selectedBase={selectedBase} progressMap={progressMap} />,
+      show: true
     },
     {
       key: 'urls',
       title: t('knowledge.urls'),
       icon: activeKey === 'urls' ? <Link size={16} color="var(--color-primary)" /> : <Link size={16} />,
       items: urlItems,
-      content: <KnowledgeUrls selectedBase={selectedBase} />
+      content: <KnowledgeUrls selectedBase={selectedBase} />,
+      show: true
     },
     {
       key: 'sitemaps',
       title: t('knowledge.sitemaps'),
       icon: activeKey === 'sitemaps' ? <Globe size={16} color="var(--color-primary)" /> : <Globe size={16} />,
       items: sitemapItems,
-      content: <KnowledgeSitemaps selectedBase={selectedBase} />
+      content: <KnowledgeSitemaps selectedBase={selectedBase} />,
+      show: true
     },
     {
       key: 'videos',
       title: t('knowledge.videos'),
       icon: activeKey === 'videos' ? <Video size={16} color="var(--color-primary)" /> : <Video size={16} />,
       items: sitemapItems,
-      content: <KnowledgeVideos selectedBase={selectedBase} />
+      content: <KnowledgeVideos selectedBase={selectedBase} />,
+      show: base?.framework === 'langchain'
     }
   ]
 
@@ -114,19 +120,21 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
     return null
   }
 
-  const tabItems = knowledgeItems.map((item) => ({
-    key: item.key,
-    label: (
-      <TabLabel>
-        {item.icon}
-        <span>{item.title}</span>
-        <CustomTag size={10} color={item.items.length > 0 ? '#00b96b' : '#cccccc'}>
-          {item.items.length}
-        </CustomTag>
-      </TabLabel>
-    ),
-    children: <TabContent>{item.content}</TabContent>
-  }))
+  const tabItems = knowledgeItems
+    .filter((item) => item.show)
+    .map((item) => ({
+      key: item.key,
+      label: (
+        <TabLabel>
+          {item.icon}
+          <span>{item.title}</span>
+          <CustomTag size={10} color={item.items.length > 0 ? '#00b96b' : '#cccccc'}>
+            {item.items.length}
+          </CustomTag>
+        </TabLabel>
+      ),
+      children: <TabContent>{item.content}</TabContent>
+    }))
 
   return (
     <MainContainer>
