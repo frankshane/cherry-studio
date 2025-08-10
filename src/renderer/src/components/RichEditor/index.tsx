@@ -1,7 +1,7 @@
 import DragHandle from '@tiptap/extension-drag-handle-react'
 import { EditorContent } from '@tiptap/react'
 import { t } from 'i18next'
-import { ArrowLeft, ArrowRight, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Trash2 } from 'lucide-react'
 import React, { useEffect, useImperativeHandle, useRef, useState } from 'react'
 
 import { MdiDragHandle } from '../Icons/SVGIcon'
@@ -48,9 +48,9 @@ const RichEditor = ({
     editable,
     onShowTableActionMenu: ({ position, actions }) => {
       const iconMap: Record<string, React.ReactNode> = {
-        insertRowBefore: <ArrowLeft size={16} />,
+        insertRowBefore: <ArrowUp size={16} />,
         insertColumnBefore: <ArrowLeft size={16} />,
-        insertRowAfter: <ArrowRight size={16} />,
+        insertRowAfter: <ArrowDown size={16} />,
         insertColumnAfter: <ArrowRight size={16} />,
         deleteRow: <Trash2 size={16} />,
         deleteColumn: <Trash2 size={16} />
