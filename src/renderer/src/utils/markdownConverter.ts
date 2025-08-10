@@ -425,7 +425,22 @@ export const sanitizeHtml = (html: string): string => {
       'input',
       'label'
     ],
-    ALLOWED_ATTR: ['href', 'title', 'alt', 'src', 'class', 'id', 'colspan', 'rowspan', 'type', 'checked', 'disabled'],
+    ALLOWED_ATTR: [
+      'href',
+      'title',
+      'alt',
+      'src',
+      'class',
+      'id',
+      'colspan',
+      'rowspan',
+      'type',
+      'checked',
+      'disabled',
+      'width',
+      'height',
+      'loading'
+    ],
     ALLOW_DATA_ATTR: true,
     ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp):|[^a-z]|[a-z+.\\-]+(?:[^a-z+.\-:]|$))/i
   })
