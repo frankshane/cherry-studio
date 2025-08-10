@@ -270,7 +270,7 @@ export async function addVideoLoader(
     const splitterResults = await splitter.splitDocuments(docs)
     const ids = await vectorStore.addDocuments(splitterResults)
     return {
-      entriesAdded: docs.length,
+      entriesAdded: splitterResults.length,
       uniqueId: ids && ids.length > 0 ? ids[0] : '',
       uniqueIds: ids || [],
       loaderType: 'video'

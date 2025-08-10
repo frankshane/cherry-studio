@@ -30,7 +30,9 @@ interface KnowledgeContentProps {
 
 const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
   const { t } = useTranslation()
-  const { base, urlItems, fileItems, directoryItems, noteItems, sitemapItems } = useKnowledge(selectedBase.id || '')
+  const { base, urlItems, fileItems, directoryItems, noteItems, sitemapItems, videoItems } = useKnowledge(
+    selectedBase.id || ''
+  )
   const [activeKey, setActiveKey] = useState('files')
   const [quota, setQuota] = useState<number | undefined>(undefined)
   const [progressMap, setProgressMap] = useState<Map<string, number>>(new Map())
@@ -110,7 +112,7 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
       key: 'videos',
       title: t('knowledge.videos'),
       icon: activeKey === 'videos' ? <Video size={16} color="var(--color-primary)" /> : <Video size={16} />,
-      items: sitemapItems,
+      items: videoItems,
       content: <KnowledgeVideos selectedBase={selectedBase} />,
       show: base?.framework === 'langchain'
     }

@@ -68,58 +68,62 @@ export class SrtSplitter extends TextSplitter {
     return segments
   }
 
-  // 辅助方法：将解析后的片段合并成符合 chunkSize 的块
+  // 辅助方法：将解析后的片段合并成每 5 段一个块
   private mergeSegmentsIntoChunks(segments: SrtSegment[], baseMetadata: Record<string, any>): Document[] {
     const chunks: Document[] = []
     let currentChunkText = ''
-    let chunkStartTime = segments[0]?.startTime ?? 0
-    let chunkEndTime = 0
+    let currentChunkStartTime = 0
+    let currentChunkEndTime = 0
+    let segmentCount = 0
 
-    for (let i = 0; i < segments.length; i++) {
-      const segment = segments[i]
-      const textToAdd = segment.text + ' ' // 添加空格分隔
-
-      // 如果当前块为空，设置起始时间
-      if (currentChunkText.length === 0) {
-        chunkStartTime = segment.startTime
+    for (const segment of segments) {
+      if (segmentCount === 0) {
+        currentChunkStartTime = segment.startTime
       }
 
-      // 检查添加新片段后是否会超出 chunkSize
-      // 注意：这里的 chunkOverlap 逻辑是简化的，我们不回溯，只保证块不超过大小
-      if (currentChunkText.length + textToAdd.length > this.chunkSize) {
-        // 当前块已满，创建 Document
+      currentChunkText += (currentChunkText ? ' ' : '') + segment.text
+      currentChunkEndTime = segment.endTime
+      segmentCount++
+
+      // 当累积到 5 段时，创建一个新的 Document
+      if (segmentCount === 5) {
+        const metadata: Record<string, any> = {
+          ...baseMetadata,
+          startTime: currentChunkStartTime,
+          endTime: currentChunkEndTime
+        }
+        if (baseMetadata.source_url) {
+          metadata.source_url_with_timestamp = `${baseMetadata.source_url}?t=${Math.floor(currentChunkStartTime)}s`
+        }
         chunks.push(
           new Document({
-            pageContent: currentChunkText.trim(),
-            metadata: {
-              ...baseMetadata,
-              startTime: chunkStartTime,
-              endTime: chunkEndTime
-            }
+            pageContent: currentChunkText,
+            metadata
           })
         )
-        // 开始一个新块
-        currentChunkText = ''
-        // 回溯，从当前片段开始新块
-        i--
-        continue
-      }
 
-      currentChunkText += textToAdd
-      chunkEndTime = segment.endTime
+        // 重置计数器和临时变量
+        currentChunkText = ''
+        currentChunkStartTime = 0
+        currentChunkEndTime = 0
+        segmentCount = 0
+      }
     }
 
-    // 添加最后一个未满的块
-    if (currentChunkText.length > 0) {
+    // 如果还有剩余的片段，创建最后一个 Document
+    if (segmentCount > 0) {
+      const metadata: Record<string, any> = {
+        ...baseMetadata,
+        startTime: currentChunkStartTime,
+        endTime: currentChunkEndTime
+      }
+      if (baseMetadata.source_url) {
+        metadata.source_url_with_timestamp = `${baseMetadata.source_url}?t=${Math.floor(currentChunkStartTime)}s`
+      }
       chunks.push(
         new Document({
-          pageContent: currentChunkText.trim(),
-          metadata: {
-            ...baseMetadata,
-            startTime: chunkStartTime,
-            endTime: chunkEndTime,
-            source_url_with_timestamp: `${baseMetadata.source_url}?t=${Math.floor(chunkStartTime)}s`
-          }
+          pageContent: currentChunkText,
+          metadata
         })
       )
     }
