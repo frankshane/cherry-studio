@@ -1,6 +1,7 @@
 import { loggerService } from '@logger'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import FileManager from '@renderer/services/FileManager'
+import { getKnowledgeBaseParams } from '@renderer/services/KnowledgeService'
 import { FileMetadata, KnowledgeBase, KnowledgeItem, ProcessingStatus } from '@renderer/types'
 
 const logger = loggerService.withContext('Store:Knowledge')
@@ -27,11 +28,7 @@ const knowledgeSlice = createSlice({
         state.bases = state.bases.filter((b) => b.id !== action.payload.baseId)
         const files = base.items.filter((item) => item.type === 'file')
         FileManager.deleteFiles(files.map((item) => item.content) as FileMetadata[])
-        if (base.framework === 'langchain') {
-          window.api.newKnowledgeBase.delete(action.payload.baseId)
-        } else {
-          window.api.knowledgeBase.delete(action.payload.baseId)
-        }
+        window.api.knowledgeBase.delete(getKnowledgeBaseParams(base), action.payload.baseId)
       }
     },
 

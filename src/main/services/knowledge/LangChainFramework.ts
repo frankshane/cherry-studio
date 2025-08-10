@@ -1,0 +1,467 @@
+import * as fs from 'node:fs'
+import path from 'node:path'
+
+import { LibSQLVectorStore } from '@langchain/community/vectorstores/libsql'
+import { Document } from '@langchain/core/documents'
+import { createClient } from '@libsql/client'
+import { loggerService } from '@logger'
+import Embeddings from '@main/knowledge/langchain/embeddings/Embeddings'
+import {
+  addFileLoader,
+  addNoteLoader,
+  addSitemapLoader,
+  addVideoLoader,
+  addWebLoader
+} from '@main/knowledge/langchain/loader'
+import { RetrieverFactory } from '@main/knowledge/langchain/retriever'
+import { preprocessingService } from '@main/knowledge/preprocess/PreprocessingService'
+import { getAllFiles } from '@main/utils/file'
+import { getUrlSource } from '@main/utils/knowledge'
+import { MB } from '@shared/config/constant'
+import { LoaderReturn } from '@shared/config/types'
+import { IpcChannel } from '@shared/IpcChannel'
+import { FileMetadata, KnowledgeBaseParams, KnowledgeSearchResult } from '@types'
+import { uuidv4 } from 'zod/v4'
+
+import { windowService } from '../WindowService'
+import {
+  IKnowledgeFramework,
+  KnowledgeBaseAddItemOptionsNonNullableAttribute,
+  LoaderDoneReturn,
+  LoaderTask,
+  LoaderTaskItem,
+  LoaderTaskItemState
+} from './IKnowledgeFramework'
+
+const logger = loggerService.withContext('LangChainFramework')
+
+export class LangChainFramework implements IKnowledgeFramework {
+  private storageDir: string
+
+  private static ERROR_LOADER_RETURN: LoaderReturn = {
+    entriesAdded: 0,
+    uniqueId: '',
+    uniqueIds: [''],
+    loaderType: '',
+    status: 'failed'
+  }
+
+  constructor(storageDir: string) {
+    this.storageDir = storageDir
+    this.initStorageDir()
+  }
+  private initStorageDir = (): void => {
+    if (!fs.existsSync(this.storageDir)) {
+      fs.mkdirSync(this.storageDir, { recursive: true })
+    }
+  }
+
+  private async createDatabase(base: KnowledgeBaseParams): Promise<void> {
+    const client = createClient({
+      url: `file:${path.join(this.storageDir, base.id)}`
+    })
+
+    await client.batch(
+      [
+        `CREATE TABLE IF NOT EXISTS Knowledge
+              (
+                  id        INTEGER PRIMARY KEY AUTOINCREMENT,
+                  content   TEXT,
+                  metadata  TEXT,
+                  EMBEDDING_COLUMN F32_BLOB(${base.dimensions})
+                  );
+                `,
+        `CREATE INDEX IF NOT EXISTS idx_Knowledge_EMBEDDING_COLUMN ON Knowledge (libsql_vector_idx(EMBEDDING_COLUMN));`
+      ],
+      'write'
+    )
+  }
+
+  private async getVectorStore(base: KnowledgeBaseParams): Promise<LibSQLVectorStore> {
+    const embeddings = new Embeddings({
+      embedApiClient: base.embedApiClient,
+      dimensions: base.dimensions
+    })
+    const client = createClient({
+      url: `file:${path.join(this.storageDir, base.id)}`
+    })
+
+    const vectorStore = new LibSQLVectorStore(embeddings, {
+      db: client,
+      table: 'Knowledge',
+      column: 'EMBEDDING_COLUMN'
+    })
+
+    return vectorStore
+  }
+
+  async initialize(base: KnowledgeBaseParams): Promise<void> {
+    await this.createDatabase(base)
+    await this.getVectorStore(base)
+  }
+  async reset(base: KnowledgeBaseParams): Promise<void> {
+    const vectorStore = await this.getVectorStore(base)
+    await vectorStore.delete({ deleteAll: true })
+  }
+  async delete(id: string): Promise<void> {
+    const dbPath = path.join(this.storageDir, id)
+    if (fs.existsSync(dbPath)) {
+      fs.rmSync(dbPath, { recursive: true })
+    }
+  }
+  getLoaderTask(options: KnowledgeBaseAddItemOptionsNonNullableAttribute): LoaderTask {
+    const { item } = options
+    const getStore = () => this.getVectorStore(options.base)
+    switch (item.type) {
+      case 'file':
+        return this.fileTask(getStore, options)
+      case 'directory':
+        return this.directoryTask(getStore, options)
+      case 'url':
+        return this.urlTask(getStore, options)
+      case 'sitemap':
+        return this.sitemapTask(getStore, options)
+      case 'note':
+        return this.noteTask(getStore, options)
+      case 'video':
+        return this.videoTask(getStore, options)
+      default:
+        return {
+          loaderTasks: [],
+          loaderDoneReturn: null
+        }
+    }
+  }
+  async remove(options: { uniqueIds: string[]; base: KnowledgeBaseParams }): Promise<void> {
+    const dbPath = path.join(this.storageDir, options.base.id)
+    if (fs.existsSync(dbPath)) {
+      fs.rmSync(dbPath, { recursive: true })
+    }
+  }
+  async search(options: { search: string; base: KnowledgeBaseParams }): Promise<KnowledgeSearchResult[]> {
+    const { search, base } = options
+    logger.info(`search base: ${JSON.stringify(base)}`)
+
+    const vectorStore = await this.getVectorStore(base)
+
+    // 如果是 bm25 或 hybrid 模式，则从数据库获取所有文档
+    let documents: Document[] = []
+    if (base.retriever === 'bm25' || base.retriever === 'hybrid') {
+      documents = await this.getAllDocuments(base)
+    }
+
+    const retrieverFactory = new RetrieverFactory()
+    const retriever = retrieverFactory.createRetriever(base, vectorStore, documents)
+
+    const results = await retriever.invoke(search)
+    logger.info(`Search Results: ${JSON.stringify(results)}`)
+
+    // VectorStoreRetriever 和 EnsembleRetriever 会将分数附加到 metadata.score
+    // BM25Retriever 默认不返回分数，所以我们需要处理这种情况
+    return results.map((item) => {
+      return {
+        pageContent: item.pageContent,
+        metadata: item.metadata,
+        // 如果 metadata 中没有 score，提供一个默认值
+        score: typeof item.metadata.score === 'number' ? item.metadata.score : 0
+      }
+    })
+  }
+
+  private fileTask(
+    getVectorStore: () => Promise<LibSQLVectorStore>,
+    options: KnowledgeBaseAddItemOptionsNonNullableAttribute
+  ): LoaderTask {
+    const { base, item, userId } = options
+    const file = item.content as FileMetadata
+
+    const loaderTask: LoaderTask = {
+      loaderTasks: [
+        {
+          state: LoaderTaskItemState.PENDING,
+          task: async () => {
+            try {
+              // 添加预处理逻辑
+              const fileToProcess: FileMetadata = await preprocessingService.preprocessFile(file, base, item, userId)
+              const vectorStore = await getVectorStore()
+
+              // 使用处理后的文件进行加载
+              return addFileLoader(base, vectorStore, fileToProcess)
+                .then((result) => {
+                  loaderTask.loaderDoneReturn = result
+                  return result
+                })
+                .catch((e) => {
+                  logger.error(`Error in addFileLoader for ${file.name}: ${e}`)
+                  const errorResult: LoaderReturn = {
+                    ...LangChainFramework.ERROR_LOADER_RETURN,
+                    message: e.message,
+                    messageSource: 'embedding'
+                  }
+                  loaderTask.loaderDoneReturn = errorResult
+                  return errorResult
+                })
+            } catch (e: any) {
+              logger.error(`Preprocessing failed for ${file.name}: ${e}`)
+              const errorResult: LoaderReturn = {
+                ...LangChainFramework.ERROR_LOADER_RETURN,
+                message: e.message,
+                messageSource: 'preprocess'
+              }
+              loaderTask.loaderDoneReturn = errorResult
+              return errorResult
+            }
+          },
+          evaluateTaskWorkload: { workload: file.size }
+        }
+      ],
+      loaderDoneReturn: null
+    }
+
+    return loaderTask
+  }
+  private directoryTask(
+    getVectorStore: () => Promise<LibSQLVectorStore>,
+    options: KnowledgeBaseAddItemOptionsNonNullableAttribute
+  ): LoaderTask {
+    const { base, item } = options
+    const directory = item.content as string
+    const files = getAllFiles(directory)
+    const totalFiles = files.length
+    let processedFiles = 0
+
+    const sendDirectoryProcessingPercent = (totalFiles: number, processedFiles: number) => {
+      const mainWindow = windowService.getMainWindow()
+      mainWindow?.webContents.send(IpcChannel.DirectoryProcessingPercent, {
+        itemId: item.id,
+        percent: (processedFiles / totalFiles) * 100
+      })
+    }
+
+    const loaderDoneReturn: LoaderDoneReturn = {
+      entriesAdded: 0,
+      uniqueId: `DirectoryLoader_${uuidv4()}`,
+      uniqueIds: [],
+      loaderType: 'DirectoryLoader'
+    }
+    const loaderTasks: LoaderTaskItem[] = []
+    for (const file of files) {
+      loaderTasks.push({
+        state: LoaderTaskItemState.PENDING,
+        task: async () => {
+          const vectorStore = await getVectorStore()
+          return addFileLoader(base, vectorStore, file)
+            .then((result) => {
+              loaderDoneReturn.entriesAdded += 1
+              processedFiles += 1
+              sendDirectoryProcessingPercent(totalFiles, processedFiles)
+              loaderDoneReturn.uniqueIds.push(result.uniqueId)
+              return result
+            })
+            .catch((err) => {
+              logger.error(err)
+              return {
+                ...LangChainFramework.ERROR_LOADER_RETURN,
+                message: `Failed to add dir loader: ${err.message}`,
+                messageSource: 'embedding'
+              }
+            })
+        },
+        evaluateTaskWorkload: { workload: file.size }
+      })
+    }
+
+    return {
+      loaderTasks,
+      loaderDoneReturn
+    }
+  }
+
+  private urlTask(
+    getVectorStore: () => Promise<LibSQLVectorStore>,
+    options: KnowledgeBaseAddItemOptionsNonNullableAttribute
+  ): LoaderTask {
+    const { base, item } = options
+    const url = item.content as string
+
+    const loaderTask: LoaderTask = {
+      loaderTasks: [
+        {
+          state: LoaderTaskItemState.PENDING,
+          task: async () => {
+            // 使用处理后的网页进行加载
+            const vectorStore = await getVectorStore()
+            return addWebLoader(base, vectorStore, url, getUrlSource(url))
+              .then((result) => {
+                loaderTask.loaderDoneReturn = result
+                return result
+              })
+              .catch((e) => {
+                logger.error(`Error in addWebLoader for ${url}: ${e}`)
+                const errorResult: LoaderReturn = {
+                  ...LangChainFramework.ERROR_LOADER_RETURN,
+                  message: e.message,
+                  messageSource: 'embedding'
+                }
+                loaderTask.loaderDoneReturn = errorResult
+                return errorResult
+              })
+          },
+          evaluateTaskWorkload: { workload: 2 * MB }
+        }
+      ],
+      loaderDoneReturn: null
+    }
+    return loaderTask
+  }
+
+  private sitemapTask(
+    getVectorStore: () => Promise<LibSQLVectorStore>,
+    options: KnowledgeBaseAddItemOptionsNonNullableAttribute
+  ): LoaderTask {
+    const { base, item } = options
+    const url = item.content as string
+
+    const loaderTask: LoaderTask = {
+      loaderTasks: [
+        {
+          state: LoaderTaskItemState.PENDING,
+          task: async () => {
+            // 使用处理后的网页进行加载
+            const vectorStore = await getVectorStore()
+            return addSitemapLoader(base, vectorStore, url)
+              .then((result) => {
+                loaderTask.loaderDoneReturn = result
+                return result
+              })
+              .catch((e) => {
+                logger.error(`Error in addWebLoader for ${url}: ${e}`)
+                const errorResult: LoaderReturn = {
+                  ...LangChainFramework.ERROR_LOADER_RETURN,
+                  message: e.message,
+                  messageSource: 'embedding'
+                }
+                loaderTask.loaderDoneReturn = errorResult
+                return errorResult
+              })
+          },
+          evaluateTaskWorkload: { workload: 2 * MB }
+        }
+      ],
+      loaderDoneReturn: null
+    }
+    return loaderTask
+  }
+
+  private noteTask(
+    getVectorStore: () => Promise<LibSQLVectorStore>,
+    options: KnowledgeBaseAddItemOptionsNonNullableAttribute
+  ): LoaderTask {
+    const { base, item } = options
+    const content = item.content as string
+    const sourceUrl = (item as any).sourceUrl
+
+    logger.info(`noteTask ${content}, ${sourceUrl}`)
+
+    const encoder = new TextEncoder()
+    const contentBytes = encoder.encode(content)
+    const loaderTask: LoaderTask = {
+      loaderTasks: [
+        {
+          state: LoaderTaskItemState.PENDING,
+          task: async () => {
+            // 使用处理后的笔记进行加载
+            const vectorStore = await getVectorStore()
+            return addNoteLoader(base, vectorStore, content, sourceUrl)
+              .then((result) => {
+                loaderTask.loaderDoneReturn = result
+                return result
+              })
+              .catch((e) => {
+                logger.error(`Error in addNoteLoader for ${sourceUrl}: ${e}`)
+                const errorResult: LoaderReturn = {
+                  ...LangChainFramework.ERROR_LOADER_RETURN,
+                  message: e.message,
+                  messageSource: 'embedding'
+                }
+                loaderTask.loaderDoneReturn = errorResult
+                return errorResult
+              })
+          },
+          evaluateTaskWorkload: { workload: contentBytes.length }
+        }
+      ],
+      loaderDoneReturn: null
+    }
+    return loaderTask
+  }
+
+  private videoTask(
+    getVectorStore: () => Promise<LibSQLVectorStore>,
+    options: KnowledgeBaseAddItemOptionsNonNullableAttribute
+  ): LoaderTask {
+    const { base, item } = options
+    const files = item.content as FileMetadata[]
+
+    const loaderTask: LoaderTask = {
+      loaderTasks: [
+        {
+          state: LoaderTaskItemState.PENDING,
+          task: async () => {
+            const vectorStore = await getVectorStore()
+            return addVideoLoader(base, vectorStore, files)
+              .then((result) => {
+                loaderTask.loaderDoneReturn = result
+                return result
+              })
+              .catch((e) => {
+                logger.error(`Preprocessing failed for ${files[0].name}: ${e}`)
+                const errorResult: LoaderReturn = {
+                  ...LangChainFramework.ERROR_LOADER_RETURN,
+                  message: e.message,
+                  messageSource: 'preprocess'
+                }
+                loaderTask.loaderDoneReturn = errorResult
+                return errorResult
+              })
+          },
+          evaluateTaskWorkload: { workload: files[0].size }
+        }
+      ],
+      loaderDoneReturn: null
+    }
+    return loaderTask
+  }
+
+  private async getAllDocuments({ id }: KnowledgeBaseParams): Promise<Document[]> {
+    logger.info(`Fetching all documents from database for knowledge base: ${id}`)
+    const client = createClient({
+      url: `file:${path.join(this.storageDir, id)}`
+    })
+
+    try {
+      const resultSet = await client.execute('SELECT content, metadata FROM Knowledge')
+
+      const documents: Document[] = []
+      for (const row of resultSet.rows) {
+        if (row.content && row.metadata) {
+          try {
+            const pageContent = row.content as string
+            // metadata 在数据库中存储为 TEXT，需要解析回 JSON 对象
+            const metadata = JSON.parse(row.metadata as string)
+            documents.push(new Document({ pageContent, metadata }))
+          } catch (e) {
+            logger.error(`Failed to parse document row: ${e}`, row)
+          }
+        }
+      }
+
+      logger.info(`Fetched ${documents.length} documents for BM25/Hybrid retriever.`)
+      return documents
+    } catch (e) {
+      logger.error(`Could not fetch documents from database for base ${id}: ${e}`)
+      // 如果表不存在或查询失败，返回空数组
+      return []
+    }
+  }
+}

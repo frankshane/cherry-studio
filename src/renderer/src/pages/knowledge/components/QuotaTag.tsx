@@ -33,7 +33,7 @@ const QuotaTag: FC<{ base: KnowledgeBase; providerId: string; quota?: number }> 
         try {
           let response: number
           if (base.framework === 'langchain') {
-            response = await window.api.newKnowledgeBase.checkQuota({
+            response = await window.api.knowledgeBase.checkQuota({
               base: baseParams,
               userId: userId as string
             })

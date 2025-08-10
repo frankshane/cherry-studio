@@ -1,7 +1,6 @@
 import { db } from '@renderer/databases'
 import KnowledgeQueue from '@renderer/queue/KnowledgeQueue'
 import { getKnowledgeBaseParams } from '@renderer/services/KnowledgeService'
-import { loggerService } from '@renderer/services/LoggerService'
 import { RootState, useAppDispatch } from '@renderer/store'
 import {
   addBase,
@@ -26,8 +25,6 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { useAgents } from './useAgents'
 import { useAssistants } from './useAssistant'
-
-const logger = loggerService.withContext('useKnowledge')
 
 export const useKnowledge = (baseId: string) => {
   const dispatch = useAppDispatch()
@@ -110,7 +107,6 @@ export const useKnowledge = (baseId: string) => {
     if (!base || !item?.uniqueId || !item?.uniqueIds) {
       return
     }
-    const apiEndpoint = base.framework === 'langchain' ? window.api.newKnowledgeBase : window.api.knowledgeBase
 
     const removalParams = {
       uniqueId: item.uniqueId,
@@ -118,7 +114,7 @@ export const useKnowledge = (baseId: string) => {
       base: getKnowledgeBaseParams(base)
     }
 
-    await apiEndpoint.remove(removalParams)
+    await window.api.knowledgeBase.remove(removalParams)
 
     if (item.type === 'file' && typeof item.content === 'object') {
       const file = item.content as FileMetadata
@@ -144,15 +140,13 @@ export const useKnowledge = (baseId: string) => {
       return
     }
 
-    const apiEndpoint = base.framework === 'langchain' ? window.api.newKnowledgeBase : window.api.knowledgeBase
-
     const removalParams = {
       uniqueId: item.uniqueId,
       uniqueIds: item.uniqueIds,
       base: getKnowledgeBaseParams(base)
     }
 
-    await apiEndpoint.remove(removalParams)
+    await window.api.knowledgeBase.remove(removalParams)
 
     updateItem({
       ...item,

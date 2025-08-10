@@ -138,27 +138,15 @@ class KnowledgeQueue {
           if (note) {
             content = note.content as string
             logger.info('{ ...sourceItem, content }', { ...sourceItem, content })
-            if (baseParams.framework === 'langchain') {
-              result = await window.api.newKnowledgeBase.add({ base: baseParams, item: { ...sourceItem, content } })
-            } else {
-              result = await window.api.knowledgeBase.add({ base: baseParams, item: { ...sourceItem, content } })
-            }
+            result = await window.api.knowledgeBase.add({ base: baseParams, item: { ...sourceItem, content } })
           }
           break
         default: {
-          if (baseParams.framework === 'embedjs') {
-            result = await window.api.knowledgeBase.add({
-              base: baseParams,
-              item: sourceItem,
-              userId: userId as string
-            })
-          } else {
-            result = await window.api.newKnowledgeBase.add({
-              base: baseParams,
-              item: sourceItem,
-              userId: userId as string
-            })
-          }
+          result = await window.api.knowledgeBase.add({
+            base: baseParams,
+            item: sourceItem,
+            userId: userId as string
+          })
           break
         }
       }

@@ -136,9 +136,8 @@ export const searchKnowledgeBase = async (
         modelName
       })
     }
-    const knowledgeBaseApi = base.framework === 'langchain' ? window.api.newKnowledgeBase : window.api.knowledgeBase
 
-    const searchResults: KnowledgeSearchResult[] = await knowledgeBaseApi.search(
+    const searchResults: KnowledgeSearchResult[] = await window.api.knowledgeBase.search(
       {
         search: rewrite || query,
         base: baseParams
@@ -152,11 +151,7 @@ export const searchKnowledgeBase = async (
     // 如果有rerank模型，执行重排
     let rerankResults = filteredResults
     if (base.rerankModel && filteredResults.length > 0) {
-      // 1. 根据框架选择API对象
-      const knowledgeBaseApi = base.framework === 'langchain' ? window.api.newKnowledgeBase : window.api.knowledgeBase
-
-      // 2. 使用选定的API对象进行调用，代码不再重复
-      rerankResults = await knowledgeBaseApi.rerank(
+      rerankResults = await window.api.knowledgeBase.rerank(
         {
           search: rewrite || query,
           base: baseParams,

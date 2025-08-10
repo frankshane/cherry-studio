@@ -22,10 +22,9 @@ import DxtService from './services/DxtService'
 import { ExportService } from './services/ExportService'
 import FileStorage from './services/FileStorage'
 import FileService from './services/FileSystemService'
-import KnowledgeService from './services/KnowledgeService'
+import KnowledgeService from './services/knowledge/KnowledgeService'
 import mcpService from './services/MCPService'
 import MemoryService from './services/memory/MemoryService'
-import NewKnowledgeService from './services/NewKnowledgeService'
 import { openTraceWindow, setTraceWindowTitle } from './services/NodeTraceService'
 import NotificationService from './services/NotificationService'
 import * as NutstoreService from './services/NutstoreService'
@@ -484,7 +483,6 @@ export function registerIpc(mainWindow: BrowserWindow, app: Electron.App) {
     }
   })
 
-  // knowledge base
   ipcMain.handle(IpcChannel.KnowledgeBase_Create, KnowledgeService.create.bind(KnowledgeService))
   ipcMain.handle(IpcChannel.KnowledgeBase_Reset, KnowledgeService.reset.bind(KnowledgeService))
   ipcMain.handle(IpcChannel.KnowledgeBase_Delete, KnowledgeService.delete.bind(KnowledgeService))
@@ -493,16 +491,6 @@ export function registerIpc(mainWindow: BrowserWindow, app: Electron.App) {
   ipcMain.handle(IpcChannel.KnowledgeBase_Search, KnowledgeService.search.bind(KnowledgeService))
   ipcMain.handle(IpcChannel.KnowledgeBase_Rerank, KnowledgeService.rerank.bind(KnowledgeService))
   ipcMain.handle(IpcChannel.KnowledgeBase_Check_Quota, KnowledgeService.checkQuota.bind(KnowledgeService))
-
-  // new knowledge base
-  ipcMain.handle(IpcChannel.New_KnowledgeBase_Create, NewKnowledgeService.create.bind(NewKnowledgeService))
-  ipcMain.handle(IpcChannel.New_KnowledgeBase_Reset, NewKnowledgeService.reset.bind(NewKnowledgeService))
-  ipcMain.handle(IpcChannel.New_KnowledgeBase_Delete, NewKnowledgeService.delete.bind(NewKnowledgeService))
-  ipcMain.handle(IpcChannel.New_KnowledgeBase_Add, NewKnowledgeService.add.bind(NewKnowledgeService))
-  ipcMain.handle(IpcChannel.New_KnowledgeBase_Remove, NewKnowledgeService.remove.bind(NewKnowledgeService))
-  ipcMain.handle(IpcChannel.New_KnowledgeBase_Search, NewKnowledgeService.search.bind(NewKnowledgeService))
-  ipcMain.handle(IpcChannel.New_KnowledgeBase_Rerank, NewKnowledgeService.rerank.bind(NewKnowledgeService))
-  ipcMain.handle(IpcChannel.New_KnowledgeBase_Check_Quota, NewKnowledgeService.checkQuota.bind(NewKnowledgeService))
 
   // memory
   ipcMain.handle(IpcChannel.Memory_Add, async (_, messages, config) => {

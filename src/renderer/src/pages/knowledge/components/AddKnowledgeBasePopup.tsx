@@ -55,7 +55,7 @@ const PopupContainer: React.FC<PopupContainerProps> = ({ title, resolve }) => {
         framework: 'langchain'
       }
 
-      await window.api.newKnowledgeBase.create(getKnowledgeBaseParams(_newBase))
+      await window.api.knowledgeBase.create(getKnowledgeBaseParams(_newBase))
 
       addKnowledgeBase(_newBase)
       setOpen(false)
