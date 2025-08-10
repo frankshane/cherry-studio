@@ -137,6 +137,24 @@ vi.mock('antd', () => ({
       {children}
     </select>
   ),
+  Segmented: ({ value, onChange, options, style }: any) => (
+    <div data-testid="retriever-segmented" style={style}>
+      {options?.map((option: any) => (
+        <button
+          key={option.value}
+          type="button"
+          data-testid={`segmented-option-${option.value}`}
+          onClick={() => onChange?.(option.value)}
+          data-active={value === option.value}
+          style={{
+            backgroundColor: value === option.value ? '#1677ff' : '#fff',
+            color: value === option.value ? '#fff' : '#000'
+          }}>
+          {option.label}
+        </button>
+      ))}
+    </div>
+  ),
   Slider: ({ value, onChange, min, max, step, marks }: any) => (
     <input
       data-testid="document-count-slider"
@@ -172,6 +190,7 @@ function createKnowledgeBase(overrides: Partial<KnowledgeBase> = {}): KnowledgeB
     created_at: Date.now(),
     updated_at: Date.now(),
     version: 1,
+    framework: 'langchain',
     ...overrides
   }
 }
@@ -288,6 +307,26 @@ describe('GeneralSettingsPanel', () => {
       fireEvent.change(documentCountSlider, { target: { value: '10' } })
 
       expect(mockSetNewBase).toHaveBeenCalledWith(expect.any(Function))
+    })
+
+    it('should handle retriever selection change', async () => {
+      renderComponent()
+
+      // Test clicking on hybrid retriever option
+      const hybridOption = screen.getByTestId('segmented-option-hybrid')
+      await user.click(hybridOption)
+
+      expect(mockSetNewBase).toHaveBeenCalledWith({
+        ...mockBase,
+        retriever: 'hybrid'
+      })
+    })
+
+    it('should not render retriever segmented when framework is embedjs', () => {
+      const baseWithEmbedjs = createKnowledgeBase({ framework: 'embedjs' })
+      renderComponent({ newBase: baseWithEmbedjs })
+
+      expect(screen.queryByTestId('retriever-segmented')).not.toBeInTheDocument()
     })
 
     it('should disable dimension input when no model is selected', () => {
