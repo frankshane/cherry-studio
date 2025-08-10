@@ -101,7 +101,6 @@ export function MdiLightbulbOn90(props: SVGProps<SVGSVGElement>) {
   )
 }
 
-
 export function MdiLightbulbOn(props: SVGProps<SVGSVGElement>) {
   // {/* Icon from Material Design Icons by Pictogrammers - https://github.com/Templarian/MaterialDesign/blob/master/LICENSE */}
   return (

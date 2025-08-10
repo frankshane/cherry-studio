@@ -4,7 +4,7 @@ import { t } from 'i18next'
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Trash2 } from 'lucide-react'
 import React, { useEffect, useImperativeHandle, useRef, useState } from 'react'
 
-import { MdiDragHandle } from '../Icons/SVGIcon'
+import { MdiLightbulbOn } from '../Icons/SVGIcon'
 import {
   getAllCommands,
   getToolbarCommands,
@@ -282,7 +282,7 @@ const RichEditor = ({
       {showToolbar && <Toolbar editor={editor} formattingState={formattingState} onCommand={handleCommand} />}
       <StyledEditorContent ref={scrollContainerRef}>
         <DragHandle editor={editor}>
-          <MdiDragHandle />
+          <MdiLightbulbOn />
         </DragHandle>
         <EditorContent editor={editor} />
       </StyledEditorContent>
