@@ -89,6 +89,7 @@ const NotesPage: FC = () => {
     const loadNotesTree = async () => {
       try {
         const tree = await NotesService.getNotesTree()
+        logger.debug('Loaded notes tree:', tree)
         setNotesTree(tree)
       } catch (error) {
         logger.error('Failed to load notes tree:', error as Error)
@@ -305,6 +306,7 @@ const NotesPage: FC = () => {
                         requestAnimationFrame(() => editorRef.current?.setScrollTop?.(currentScrollTop))
                       } else {
                         setShowPreview(true)
+                        window.message.success(t('common.saved'))
                         requestAnimationFrame(() => editorRef.current?.setScrollTop?.(currentScrollTop))
                       }
                     }}>

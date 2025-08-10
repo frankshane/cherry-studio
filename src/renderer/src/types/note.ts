@@ -11,7 +11,7 @@ export interface NotesTreeNode {
   id: string
   name: string
   type: 'folder' | 'file'
-  path: string
+  treePath?: string // 在文件树中的路径，区别于FileMetadata的path
   children?: NotesTreeNode[]
   is_starred?: boolean
   expanded?: boolean

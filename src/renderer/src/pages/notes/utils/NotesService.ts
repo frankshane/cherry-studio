@@ -1,11 +1,11 @@
 import { loggerService } from '@logger'
 import db from '@renderer/databases'
 import FileManager from '@renderer/services/FileManager'
+import store from '@renderer/store'
 import { FileMetadata, FileTypes } from '@renderer/types'
 import { NotesTreeNode } from '@renderer/types/note'
 import { v4 as uuidv4 } from 'uuid'
 
-const NOTES_FOLDER_PREFIX = 'notes'
 const MARKDOWN_EXT = '.md'
 
 const logger = loggerService.withContext('NotesService')
@@ -21,8 +21,8 @@ export class NotesService {
       const storedTree = localStorage.getItem(this.NOTES_STORAGE_KEY)
       const tree: NotesTreeNode[] = storedTree ? JSON.parse(storedTree) : []
 
-      await this.syncFileNames(tree)
-
+      await this.syncFile(tree)
+      logger.debug('Notes tree loaded:', tree)
       return tree
     } catch (error) {
       logger.error('Failed to get notes tree:', error as Error)
@@ -31,10 +31,9 @@ export class NotesService {
   }
 
   /**
-   * 同步所有文件节点的名称
+   * 同步文件
    */
-  private static async syncFileNames(tree: NotesTreeNode[]): Promise<void> {
-    // 收集所有文件ID
+  private static async syncFile(tree: NotesTreeNode[]): Promise<void> {
     const fileIds: string[] = []
     this.collectFileIds(tree, fileIds)
 
@@ -42,14 +41,26 @@ export class NotesService {
 
     try {
       const filesMetadata = await Promise.all(fileIds.map((id) => FileManager.getFile(id)))
-      const metadataMap = new Map(filesMetadata.filter((file) => file !== null).map((file) => [file!.id, file]))
-      const hasChanges = this.updateFileNames(tree, metadataMap)
+      const validFiles = filesMetadata.filter((file) => file && typeof file === 'object' && 'id' in file)
+      const metadataMap = new Map(validFiles.map((file) => [file!.id, file!]))
+      const deletedFileIds = fileIds.filter((id) => !metadataMap.has(id))
+
+      let hasChanges = false
+
+      const nameChanges = this.updateFileNames(tree, metadataMap)
+      hasChanges = hasChanges || nameChanges
+
+      // 删除不存在的文件节点
+      if (deletedFileIds.length > 0) {
+        const deleteChanges = this.removeDeletedFiles(tree, deletedFileIds)
+        hasChanges = hasChanges || deleteChanges
+      }
 
       if (hasChanges) {
         await this.saveNotesTree(tree)
       }
     } catch (error) {
-      logger.error('Failed to sync file names:', error as Error)
+      logger.error('Failed to sync files:', error as Error)
     }
   }
 
@@ -93,6 +104,28 @@ export class NotesService {
   }
 
   /**
+   * 删除树中已删除的文件节点
+   * @returns 是否有删除操作
+   */
+  private static removeDeletedFiles(tree: NotesTreeNode[], deletedFileIds: string[]): boolean {
+    let hasChanges = false
+
+    for (let i = tree.length - 1; i >= 0; i--) {
+      const node = tree[i]
+      if (node.type === 'file' && node.fileId && deletedFileIds.includes(node.fileId)) {
+        tree.splice(i, 1)
+        hasChanges = true
+        logger.info(`Removed deleted file node: ${node.name} (${node.fileId})`)
+      } else if (node.children && node.children.length > 0) {
+        const childChanges = this.removeDeletedFiles(node.children, deletedFileIds)
+        hasChanges = hasChanges || childChanges
+      }
+    }
+
+    return hasChanges
+  }
+
+  /**
    * 保存笔记树结构
    */
   static async saveNotesTree(tree: NotesTreeNode[]): Promise<void> {
@@ -108,13 +141,11 @@ export class NotesService {
    */
   static async createFolder(name: string, parentId?: string): Promise<NotesTreeNode> {
     const folderId = uuidv4()
-    const folderPath = this.buildPath(name, parentId)
 
     const folder: NotesTreeNode = {
       id: folderId,
       name,
       type: 'folder',
-      path: folderPath,
       children: [],
       expanded: true,
       createdAt: new Date().toISOString(),
@@ -134,7 +165,7 @@ export class NotesService {
    */
   static async createNote(name: string, content: string = '', parentId?: string): Promise<NotesTreeNode> {
     const noteId = uuidv4()
-    const notePath = this.buildPath(name, parentId)
+    const filesPath = store.getState().runtime.filesPath
 
     // 确保文件名是markdown格式
     let displayName = name
@@ -147,7 +178,7 @@ export class NotesService {
         id: noteId,
         name: noteId + MARKDOWN_EXT,
         origin_name: displayName,
-        path: notePath,
+        path: `${filesPath}/${noteId}${MARKDOWN_EXT}`,
         size: content.length,
         ext: MARKDOWN_EXT,
         type: FileTypes.TEXT,
@@ -163,7 +194,7 @@ export class NotesService {
         id: noteId,
         name: displayName,
         type: 'file',
-        path: notePath,
+        treePath: this.getNodePath(displayName, parentId),
         fileId: noteId,
         createdAt: fileMetadata.created_at,
         updatedAt: fileMetadata.created_at
@@ -334,24 +365,72 @@ export class NotesService {
 
     this.removeNodeFromTree(tree, nodeId)
 
+    // 如果是文件类型，需要更新treePath
+    if (node.type === 'file') {
+      node.treePath = this.getNodePath(node.name, newParentId)
+    }
+    node.updatedAt = new Date().toISOString()
+
     this.insertNodeIntoTree(tree, node, newParentId)
 
     await this.saveNotesTree(tree)
   }
 
   /**
-   * 构建文件路径
+   * 获取节点文件树路径
    */
-  private static buildPath(name: string, parentId?: string): string {
-    const segments = [NOTES_FOLDER_PREFIX]
+  private static getNodePath(name: string, parentId?: string): string {
+    if (!parentId) {
+      return `/${name}`
+    }
+    // 递归构建父节点路径
+    const parentPath = this.buildNodePath(parentId)
+    return `${parentPath}/${name}`
+  }
 
-    if (parentId) {
-      // 这里应该根据parentId构建完整路径，简化处理
-      segments.push(parentId)
+  /**
+   * 递归构建节点路径
+   */
+  private static buildNodePath(nodeId: string): string {
+    // 从当前存储的树中查找节点
+    const storedTree = localStorage.getItem(this.NOTES_STORAGE_KEY)
+    const tree: NotesTreeNode[] = storedTree ? JSON.parse(storedTree) : []
+
+    const node = this.findNodeInTree(tree, nodeId)
+    if (!node) {
+      return `/${nodeId}`
     }
 
-    segments.push(name)
-    return segments.join('/')
+    // 递归查找父节点路径
+    const parentNode = this.findParentNode(tree, nodeId)
+    if (!parentNode) {
+      return `/${node.name}`
+    }
+
+    const parentPath = this.buildNodePath(parentNode.id)
+    return `${parentPath}/${node.name}`
+  }
+
+  /**
+   * 查找节点的父节点
+   */
+  private static findParentNode(tree: NotesTreeNode[], targetNodeId: string): NotesTreeNode | null {
+    for (const node of tree) {
+      if (node.children) {
+        // 检查是否是直接子节点
+        const isDirectChild = node.children.some((child) => child.id === targetNodeId)
+        if (isDirectChild) {
+          return node
+        }
+
+        // 递归查找
+        const parent = this.findParentNode(node.children, targetNodeId)
+        if (parent) {
+          return parent
+        }
+      }
+    }
+    return null
   }
 
   /**

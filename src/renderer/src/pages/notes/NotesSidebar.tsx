@@ -1,3 +1,4 @@
+import { loggerService } from '@logger'
 import Scrollbar from '@renderer/components/Scrollbar'
 import { NotesTreeNode } from '@renderer/types/note'
 import { Input, Tooltip } from 'antd'
@@ -17,6 +18,8 @@ interface NotesSidebarProps {
   activeNodeId?: string
   notesTree: NotesTreeNode[]
 }
+
+const logger = loggerService.withContext('NotesSidebar')
 
 const NotesSidebar: FC<NotesSidebarProps> = ({
   onCreateFolder,
@@ -54,6 +57,7 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
     }
     setEditingNodeId(null)
     setEditingName('')
+    logger.debug(`Renamed node ${editingNodeId} to "${editingName.trim()}"`)
   }, [editingNodeId, editingName, onRenameNode])
 
   const handleCancelEdit = useCallback(() => {
