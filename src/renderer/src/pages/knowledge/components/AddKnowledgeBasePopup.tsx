@@ -40,7 +40,7 @@ const PopupContainer: React.FC<PopupContainerProps> = ({ title, resolve }) => {
     providerData: { selectedDocPreprocessProvider, docPreprocessSelectOptions }
   } = useKnowledgeBaseForm()
 
-  const fetchDimension = useCallback(
+  const fetchDimensions = useCallback(
     async (model: Model) => {
       try {
         const aiProvider = new AiProvider(getProviderByModel(model))
@@ -69,7 +69,7 @@ const PopupContainer: React.FC<PopupContainerProps> = ({ title, resolve }) => {
       setLoading(true)
       try {
         window.message.loading({ content: t('knowledge.dimensions_getting'), key: 'dimensions-getting' })
-        const dimensions = await fetchDimension(newBase.model)
+        const dimensions = await fetchDimensions(newBase.model)
         window.message.destroy('dimensions-getting')
         newBase.dimensions = dimensions
         setLoading(false)
