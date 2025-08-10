@@ -71,6 +71,7 @@ function createKnowledgeBase(overrides: Partial<KnowledgeBase> = {}): KnowledgeB
       name: 'Test Model',
       group: 'test'
     } as Model,
+    dimensions: 1024,
     items: [],
     created_at: Date.now(),
     updated_at: Date.now(),
