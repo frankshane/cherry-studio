@@ -133,10 +133,11 @@ export class LangChainFramework implements IKnowledgeFramework {
     }
   }
   async remove(options: { uniqueIds: string[]; base: KnowledgeBaseParams }): Promise<void> {
-    const dbPath = path.join(this.storageDir, options.base.id)
-    if (fs.existsSync(dbPath)) {
-      fs.rmSync(dbPath, { recursive: true })
-    }
+    const { uniqueIds, base } = options
+    const vectorStore = await this.getVectorStore(base)
+    logger.info(`[ KnowledgeService Remove Item UniqueIds: ${uniqueIds}]`)
+
+    await vectorStore.delete({ ids: uniqueIds })
   }
   async search(options: { search: string; base: KnowledgeBaseParams }): Promise<KnowledgeSearchResult[]> {
     const { search, base } = options

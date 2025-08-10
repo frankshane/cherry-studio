@@ -98,3 +98,8 @@ export interface KnowledgeSearchResult {
   score: number
   metadata: Record<string, any>
 }
+
+export enum MigrationModeEnum {
+  EmbeddingModelChange = 'EmbeddingModelChange',
+  MigrationToLangChain = 'MigrationToLangChain'
+}

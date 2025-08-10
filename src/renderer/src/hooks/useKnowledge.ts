@@ -16,7 +16,7 @@ import {
   updateNotes
 } from '@renderer/store/knowledge'
 import { addFilesThunk, addItemThunk, addNoteThunk, addVedioThunk } from '@renderer/store/thunk/knowledgeThunk'
-import { FileMetadata, KnowledgeBase, KnowledgeItem, ProcessingStatus } from '@renderer/types'
+import { FileMetadata, KnowledgeBase, KnowledgeItem, MigrationModeEnum, ProcessingStatus } from '@renderer/types'
 import { runAsyncFunction } from '@renderer/utils'
 import dayjs from 'dayjs'
 import { cloneDeep } from 'lodash'
@@ -196,7 +196,7 @@ export const useKnowledge = (baseId: string) => {
   }
 
   // 迁移知识库（保留原知识库）
-  const migrateBase = async (newBase: KnowledgeBase) => {
+  const migrateBase = async (newBase: KnowledgeBase, mode: MigrationModeEnum) => {
     if (!base) return
 
     const timestamp = dayjs().format('YYMMDDHHmmss')
@@ -209,8 +209,13 @@ export const useKnowledge = (baseId: string) => {
       name: newName,
       created_at: Date.now(),
       updated_at: Date.now(),
-      items: []
+      items: [],
+      framework: mode === MigrationModeEnum.MigrationToLangChain ? 'langchain' : base.framework
     } as KnowledgeBase
+
+    if (mode === MigrationModeEnum.MigrationToLangChain) {
+      await window.api.knowledgeBase.create(getKnowledgeBaseParams(migratedBase))
+    }
 
     dispatch(addBase(migratedBase))
 
@@ -319,7 +324,9 @@ export const useKnowledgeBases = () => {
   }
 
   const deleteKnowledgeBase = (baseId: string) => {
-    dispatch(deleteBase({ baseId }))
+    const base = bases.find((b) => b.id === baseId)
+    if (!base) return
+    dispatch(deleteBase({ baseId, baseParams: getKnowledgeBaseParams(base) }))
 
     // remove assistant knowledge_base
     const _assistants = assistants.map((assistant) => {

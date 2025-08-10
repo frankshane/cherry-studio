@@ -14,6 +14,7 @@ import styled from 'styled-components'
 
 import EditKnowledgeBasePopup from './components/EditKnowledgeBasePopup'
 import KnowledgeSearchPopup from './components/KnowledgeSearchPopup'
+import MigrationInfoTag from './components/MigrationInfoTag'
 import QuotaTag from './components/QuotaTag'
 import KnowledgeDirectories from './items/KnowledgeDirectories'
 import KnowledgeFiles from './items/KnowledgeFiles'
@@ -150,6 +151,7 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
             {base.preprocessProvider && base.preprocessProvider.type === 'preprocess' && (
               <QuotaTag base={base} providerId={base.preprocessProvider?.provider.id} quota={quota} />
             )}
+            {base.framework !== 'langchain' && <MigrationInfoTag base={base} />}
           </div>
         </ModelInfo>
         <HStack gap={8} alignItems="center">
