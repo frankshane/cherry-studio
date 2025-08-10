@@ -99,7 +99,7 @@ const GeneralSettingsPanel: React.FC<GeneralSettingsPanelProps> = ({
           </div>
           <Segmented
             style={{ width: '100%' }}
-            value={newBase.retriever || 'vector'}
+            value={newBase.retriever || 'hybrid'}
             onChange={(value) => setNewBase({ ...newBase, retriever: value as 'vector' | 'bm25' | 'hybrid' })}
             options={[
               { label: t('knowledge.retriever_hybrid'), value: 'hybrid' },
