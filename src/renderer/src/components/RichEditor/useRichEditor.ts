@@ -176,6 +176,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
       EnhancedImage,
       TableKit.configure({
         table: {
+          resizable: true,
           allowTableNodeSelection: true,
           onRowActionClick: ({ rowIndex, position }) => {
             showTableActionMenu('row', rowIndex, position)
