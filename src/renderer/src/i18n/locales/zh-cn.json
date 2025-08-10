@@ -1066,6 +1066,9 @@
     "embedding_model": "嵌入模型",
     "enable_global_memory_first": "请先启用全局记忆",
     "end_date": "结束日期",
+    "error": {
+      "update_settings": "更新设置失败"
+    },
     "global_memory": "全局记忆",
     "global_memory_description": "需要开启助手设置中的全局记忆才能使用",
     "global_memory_disabled_desc": "要使用记忆功能，请先在助手设置中启用全局记忆。",

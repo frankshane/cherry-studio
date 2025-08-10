@@ -10,7 +10,7 @@ import { fetchDimensions } from '@renderer/services/ApiService'
 import { getModelUniqId } from '@renderer/services/ModelService'
 import { selectMemoryConfig, updateMemoryConfig } from '@renderer/store/memory'
 import { Model } from '@renderer/types'
-import { getErrorMessage } from '@renderer/utils'
+import { formatErrorMessage } from '@renderer/utils/error'
 import { Flex, Form, Modal, Switch } from 'antd'
 import { t } from 'i18next'
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
@@ -80,15 +80,11 @@ const MemoriesSettingsModal: FC<MemoriesSettingsModalProps> = ({ visible, onSubm
 
         let finalDimensions: number
         if (values.autoDims) {
+          window.message.loading({ content: t('knowledge.dimensions_getting'), key: 'dimensions-getting' })
           try {
-            window.message.loading({ content: t('knowledge.dimensions_getting'), key: 'dimensions-getting' })
             finalDimensions = await fetchDimensions(embedderModel)
+          } finally {
             window.message.destroy('dimensions-getting')
-            setLoading(false)
-          } catch (e) {
-            window.message.error(getErrorMessage(e))
-            setLoading(false)
-            return
           }
         } else {
           finalDimensions =
@@ -125,6 +121,7 @@ const MemoriesSettingsModal: FC<MemoriesSettingsModalProps> = ({ visible, onSubm
       }
     } catch (error) {
       logger.error('Error submitting form:', error as Error)
+      window.message.error(t('memory.error.update_settings') + formatErrorMessage(error))
       setLoading(false)
     }
   }
