@@ -1693,10 +1693,11 @@ const migrateConfig = {
             method: 'cutoff',
             cutoffUnit: 'char',
             // @ts-ignore eslint-disable-next-line
-            cutoffLimit: state.websearch.contentLimit
+            cutoffLimit: state.websearch.contentLimit,
+            embeddingDimensions: 1024
           }
         } else {
-          state.websearch.compressionConfig = { method: 'none', cutoffUnit: 'char' }
+          state.websearch.compressionConfig = { method: 'none', cutoffUnit: 'char', embeddingDimensions: 1024 }
         }
 
         // @ts-ignore eslint-disable-next-line
@@ -2110,6 +2111,15 @@ const migrateConfig = {
           base.userDims = true
         }
       })
+      // 迁移其他使用到RAG的地方
+      if (state.websearch.compressionConfig) {
+        // userDims undefined，不会传参，旧配置仍然安全使用
+        state.websearch.compressionConfig.embeddingDimensions = 1024
+      }
+      // memory这边保持类型为可选，使用之前没有用到的isAutoDimensions字段，作为 userDims 的同位
+      if (state.memory.memoryConfig.embedderDimensions === undefined) {
+        state.memory.memoryConfig.isAutoDimensions = true
+      }
       return state
     } catch (error) {
       logger.error('migrate 199 error', error as Error)
