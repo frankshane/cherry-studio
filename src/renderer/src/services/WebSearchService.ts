@@ -22,9 +22,11 @@ import { ExtractResults } from '@renderer/utils/extract'
 import { fetchWebContents } from '@renderer/utils/fetch'
 import { consolidateReferencesByUrl, selectReferences } from '@renderer/utils/websearch'
 import dayjs from 'dayjs'
+import { t } from 'i18next'
 import { LRUCache } from 'lru-cache'
 import { sliceByTokens } from 'tokenx'
 
+import { fetchDimensions } from './ApiService'
 import { getKnowledgeBaseParams } from './KnowledgeService'
 import { getKnowledgeSourceUrl, searchKnowledgeBase } from './KnowledgeService'
 
@@ -224,13 +226,18 @@ class WebSearchService {
     const state = this.getRequestState(requestId)
 
     // 如果已存在且配置未变，直接复用
-    if (state.searchBase && this.isConfigMatched(state.searchBase, config)) {
+    if (state.searchBase && this.isConfigMatched(state.searchBase, config) && this.isNeedMigration(state.searchBase)) {
       return state.searchBase
     }
 
     // 清理旧的知识库
     if (state.searchBase) {
       await window.api.knowledgeBase.delete(getKnowledgeBaseParams(state.searchBase), state.searchBase.id)
+    }
+
+    // 检查是否需要迁移
+    if (state.searchBase && !this.isNeedMigration(state.searchBase)) {
+      config = await this.migrateConfig(state.searchBase, config)
     }
 
     if (!config.embeddingModel) {
@@ -244,6 +251,7 @@ class WebSearchService {
       model: config.embeddingModel,
       rerankModel: config.rerankModel,
       dimensions: config.embeddingDimensions,
+      userDims: config.userDims,
       documentCount,
       items: [],
       created_at: Date.now(),
@@ -271,6 +279,28 @@ class WebSearchService {
       base.rerankModel?.id === config.rerankModel?.id &&
       base.dimensions === config.embeddingDimensions
     )
+  }
+
+  // 迁移旧类型使用，过去dimensions为可选属性
+  private isNeedMigration(base: KnowledgeBase): boolean {
+    return base.dimensions !== undefined
+  }
+
+  private async migrateConfig(base: KnowledgeBase, config: CompressionConfig): Promise<CompressionConfig> {
+    const newConfig = { ...config }
+
+    // 迁移 dimensions
+    let dimensions: number
+    try {
+      dimensions = await fetchDimensions(base.model)
+    } catch (e) {
+      logger.error('Failed to migrate websearch base when fetching dimensinos.', e as Error)
+      throw new Error(t('knowledge.error.get_embedding_dimensions'))
+    }
+    newConfig.embeddingDimensions = dimensions
+    newConfig.userDims = false
+
+    return newConfig
   }
 
   /**
