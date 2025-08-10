@@ -8,11 +8,20 @@ import {
   isSupportArrayContentProvider,
   isSupportDeveloperRoleProvider,
   isSupportStreamOptionsProvider,
-  isSystemProvider
+  SYSTEM_PROVIDERS
 } from '@renderer/config/providers'
 import db from '@renderer/databases'
 import i18n from '@renderer/i18n'
-import { Assistant, LanguageCode, Model, Provider, WebSearchProvider } from '@renderer/types'
+import {
+  Assistant,
+  isSystemProvider,
+  LanguageCode,
+  Model,
+  Provider,
+  ProviderApiOptions,
+  SystemProviderIds,
+  WebSearchProvider
+} from '@renderer/types'
 import { getDefaultGroupName, getLeadingEmoji, runAsyncFunction, uuid } from '@renderer/utils'
 import { defaultByPassRules, UpgradeChannel } from '@shared/config/constant'
 import { isEmpty } from 'lodash'
@@ -20,7 +29,7 @@ import { createMigrate } from 'redux-persist'
 
 import { RootState } from '.'
 import { DEFAULT_TOOL_ORDER } from './inputTools'
-import { initialState as llmInitialState, moveProvider, SYSTEM_PROVIDERS } from './llm'
+import { initialState as llmInitialState, moveProvider } from './llm'
 import { mcpSlice } from './mcp'
 import { defaultActionItems } from './selectionStore'
 import { DEFAULT_SIDEBAR_ICONS, initialState as settingsInitialState } from './settings'
@@ -1429,7 +1438,8 @@ const migrateConfig = {
     try {
       state.settings.openAI = {
         summaryText: 'off',
-        serviceTier: 'auto'
+        serviceTier: 'auto',
+        verbosity: 'medium'
       }
 
       state.settings.codeExecution = {
@@ -1521,7 +1531,8 @@ const migrateConfig = {
       if (!state.settings.openAI) {
         state.settings.openAI = {
           summaryText: 'off',
-          serviceTier: 'auto'
+          serviceTier: 'auto',
+          verbosity: 'medium'
         }
       }
       return state
@@ -2023,6 +2034,13 @@ const migrateConfig = {
   },
   '128': (state: RootState) => {
     try {
+      // 迁移 service tier 设置
+      const openai = state.llm.providers.find((provider) => provider.id === SystemProviderIds.openai)
+      const serviceTier = state.settings.openAI.serviceTier
+      if (openai) {
+        openai.serviceTier = serviceTier
+      }
+
       // @ts-ignore eslint-disable-next-line
       if (state.settings.codePreview) {
         // @ts-ignore eslint-disable-next-line
@@ -2039,8 +2057,47 @@ const migrateConfig = {
       logger.error('migrate 128 error', error as Error)
       return state
     }
+  },
+  '129': (state: RootState) => {
+    try {
+      // 聚合 api options
+      state.llm.providers.forEach((p) => {
+        if (isSystemProvider(p)) {
+          updateProvider(state, p.id, { apiOptions: undefined })
+        } else {
+          const changes: ProviderApiOptions = {
+            isNotSupportArrayContent: p.isNotSupportArrayContent,
+            isNotSupportServiceTier: p.isNotSupportServiceTier,
+            isNotSupportDeveloperRole: p.isNotSupportDeveloperRole,
+            isNotSupportStreamOptions: p.isNotSupportStreamOptions
+          }
+          updateProvider(state, p.id, { apiOptions: changes })
+        }
+      })
+      return state
+    } catch (error) {
+      logger.error('migrate 129 error', error as Error)
+      return state
+    }
+  },
+  '130': (state: RootState) => {
+    try {
+      if (state.settings && state.settings.openAI && !state.settings.openAI.verbosity) {
+        state.settings.openAI.verbosity = 'medium'
+      }
+      // 为 nutstore 添加备份数量限制的默认值
+      if (state.nutstore && state.nutstore.nutstoreMaxBackups === undefined) {
+        state.nutstore.nutstoreMaxBackups = 0
+      }
+      return state
+    } catch (error) {
+      logger.error('migrate 130 error', error as Error)
+      return state
+    }
   }
 }
+
+// 注意：添加新迁移时，记得同时更新 persistReducer
 
 const migrate = createMigrate(migrateConfig as any)
 

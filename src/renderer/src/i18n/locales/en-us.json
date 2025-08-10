@@ -183,10 +183,11 @@
       "prompt": "Prompt Settings",
       "reasoning_effort": {
         "default": "Default",
-        "high": "Think harder",
+        "high": "High",
         "label": "Reasoning effort",
-        "low": "Think less",
-        "medium": "Think normally",
+        "low": "Low",
+        "medium": "Medium",
+        "minimal": "Minimal",
         "off": "Off"
       },
       "regular_phrases": {
@@ -483,7 +484,32 @@
         },
         "title": "Save to Knowledge Base"
       },
-      "label": "Save"
+      "label": "Save",
+      "topic": {
+        "knowledge": {
+          "content": {
+            "maintext": {
+              "description": "Includes topic title and main text content from all messages"
+            }
+          },
+          "empty": {
+            "no_content": "This topic has no saveable content"
+          },
+          "error": {
+            "save_failed": "Failed to save topic, please check knowledge base configuration"
+          },
+          "loading": "Analyzing topic content...",
+          "select": {
+            "content": {
+              "label": "Select content types to save",
+              "selected_tip": "Selected {{count}} items from {{messages}} messages",
+              "tip": "Topic will be saved to knowledge base with complete conversation context"
+            }
+          },
+          "success": "Topic successfully saved to knowledge base ({{count}} items)",
+          "title": "Save Topic to Knowledge Base"
+        }
+      }
     },
     "settings": {
       "code": {
@@ -748,6 +774,9 @@
       "file_format": "Backup file format error"
     },
     "chat": {
+      "chunk": {
+        "non_json": "Returned an invalid data format"
+      },
       "response": "Something went wrong. Please check if you have set your API key in the Settings > Providers"
     },
     "http": {
@@ -1712,6 +1741,7 @@
     "openrouter": "OpenRouter",
     "perplexity": "Perplexity",
     "ph8": "PH8",
+    "poe": "Poe",
     "ppio": "PPIO",
     "qiniu": "Qiniu AI",
     "qwenlm": "QwenLM",
@@ -2413,7 +2443,13 @@
       },
       "nutstore": {
         "backup": {
-          "button": "Backup to Nutstore"
+          "button": "Backup to Nutstore",
+          "modal": {
+            "filename": {
+              "placeholder": "Enter backup filename"
+            },
+            "title": "Backup to Nutstore"
+          }
         },
         "checkConnection": {
           "fail": "Nutstore connection failed",
@@ -2447,7 +2483,11 @@
           "title": "Nutstore Storage Path"
         },
         "restore": {
-          "button": "Restore from Nutstore"
+          "button": "Restore from Nutstore",
+          "confirm": {
+            "content": "Restoring from Nutstore will overwrite current data. Do you want to continue?",
+            "title": "Restore from Nutstore"
+          }
         },
         "title": "Nutstore Configuration",
         "username": "Nutstore Username"
@@ -2712,6 +2752,7 @@
     },
     "developer": {
       "enable_developer_mode": "Enable Developer Mode",
+      "help": "After enabling developer mode, you can use the trace feature to view the data flow during model invocation.",
       "title": "Developer Mode"
     },
     "display": {
@@ -3256,6 +3297,9 @@
         "auto": "auto",
         "default": "default",
         "flex": "flex",
+        "on_demand": "on demand",
+        "performance": "performance",
+        "priority": "priority",
         "tip": "Specifies the latency tier to use for processing the request",
         "title": "Service Tier"
       },
@@ -3267,7 +3311,14 @@
         "tip": "A summary of the reasoning performed by the model",
         "title": "Summary Mode"
       },
-      "title": "OpenAI Settings"
+      "title": "OpenAI Settings",
+      "verbosity": {
+        "high": "High",
+        "low": "Low",
+        "medium": "Medium",
+        "tip": "Control the level of detail in the model's output",
+        "title": "Level of detail"
+      }
     },
     "privacy": {
       "enable_privacy_mode": "Anonymous reporting of errors and statistics",
@@ -3308,7 +3359,15 @@
             "help": "Does the provider support messages with role: \"developer\"?",
             "label": "Support Developer Message"
           },
+          "enable_thinking": {
+            "help": "Does the provider support controlling the reasoning of models like Qwen3 via the enable_thinking parameter?",
+            "label": "Support enable_thinking"
+          },
           "label": "API Settings",
+          "service_tier": {
+            "help": "Whether the provider supports configuring the service_tier parameter. When enabled, this parameter can be adjusted in the service tier settings on the chat page. (OpenAI models only)",
+            "label": "Supports service_tier"
+          },
           "stream_options": {
             "help": "Does the provider support the stream_options parameter?",
             "label": "Support stream_options"
@@ -3752,6 +3811,9 @@
     "message": "New version {{version}} is ready, do you want to install it now?",
     "noReleaseNotes": "No release notes",
     "title": "Update"
+  },
+  "warning": {
+    "missing_provider": "The supplier does not exist; reverted to the default supplier {{provider}}. This may cause issues."
   },
   "words": {
     "knowledgeGraph": "Knowledge Graph",

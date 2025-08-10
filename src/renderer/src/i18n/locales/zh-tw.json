@@ -187,6 +187,7 @@
         "label": "思維鏈長度",
         "low": "稍微思考",
         "medium": "正常思考",
+        "minimal": "最少思考",
         "off": "關閉"
       },
       "regular_phrases": {
@@ -483,7 +484,32 @@
         },
         "title": "儲存到知識庫"
       },
-      "label": "儲存"
+      "label": "保存",
+      "topic": {
+        "knowledge": {
+          "content": {
+            "maintext": {
+              "description": "包含話題標題及所有訊息的主要文字內容"
+            }
+          },
+          "empty": {
+            "no_content": "此話題沒有可保存的內容"
+          },
+          "error": {
+            "save_failed": "保存話題失敗，請檢查知識庫設定"
+          },
+          "loading": "正在分析話題內容...",
+          "select": {
+            "content": {
+              "label": "選擇要保存的內容類型",
+              "selected_tip": "已選擇 {{count}} 項內容，來自 {{messages}} 條訊息",
+              "tip": "話題將以包含完整對話上下文的形式保存到知識庫"
+            }
+          },
+          "success": "話題已成功保存到知識庫（{{count}} 項內容）",
+          "title": "保存話題到知識庫"
+        }
+      }
     },
     "settings": {
       "code": {
@@ -748,6 +774,9 @@
       "file_format": "備份檔案格式錯誤"
     },
     "chat": {
+      "chunk": {
+        "non_json": "返回了無效的資料格式"
+      },
       "response": "出現錯誤。如果尚未設定 API 金鑰，請前往設定 > 模型提供者中設定金鑰"
     },
     "http": {
@@ -1712,6 +1741,7 @@
     "openrouter": "OpenRouter",
     "perplexity": "Perplexity",
     "ph8": "PH8 大模型開放平台",
+    "poe": "Poe",
     "ppio": "PPIO 派歐雲",
     "qiniu": "七牛雲 AI 推理",
     "qwenlm": "QwenLM",
@@ -2413,7 +2443,13 @@
       },
       "nutstore": {
         "backup": {
-          "button": "備份到堅果雲"
+          "button": "備份到堅果雲",
+          "modal": {
+            "filename": {
+              "placeholder": "請輸入備份檔案名"
+            },
+            "title": "備份到堅果雲"
+          }
         },
         "checkConnection": {
           "fail": "堅果雲連接失敗",
@@ -2447,7 +2483,11 @@
           "title": "堅果雲存儲路徑"
         },
         "restore": {
-          "button": "從堅果雲恢復"
+          "button": "從堅果雲恢復",
+          "confirm": {
+            "content": "從堅果雲恢復將覆蓋目前資料，是否繼續？",
+            "title": "從堅果雲恢復"
+          }
         },
         "title": "堅果雲設定",
         "username": "堅果雲用戶名"
@@ -2712,6 +2752,7 @@
     },
     "developer": {
       "enable_developer_mode": "啟用開發者模式",
+      "help": "啟用開發者模式後，將可以使用調用鏈功能查看模型調用過程的數據流。",
       "title": "開發者模式"
     },
     "display": {
@@ -3256,6 +3297,9 @@
         "auto": "自動",
         "default": "預設",
         "flex": "彈性",
+        "on_demand": "按需",
+        "performance": "效能",
+        "priority": "優先",
         "tip": "指定用於處理請求的延遲層級",
         "title": "服務層級"
       },
@@ -3267,7 +3311,14 @@
         "tip": "模型所執行的推理摘要",
         "title": "摘要模式"
       },
-      "title": "OpenAI 設定"
+      "title": "OpenAI 設定",
+      "verbosity": {
+        "high": "高",
+        "low": "低",
+        "medium": "中",
+        "tip": "控制模型輸出的詳細程度",
+        "title": "詳細程度"
+      }
     },
     "privacy": {
       "enable_privacy_mode": "匿名發送錯誤報告和資料統計",
@@ -3308,7 +3359,15 @@
             "help": "該提供商是否支援 role: \"developer\" 的訊息",
             "label": "支援開發人員訊息"
           },
+          "enable_thinking": {
+            "help": "該提供商是否支援透過 enable_thinking 參數控制 Qwen3 等模型的思考",
+            "label": "支援 enable_thinking"
+          },
           "label": "API 設定",
+          "service_tier": {
+            "help": "該提供商是否支援設定 service_tier 參數。啟用後，可在對話頁面的服務層級設定中調整此參數。（僅限 OpenAI 模型）",
+            "label": "支援 service_tier"
+          },
           "stream_options": {
             "help": "該提供商是否支援 stream_options 參數",
             "label": "支援 stream_options"
@@ -3752,6 +3811,9 @@
     "message": "新版本 {{version}} 已準備就緒，是否立即安裝？",
     "noReleaseNotes": "暫無更新日誌",
     "title": "更新提示"
+  },
+  "warning": {
+    "missing_provider": "供應商不存在，已回退到預設供應商 {{provider}}。這可能導致問題。"
   },
   "words": {
     "knowledgeGraph": "知識圖譜",
