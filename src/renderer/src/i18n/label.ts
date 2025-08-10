@@ -5,6 +5,7 @@
  */
 
 import { loggerService } from '@logger'
+import { ThinkingOption } from '@renderer/types'
 
 import i18n from './index'
 
@@ -263,19 +264,17 @@ const httpMessageKeyMap = {
 } as const
 
 export const getHttpMessageLabel = (key: string): string => {
-  const labelMap = {
-    '400': t('error.http.400'),
-    '401': t('error.http.401'),
-    '403': t('error.http.403'),
-    '404': t('error.http.404'),
-    '429': t('error.http.429'),
-    '500': t('error.http.500'),
-    '502': t('error.http.502'),
-    '503': t('error.http.503'),
-    '504': t('error.http.504')
-  } as const
-  return labelMap[key] ?? key
+  return getLabel(key, httpMessageKeyMap)
 }
+
+const reasoningEffortOptionsKeyMap: Record<ThinkingOption, string> = {
+  off: 'assistants.settings.reasoning_effort.off',
+  minimal: 'assistants.settings.reasoning_effort.minimal',
+  high: 'assistants.settings.reasoning_effort.high',
+  low: 'assistants.settings.reasoning_effort.low',
+  medium: 'assistants.settings.reasoning_effort.medium',
+  auto: 'assistants.settings.reasoning_effort.default'
+} as const
 
 export const getReasoningEffortOptionsLabel = (key: string): string => {
   return getLabel(key, reasoningEffortOptionsKeyMap)

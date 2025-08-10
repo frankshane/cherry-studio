@@ -1,9 +1,25 @@
 import Selector from '@renderer/components/Selector'
+import {
+  isSupportedReasoningEffortOpenAIModel,
+  isSupportFlexServiceTierModel,
+  isSupportVerbosityModel
+} from '@renderer/config/models'
+import { isSupportServiceTierProvider } from '@renderer/config/providers'
+import { useProvider } from '@renderer/hooks/useProvider'
 import { SettingDivider, SettingRow } from '@renderer/pages/settings'
 import { CollapsibleSettingGroup } from '@renderer/pages/settings/SettingGroup'
 import { RootState, useAppDispatch } from '@renderer/store'
-import { setOpenAIServiceTier, setOpenAISummaryText } from '@renderer/store/settings'
-import { OpenAIServiceTier, OpenAISummaryText } from '@renderer/types'
+import { setOpenAISummaryText, setOpenAIVerbosity } from '@renderer/store/settings'
+import {
+  GroqServiceTiers,
+  Model,
+  OpenAIServiceTier,
+  OpenAIServiceTiers,
+  OpenAISummaryText,
+  ServiceTier,
+  SystemProviderIds
+} from '@renderer/types'
+import { OpenAIVerbosity } from '@types'
 import { Tooltip } from 'antd'
 import { CircleHelp } from 'lucide-react'
 import { FC, useCallback, useEffect, useMemo } from 'react'
@@ -19,9 +35,19 @@ interface Props {
 
 const OpenAISettingsGroup: FC<Props> = ({ model, providerId, SettingGroup, SettingRowTitleSmall }) => {
   const { t } = useTranslation()
+  const { provider, updateProvider } = useProvider(providerId)
+  const verbosity = useSelector((state: RootState) => state.settings.openAI.verbosity)
   const summaryText = useSelector((state: RootState) => state.settings.openAI.summaryText)
   const serviceTierMode = provider.serviceTier
   const dispatch = useAppDispatch()
+
+  const isOpenAIReasoning =
+    isSupportedReasoningEffortOpenAIModel(model) &&
+    !model.id.includes('o1-pro') &&
+    (provider.type === 'openai-response' || provider.id === 'aihubmix')
+  const isSupportVerbosity = isSupportVerbosityModel(model)
+  const isSupportServiceTier = isSupportServiceTierProvider(provider)
+  const isSupportedFlexServiceTier = isSupportFlexServiceTierModel(model)
 
   const setSummaryText = useCallback(
     (value: OpenAISummaryText) => {
@@ -31,10 +57,17 @@ const OpenAISettingsGroup: FC<Props> = ({ model, providerId, SettingGroup, Setti
   )
 
   const setServiceTierMode = useCallback(
-    (value: OpenAIServiceTier) => {
-      dispatch(setOpenAIServiceTier(value))
+    (value: ServiceTier) => {
+      updateProvider({ serviceTier: value })
     },
     [updateProvider]
+  )
+
+  const setVerbosity = useCallback(
+    (value: OpenAIVerbosity) => {
+      dispatch(setOpenAIVerbosity(value))
+    },
+    [dispatch]
   )
 
   const summaryTextOptions = [
@@ -125,26 +158,36 @@ const OpenAISettingsGroup: FC<Props> = ({ model, providerId, SettingGroup, Setti
         setServiceTierMode(OpenAIServiceTiers.auto)
       }
     }
-  }, [serviceTierMode, serviceTierOptions, setServiceTierMode])
+  }, [provider.id, serviceTierMode, serviceTierOptions, setServiceTierMode])
+
+  if (!isOpenAIReasoning && !isSupportServiceTier && !isSupportVerbosity) {
+    return null
+  }
 
   return (
     <CollapsibleSettingGroup title={t('settings.openai.title')} defaultExpanded={true}>
       <SettingGroup>
-        <SettingRow>
-          <SettingRowTitleSmall>
-            {t('settings.openai.service_tier.title')}{' '}
-            <Tooltip title={t('settings.openai.service_tier.tip')}>
-              <CircleHelp size={14} style={{ marginLeft: 4 }} color="var(--color-text-2)" />
-            </Tooltip>
-          </SettingRowTitleSmall>
-          <Selector
-            value={serviceTierMode}
-            onChange={(value) => {
-              setServiceTierMode(value as OpenAIServiceTier)
-            }}
-            options={serviceTierOptions}
-          />
-        </SettingRow>
+        {isSupportServiceTier && (
+          <>
+            <SettingRow>
+              <SettingRowTitleSmall>
+                {t('settings.openai.service_tier.title')}{' '}
+                <Tooltip title={t('settings.openai.service_tier.tip')}>
+                  <CircleHelp size={14} style={{ marginLeft: 4 }} color="var(--color-text-2)" />
+                </Tooltip>
+              </SettingRowTitleSmall>
+              <Selector
+                value={serviceTierMode}
+                onChange={(value) => {
+                  setServiceTierMode(value as OpenAIServiceTier)
+                }}
+                options={serviceTierOptions}
+                placeholder={t('settings.openai.service_tier.auto')}
+              />
+            </SettingRow>
+            {(isOpenAIReasoning || isSupportVerbosity) && <SettingDivider />}
+          </>
+        )}
         {isOpenAIReasoning && (
           <>
             <SettingRow>
