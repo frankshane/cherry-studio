@@ -958,6 +958,12 @@
     "retriever_bm25_desc": "根據關鍵字的相關性和頻率查找文件。",
     "retriever_hybrid": "混合搜尋（推薦）",
     "retriever_hybrid_desc": "結合關鍵字搜索和語義搜索，以實現最佳檢索準確性。",
+    "retriever_hybrid_weight": {
+      "bm25": "全文",
+      "recommended": "推薦",
+      "title": "混合搜尋權重調整 (全文/向量)",
+      "vector": "向量"
+    },
     "retriever_tooltip": "使用不同的檢索方式檢索知識庫",
     "retriever_vector": "向量搜尋",
     "retriever_vector_desc": "根據語意相似性和含義查找文件。",

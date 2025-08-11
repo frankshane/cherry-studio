@@ -143,7 +143,7 @@ export class LangChainFramework implements IKnowledgeFramework {
 
       // 如果是 bm25 或 hybrid 模式，则从数据库获取所有文档
       let documents: Document[] = []
-      if (base.retriever === 'bm25' || base.retriever === 'hybrid') {
+      if (base.retriever?.mode === 'bm25' || base.retriever?.mode === 'hybrid') {
         documents = await this.getAllDocuments(base)
       }
       if (documents.length === 0) return []

@@ -16,7 +16,8 @@ export class RetrieverFactory {
    * @returns 返回一个 BaseRetriever 实例。
    */
   public createRetriever(base: KnowledgeBaseParams, vectorStore: FaissStore, documents: Document[]): BaseRetriever {
-    const retrieverType = base.retriever ?? 'hybrid'
+    const retrieverType = base.retriever?.mode ?? 'hybrid'
+    const retrieverWeight = base.retriever?.weight ?? 0.5
     const searchK = base.documentCount ?? 5
 
     logger.info(`Creating retriever of type: ${retrieverType} with k=${searchK}`)
@@ -40,8 +41,8 @@ export class RetrieverFactory {
 
         logger.info('Create Hybrid Retriever')
         return new EnsembleRetriever({
-          retrievers: [vectorstoreRetriever, bm25Retriever],
-          weights: [0.7, 0.3]
+          retrievers: [bm25Retriever, vectorstoreRetriever],
+          weights: [retrieverWeight, 1 - retrieverWeight]
         })
       }
 

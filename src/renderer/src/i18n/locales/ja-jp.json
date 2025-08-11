@@ -958,6 +958,12 @@
     "retriever_bm25_desc": "キーワードの関連性と頻度に基づいてドキュメントを検索します。",
     "retriever_hybrid": "ハイブリッド検索（おすすめ）",
     "retriever_hybrid_desc": "キーワード検索と意味検索を組み合わせて、最高の検索精度を実現します。",
+    "retriever_hybrid_weight": {
+      "bm25": "全文（ぜんぶん）",
+      "recommended": "おすすめ",
+      "title": "ハイブリッド検索の重み付け調整 (全文/ベクトル)",
+      "vector": "ベクトル"
+    },
     "retriever_tooltip": "異なる検索方法を使用してナレッジベースを検索する",
     "retriever_vector": "ベクトル検索",
     "retriever_vector_desc": "意味的な類似性と意味に基づいて文書を検索します。",

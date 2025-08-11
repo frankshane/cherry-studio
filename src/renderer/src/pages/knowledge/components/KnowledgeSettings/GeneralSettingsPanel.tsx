@@ -107,36 +107,52 @@ const GeneralSettingsPanel: React.FC<GeneralSettingsPanelProps> = ({
       </SettingsItem>
 
       {newBase.framework !== 'embedjs' && (
-        <SettingsItem>
-          <div className="settings-label">
-            {t('knowledge.retriever')}
-            <InfoTooltip title={t('knowledge.retriever_tooltip')} placement="right" />
-          </div>
-          <Segmented
-            value={newBase.retriever || 'hybrid'}
-            onChange={(value) => setNewBase({ ...newBase, retriever: value as 'vector' | 'bm25' | 'hybrid' })}
-            options={[
-              { label: t('knowledge.retriever_hybrid'), value: 'hybrid' },
-              { label: t('knowledge.retriever_vector'), value: 'vector' },
-              { label: t('knowledge.retriever_bm25'), value: 'bm25' }
-            ]}
-          />
-          {newBase.retriever === 'hybrid' && (
-            <div style={{ marginTop: 8, fontSize: 12, color: 'var(--color-text-3)' }}>
-              {t('knowledge.retriever_hybrid_desc')}
+        <>
+          <SettingsItem>
+            <div className="settings-label">
+              {t('knowledge.retriever')}
+              <InfoTooltip title={t('knowledge.retriever_tooltip')} placement="right" />
             </div>
+            <Segmented
+              value={newBase.retriever?.mode || 'hybrid'}
+              onChange={(value) =>
+                setNewBase({ ...newBase, retriever: { mode: value as 'vector' | 'bm25' | 'hybrid' } })
+              }
+              options={[
+                { label: t('knowledge.retriever_hybrid'), value: 'hybrid' },
+                { label: t('knowledge.retriever_vector'), value: 'vector' },
+                { label: t('knowledge.retriever_bm25'), value: 'bm25' }
+              ]}
+            />
+          </SettingsItem>
+          {newBase.retriever?.mode === 'hybrid' && (
+            <SettingsItem>
+              <div className="settings-label">{t('knowledge.retriever_hybrid_weight.title')}</div>
+              <Slider
+                style={{ width: '100%' }}
+                min={0}
+                max={1}
+                step={0.1}
+                value={newBase.retriever?.weight || 0.5}
+                marks={{
+                  0: t('knowledge.retriever_hybrid_weight.bm25'),
+                  0.5: t('knowledge.retriever_hybrid_weight.recommended'),
+                  1: t('knowledge.retriever_hybrid_weight.vector')
+                }}
+                onChange={(value) =>
+                  setNewBase({
+                    ...newBase,
+                    retriever: {
+                      ...newBase.retriever,
+                      mode: 'hybrid',
+                      weight: value
+                    }
+                  })
+                }
+              />
+            </SettingsItem>
           )}
-          {newBase.retriever === 'vector' && (
-            <div style={{ marginTop: 8, fontSize: 12, color: 'var(--color-text-3)' }}>
-              {t('knowledge.retriever_vector_desc')}
-            </div>
-          )}
-          {newBase.retriever === 'bm25' && (
-            <div style={{ marginTop: 8, fontSize: 12, color: 'var(--color-text-3)' }}>
-              {t('knowledge.retriever_bm25_desc')}
-            </div>
-          )}
-        </SettingsItem>
+        </>
       )}
 
       <SettingsItem>

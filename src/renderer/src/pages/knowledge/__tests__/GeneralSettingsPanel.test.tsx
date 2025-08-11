@@ -155,18 +155,25 @@ vi.mock('antd', () => ({
       ))}
     </div>
   ),
-  Slider: ({ value, onChange, min, max, step, marks }: any) => (
-    <input
-      data-testid="document-count-slider"
-      type="range"
-      value={value}
-      onChange={(e) => onChange?.(Number(e.target.value))}
-      min={min}
-      max={max}
-      step={step}
-      data-marks={JSON.stringify(marks)}
-    />
-  )
+  Slider: ({ value, onChange, min, max, step, marks, style }: any) => {
+    // Determine test ID based on slider characteristics
+    const isWeightSlider = min === 0 && max === 1 && step === 0.1
+    const testId = isWeightSlider ? 'weight-slider' : 'document-count-slider'
+
+    return (
+      <input
+        data-testid={testId}
+        type="range"
+        value={value}
+        onChange={(e) => onChange?.(Number(e.target.value))}
+        min={min}
+        max={max}
+        step={step}
+        style={style}
+        data-marks={JSON.stringify(marks)}
+      />
+    )
+  }
 }))
 
 /**
@@ -186,7 +193,9 @@ function createKnowledgeBase(overrides: Partial<KnowledgeBase> = {}): KnowledgeB
     id: 'test-base-id',
     name: 'Test Knowledge Base',
     model: defaultModel,
-    retriever: 'hybrid',
+    retriever: {
+      mode: 'hybrid'
+    },
     items: [],
     created_at: Date.now(),
     updated_at: Date.now(),
@@ -310,6 +319,22 @@ describe('GeneralSettingsPanel', () => {
       expect(mockSetNewBase).toHaveBeenCalledWith(expect.any(Function))
     })
 
+    it('should handle hybrid weight change', async () => {
+      renderComponent()
+
+      const weightSlider = screen.getByTestId('weight-slider')
+      fireEvent.change(weightSlider, { target: { value: '0.7' } })
+
+      expect(mockSetNewBase).toHaveBeenCalledWith({
+        ...mockBase,
+        retriever: {
+          ...mockBase.retriever,
+          mode: 'hybrid',
+          weight: 0.7
+        }
+      })
+    })
+
     it('should handle retriever selection change', async () => {
       renderComponent()
 
@@ -319,7 +344,7 @@ describe('GeneralSettingsPanel', () => {
 
       expect(mockSetNewBase).toHaveBeenCalledWith({
         ...mockBase,
-        retriever: 'hybrid'
+        retriever: { mode: 'hybrid' }
       })
     })
 

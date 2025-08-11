@@ -43,8 +43,11 @@ export interface KnowledgeBase {
     provider: PreprocessProvider
   }
   framework: 'embedjs' | 'langchain'
-  // default is vector
-  retriever?: 'vector' | 'bm25' | 'hybrid'
+  // default is hybrid
+  retriever?: {
+    mode: 'vector' | 'bm25' | 'hybrid'
+    weight?: number
+  }
 }
 
 export type ProcessingStatus = 'pending' | 'processing' | 'completed' | 'failed'
@@ -81,7 +84,10 @@ export type KnowledgeBaseParams = {
     provider: PreprocessProvider
   }
   framework: 'embedjs' | 'langchain'
-  retriever?: 'vector' | 'bm25' | 'hybrid'
+  retriever?: {
+    mode: 'vector' | 'bm25' | 'hybrid'
+    weight?: number
+  }
 }
 
 export type KnowledgeReference = {

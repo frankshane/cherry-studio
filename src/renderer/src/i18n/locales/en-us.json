@@ -958,6 +958,12 @@
     "retriever_bm25_desc": "Search for documents based on keyword relevance and frequency.",
     "retriever_hybrid": "Hybrid Search (Recommended)",
     "retriever_hybrid_desc": "Combine keyword search and semantic search to achieve optimal retrieval accuracy.",
+    "retriever_hybrid_weight": {
+      "bm25": "full text",
+      "recommended": "recommend",
+      "title": "Hybrid Search Weight Adjustment (Full-text/Vector)",
+      "vector": "vector"
+    },
     "retriever_tooltip": "Using different retrieval methods to search the knowledge base",
     "retriever_vector": "vector search",
     "retriever_vector_desc": "Retrieve documents based on semantic similarity and meaning.",
