@@ -1,4 +1,3 @@
-import InfoTooltip from '@renderer/components/InfoTooltip'
 import InputEmbeddingDimension from '@renderer/components/InputEmbeddingDimension'
 import ModelSelector from '@renderer/components/ModelSelector'
 import { DEFAULT_WEBSEARCH_RAG_DOCUMENT_COUNT } from '@renderer/config/constant'
@@ -9,7 +8,7 @@ import { useWebSearchSettings } from '@renderer/hooks/useWebSearchProviders'
 import { SettingDivider, SettingRow, SettingRowTitle } from '@renderer/pages/settings'
 import { getModelUniqId } from '@renderer/services/ModelService'
 import { Model } from '@renderer/types'
-import { Slider, Switch, Tooltip } from 'antd'
+import { Slider, Tooltip } from 'antd'
 import { find } from 'lodash'
 import { Info } from 'lucide-react'
 import { useMemo } from 'react'
@@ -69,41 +68,21 @@ const RagSettings = () => {
       <SettingDivider />
 
       <SettingRow>
-        <SettingRowTitle className="settings-label">
-          {t('knowledge.dimensions_auto_set')}
-          <InfoTooltip
-            style={{ marginLeft: 5, cursor: 'pointer' }}
-            title={t('knowledge.dimensions_default')}
-            placement="right"
-          />
+        <SettingRowTitle>
+          {t('models.embedding_dimensions')}
+          <Tooltip title={t('knowledge.dimensions_size_tooltip')}>
+            <Info size={16} color="var(--color-icon)" style={{ marginLeft: 5, cursor: 'pointer' }} />
+          </Tooltip>
         </SettingRowTitle>
-        <Switch
-          checked={!compressionConfig?.userDims}
-          onChange={(checked: boolean) => updateCompressionConfig({ userDims: !checked })}
+        <InputEmbeddingDimension
+          value={compressionConfig?.embeddingDimensions}
+          onChange={handleEmbeddingDimensionsChange}
+          model={compressionConfig?.embeddingModel}
+          disabled={!compressionConfig?.embeddingModel}
+          style={{ width: INPUT_BOX_WIDTH }}
         />
       </SettingRow>
       <SettingDivider />
-
-      {compressionConfig?.userDims && (
-        <>
-          <SettingRow>
-            <SettingRowTitle>
-              {t('models.embedding_dimensions')}
-              <Tooltip title={t('knowledge.dimensions_size_tooltip')}>
-                <Info size={16} color="var(--color-icon)" style={{ marginLeft: 5, cursor: 'pointer' }} />
-              </Tooltip>
-            </SettingRowTitle>
-            <InputEmbeddingDimension
-              value={compressionConfig?.embeddingDimensions}
-              onChange={handleEmbeddingDimensionsChange}
-              model={compressionConfig?.embeddingModel}
-              disabled={!compressionConfig?.embeddingModel}
-              style={{ width: INPUT_BOX_WIDTH }}
-            />
-          </SettingRow>
-          <SettingDivider />
-        </>
-      )}
 
       <SettingRow>
         <SettingRowTitle>{t('models.rerank_model')}</SettingRowTitle>

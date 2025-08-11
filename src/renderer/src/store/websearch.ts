@@ -12,8 +12,7 @@ export interface CompressionConfig {
   cutoffLimit?: number
   cutoffUnit?: 'char' | 'token'
   embeddingModel?: Model
-  embeddingDimensions: number
-  userDims?: boolean
+  embeddingDimensions?: number // undefined表示自动获取
   documentCount?: number // 每个搜索结果的文档数量（只是预期值）
   rerankModel?: Model
 }
@@ -91,7 +90,6 @@ export const initialState: WebSearchState = {
   subscribeSources: [],
   overwrite: false,
   compressionConfig: {
-    embeddingDimensions: 1024,
     method: 'none',
     cutoffUnit: 'char'
   },
