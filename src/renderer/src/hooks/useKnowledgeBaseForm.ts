@@ -15,7 +15,10 @@ const createInitialKnowledgeBase = (): KnowledgeBase => ({
   created_at: Date.now(),
   updated_at: Date.now(),
   version: 1,
-  framework: 'langchain'
+  framework: 'langchain',
+  retriever: {
+    mode: 'hybrid'
+  }
 })
 
 /**
