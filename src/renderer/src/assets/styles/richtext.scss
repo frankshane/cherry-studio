@@ -46,7 +46,7 @@
   h4,
   h5,
   h6 {
-    margin: 1.5em 0 1em 0;
+    margin: 1.5rem 0 1rem 0;
     line-height: 1.1;
     text-wrap: pretty;
     font-weight: 600;
@@ -72,17 +72,9 @@
   }
 
   p {
-    margin: 1.1rem 0;
+    margin: 1.1rem 0 0.5rem 0;
     white-space: pre-wrap;
     line-height: 1.6;
-
-    &:last-child {
-      margin-bottom: 5px;
-    }
-
-    &:first-child {
-      margin-top: 0;
-    }
 
     &:has(+ ul) {
       margin-bottom: 0;
