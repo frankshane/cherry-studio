@@ -42,12 +42,20 @@ const PopupContainer: React.FC<PopupContainerProps> = ({ title, resolve }) => {
 
   const fetchDimension = useCallback(
     async (provider: Provider, model: Model) => {
+      setLoading(true)
       try {
         const aiProvider = new AiProvider(provider)
         return await aiProvider.getEmbeddingDimensions(model)
+        // for controlled input
+        // if (ref?.current) {
+        //   ref.current.value = dimension.toString()
+        // }
+        // onChange?.(dimension)
       } catch (error) {
         logger.error(t('knowledge.error.get_embedding_dimensions'), error as Error)
         throw new Error(t('knowledge.error.get_embedding_dimensions') + '\n' + getErrorMessage(error))
+      } finally {
+        setLoading(false)
       }
     },
     [t]
@@ -66,17 +74,13 @@ const PopupContainer: React.FC<PopupContainerProps> = ({ title, resolve }) => {
 
     // auto dims
     if (!newBase.userDims || newBase.dimensions === -1) {
-      setLoading(true)
       try {
         window.message.loading({ content: t('knowledge.dimensions_getting'), key: 'dimensions-getting' })
         const dimensions = await fetchDimension(getProviderByModel(newBase.model), newBase.model)
         window.message.destroy('dimensions-getting')
         newBase.dimensions = dimensions
-        setLoading(false)
       } catch (e) {
         window.message.error(t('knowledge.error.failed_to_create') + formatErrorMessage(e))
-        setLoading(false)
-        return
       }
     }
 
