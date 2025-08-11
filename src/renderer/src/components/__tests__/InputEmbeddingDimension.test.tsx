@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -117,16 +118,34 @@ describe('InputEmbeddingDimension', () => {
     group: 'test-group'
   }
 
+  const getRefreshButton = () => screen.getByRole('button', { name: /get embedding dimension/i })
+
   describe('basic rendering', () => {
     it('should match snapshot with all props', () => {
       const { container } = render(<InputEmbeddingDimension value={1536} model={mockModel} style={{ width: '100%' }} />)
       expect(container.firstChild).toMatchSnapshot()
     })
 
+    it('should match snapshot with loading state', async () => {
+      // Manually control the promise to ensure we can snapshot the loading state.
+      // This promise is intentionally never resolved.
+      const promise = new Promise(() => {})
+      mocks.aiCore.getEmbeddingDimensions.mockReturnValue(promise)
+
+      const { container } = render(<InputEmbeddingDimension model={mockModel} />)
+
+      const refreshButton = getRefreshButton()
+      await userEvent.click(refreshButton)
+
+      // At this point, the button is guaranteed to be in the loading state
+      // because the promise it's awaiting will never resolve.
+      expect(container.firstChild).toMatchSnapshot()
+    })
+
     it('should be enabled when model is provided', () => {
       render(<InputEmbeddingDimension model={mockModel} />)
 
-      const input = screen.getByPlaceholderText('1024')
+      const input = screen.getByPlaceholderText('请输入维度大小')
       expect(input).not.toBeDisabled()
     })
   })
@@ -137,34 +156,73 @@ describe('InputEmbeddingDimension', () => {
 
       render(<InputEmbeddingDimension model={mockModel} onChange={handleChange} />)
 
-      const input = screen.getByPlaceholderText('1024')
+      const input = screen.getByPlaceholderText('请输入维度大小')
       fireEvent.change(input, { target: { value: '2048' } })
 
       expect(handleChange).toHaveBeenCalledWith(2048)
     })
 
-    describe('error handling', () => {
-      it('should be disabled and show no error when no model is provided', async () => {
-        render(<InputEmbeddingDimension />)
+    it('should fetch and set dimension on refresh click', async () => {
+      mocks.aiCore.getEmbeddingDimensions.mockResolvedValue(1536)
 
-        const input = screen.getByPlaceholderText('1024')
-        expect(input).toBeDisabled()
+      const handleChange = vi.fn()
+      const user = userEvent.setup()
 
-        expect(window.message.error).not.toHaveBeenCalled()
+      render(<InputEmbeddingDimension model={mockModel} onChange={handleChange} />)
+
+      const refreshButton = getRefreshButton()
+      await user.click(refreshButton)
+
+      await waitFor(() => {
+        expect(mocks.aiCore.getEmbeddingDimensions).toHaveBeenCalledWith(mockModel)
+        expect(handleChange).toHaveBeenCalledWith(1536)
       })
+    })
+  })
 
-      it('should handle null value correctly', async () => {
-        const handleChange = vi.fn()
+  describe('error handling', () => {
+    it('should be disabled and show no error when no model is provided', async () => {
+      render(<InputEmbeddingDimension />)
 
-        render(<InputEmbeddingDimension model={mockModel} value={null} onChange={handleChange} />)
+      const refreshButton = getRefreshButton()
+      expect(refreshButton).toBeDisabled()
 
-        const input = screen.getByPlaceholderText('1024') as HTMLInputElement
-        expect(input.value).toBe('')
+      const input = screen.getByPlaceholderText('请输入维度大小')
+      expect(input).toBeDisabled()
 
-        // Should allow typing new value
-        fireEvent.change(input, { target: { value: '1024' } })
-        expect(handleChange).toHaveBeenCalledWith(1024)
+      // To be absolutely sure, we try to click the disabled button.
+      // `userEvent` will not trigger an event on a disabled element by default.
+      // We can skip this check to be explicit.
+      await userEvent.click(refreshButton, { pointerEventsCheck: 0 })
+
+      expect(window.message.error).not.toHaveBeenCalled()
+    })
+
+    it('should show error when API call fails', async () => {
+      mocks.aiCore.getEmbeddingDimensions.mockRejectedValue(new Error('API Error'))
+
+      const user = userEvent.setup()
+      render(<InputEmbeddingDimension model={mockModel} />)
+
+      const refreshButton = getRefreshButton()
+      await user.click(refreshButton)
+
+      await waitFor(() => {
+        expect(window.message.error).toHaveBeenCalledWith('获取嵌入维度失败\nAPI Error')
       })
+    })
+
+    it('should handle null value correctly', async () => {
+      const handleChange = vi.fn()
+
+      render(<InputEmbeddingDimension model={mockModel} value={null} onChange={handleChange} />)
+
+      const input = screen.getByPlaceholderText('请输入维度大小') as HTMLInputElement
+      expect(input.value).toBe('')
+
+      // Should allow typing new value
+      fireEvent.change(input, { target: { value: '1024' } })
+      expect(handleChange).toHaveBeenCalledWith(1024)
     })
   })
 })

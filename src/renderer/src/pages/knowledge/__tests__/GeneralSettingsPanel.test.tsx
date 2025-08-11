@@ -117,61 +117,57 @@ vi.mock('react-i18next', () => ({
 }))
 
 // Mock antd components
-vi.mock('antd', async () => {
-  const origin = await import('antd')
-  return {
-    ...origin,
-    Input: ({ value, onChange, placeholder }: any) => (
-      <input data-testid="name-input" value={value} onChange={onChange} placeholder={placeholder} />
-    ),
-    Select: ({ value, onChange, placeholder, options, allowClear, children }: any) => (
-      <select
-        data-testid="preprocess-select"
-        value={value || ''}
-        onChange={(e) => onChange?.(e.target.value)}
-        data-placeholder={placeholder}
-        data-allow-clear={allowClear}>
-        <option value="">Select option</option>
-        {options?.map((option: any) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-        {children}
-      </select>
-    ),
-    Segmented: ({ value, onChange, options, style }: any) => (
-      <div data-testid="retriever-segmented" style={style}>
-        {options?.map((option: any) => (
-          <button
-            key={option.value}
-            type="button"
-            data-testid={`segmented-option-${option.value}`}
-            onClick={() => onChange?.(option.value)}
-            data-active={value === option.value}
-            style={{
-              backgroundColor: value === option.value ? '#1677ff' : '#fff',
-              color: value === option.value ? '#fff' : '#000'
-            }}>
-            {option.label}
-          </button>
-        ))}
-      </div>
-    ),
-    Slider: ({ value, onChange, min, max, step, marks }: any) => (
-      <input
-        data-testid="document-count-slider"
-        type="range"
-        value={value}
-        onChange={(e) => onChange?.(Number(e.target.value))}
-        min={min}
-        max={max}
-        step={step}
-        data-marks={JSON.stringify(marks)}
-      />
-    )
-  }
-})
+vi.mock('antd', () => ({
+  Input: ({ value, onChange, placeholder }: any) => (
+    <input data-testid="name-input" value={value} onChange={onChange} placeholder={placeholder} />
+  ),
+  Select: ({ value, onChange, placeholder, options, allowClear, children }: any) => (
+    <select
+      data-testid="preprocess-select"
+      value={value || ''}
+      onChange={(e) => onChange?.(e.target.value)}
+      data-placeholder={placeholder}
+      data-allow-clear={allowClear}>
+      <option value="">Select option</option>
+      {options?.map((option: any) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+      {children}
+    </select>
+  ),
+  Segmented: ({ value, onChange, options, style }: any) => (
+    <div data-testid="retriever-segmented" style={style}>
+      {options?.map((option: any) => (
+        <button
+          key={option.value}
+          type="button"
+          data-testid={`segmented-option-${option.value}`}
+          onClick={() => onChange?.(option.value)}
+          data-active={value === option.value}
+          style={{
+            backgroundColor: value === option.value ? '#1677ff' : '#fff',
+            color: value === option.value ? '#fff' : '#000'
+          }}>
+          {option.label}
+        </button>
+      ))}
+    </div>
+  ),
+  Slider: ({ value, onChange, min, max, step, marks }: any) => (
+    <input
+      data-testid="document-count-slider"
+      type="range"
+      value={value}
+      onChange={(e) => onChange?.(Number(e.target.value))}
+      min={min}
+      max={max}
+      step={step}
+      data-marks={JSON.stringify(marks)}
+    />
+  )
+}))
 
 /**
  * 创建测试用的 KnowledgeBase 对象
@@ -191,7 +187,6 @@ function createKnowledgeBase(overrides: Partial<KnowledgeBase> = {}): KnowledgeB
     name: 'Test Knowledge Base',
     model: defaultModel,
     dimensions: 1024,
-    userDims: true,
     retriever: 'hybrid',
     items: [],
     created_at: Date.now(),
