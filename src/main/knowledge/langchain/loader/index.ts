@@ -12,6 +12,7 @@ import { LoaderReturn } from '@shared/config/types'
 import { FileMetadata, FileTypes, KnowledgeBaseParams } from '@types'
 import { randomUUID } from 'crypto'
 import { JSONLoader } from 'langchain/document_loaders/fs/json'
+import { MultiFileLoader } from 'langchain/document_loaders/fs/multi_file'
 import { TextLoader } from 'langchain/document_loaders/fs/text'
 
 import { SplitterFactory } from '../splitter'
@@ -289,5 +290,57 @@ export async function addVideoLoader(
     uniqueId: '',
     uniqueIds: [],
     loaderType: 'unknown'
+  }
+}
+
+export async function addDirectoryLoader(
+  base: KnowledgeBaseParams,
+  vectorStore: FaissStore,
+  files: FileMetadata[]
+): Promise<LoaderReturn> {
+  try {
+    // 根据文件扩展名配置不同的 loader
+    const loaderMap = {
+      '.txt': (path: string) => new TextLoader(path),
+      '.md': (path: string) => new TextLoader(path),
+      '.json': (path: string) => new JSONLoader(path),
+      '.pdf': (path: string) => new PDFLoader(path),
+      '.docx': (path: string) => new DocxLoader(path),
+      '.doc': (path: string) => new DocxLoader(path),
+      '.pptx': (path: string) => new PPTXLoader(path),
+      '.epub': (path: string) => new EPubLoader(path)
+    }
+
+    const filePaths = files.map((file) => file.path)
+
+    const multiFileLoader = new MultiFileLoader(filePaths, loaderMap)
+    let docs = await multiFileLoader.load()
+
+    // 为所有文档添加类型信息
+    docs = formatDocument(docs, 'directory')
+
+    const splitter = SplitterFactory.create({
+      chunkSize: base.chunkSize,
+      chunkOverlap: base.chunkOverlap
+    })
+
+    const splitterResults = await splitter.splitDocuments(docs)
+    const ids = splitterResults.map(() => randomUUID())
+    await vectorStore.addDocuments(splitterResults, { ids: ids })
+
+    return {
+      entriesAdded: docs.length,
+      uniqueId: ids[0],
+      uniqueIds: ids,
+      loaderType: 'directory'
+    }
+  } catch (error) {
+    logger.error(`Error loading or processing directory  ${error}`)
+    return {
+      entriesAdded: 0,
+      uniqueId: '',
+      uniqueIds: [],
+      loaderType: 'directory'
+    }
   }
 }
