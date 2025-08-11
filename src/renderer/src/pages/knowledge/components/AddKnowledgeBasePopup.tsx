@@ -5,7 +5,7 @@ import { useKnowledgeBases } from '@renderer/hooks/useKnowledge'
 import { useKnowledgeBaseForm } from '@renderer/hooks/useKnowledgeBaseForm'
 import { getProviderByModel } from '@renderer/services/AssistantService'
 import { getKnowledgeBaseParams } from '@renderer/services/KnowledgeService'
-import { KnowledgeBase, Model } from '@renderer/types'
+import { KnowledgeBase, Model, Provider } from '@renderer/types'
 import { formatErrorMessage, getErrorMessage } from '@renderer/utils/error'
 import { Button } from 'antd'
 import { useCallback, useState } from 'react'
@@ -41,9 +41,9 @@ const PopupContainer: React.FC<PopupContainerProps> = ({ title, resolve }) => {
   } = useKnowledgeBaseForm()
 
   const fetchDimension = useCallback(
-    async (model: Model) => {
+    async (provider: Provider, model: Model) => {
       try {
-        const aiProvider = new AiProvider(getProviderByModel(model))
+        const aiProvider = new AiProvider(provider)
         return await aiProvider.getEmbeddingDimensions(model)
       } catch (error) {
         logger.error(t('knowledge.error.get_embedding_dimensions'), error as Error)
@@ -69,7 +69,7 @@ const PopupContainer: React.FC<PopupContainerProps> = ({ title, resolve }) => {
       setLoading(true)
       try {
         window.message.loading({ content: t('knowledge.dimensions_getting'), key: 'dimensions-getting' })
-        const dimensions = await fetchDimension(newBase.model)
+        const dimensions = await fetchDimension(getProviderByModel(newBase.model), newBase.model)
         window.message.destroy('dimensions-getting')
         newBase.dimensions = dimensions
         setLoading(false)
