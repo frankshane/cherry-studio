@@ -76,7 +76,7 @@ export class LangChainFramework implements IKnowledgeFramework {
   private getEmbeddings(base: KnowledgeBaseParams): Embeddings {
     return new Embeddings({
       embedApiClient: base.embedApiClient,
-      dimensions: base.userDims ? base.dimensions : undefined
+      dimensions: base.dimensions
     })
   }
 

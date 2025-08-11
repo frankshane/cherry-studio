@@ -168,7 +168,7 @@ export class EmbedJsFramework implements IKnowledgeFramework {
     let ragApplication: RAGApplication
     const embeddings = new Embeddings({
       embedApiClient: base.embedApiClient,
-      dimensions: base.userDims ? base.dimensions : undefined
+      dimensions: base.dimensions
     })
     try {
       const libSqlDb = new LibSqlDb({ path: path.join(this.storageDir, base.id) })
