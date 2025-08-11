@@ -138,30 +138,36 @@ export class LangChainFramework implements IKnowledgeFramework {
     const { search, base } = options
     logger.info(`search base: ${JSON.stringify(base)}`)
 
-    const vectorStore = await this.getVectorStore(base)
+    try {
+      const vectorStore = await this.getVectorStore(base)
 
-    // 如果是 bm25 或 hybrid 模式，则从数据库获取所有文档
-    let documents: Document[] = []
-    if (base.retriever === 'bm25' || base.retriever === 'hybrid') {
-      documents = await this.getAllDocuments(base)
-    }
-
-    const retrieverFactory = new RetrieverFactory()
-    const retriever = retrieverFactory.createRetriever(base, vectorStore, documents)
-
-    const results = await retriever.invoke(search)
-    logger.info(`Search Results: ${JSON.stringify(results)}`)
-
-    // VectorStoreRetriever 和 EnsembleRetriever 会将分数附加到 metadata.score
-    // BM25Retriever 默认不返回分数，所以我们需要处理这种情况
-    return results.map((item) => {
-      return {
-        pageContent: item.pageContent,
-        metadata: item.metadata,
-        // 如果 metadata 中没有 score，提供一个默认值
-        score: typeof item.metadata.score === 'number' ? item.metadata.score : 0
+      // 如果是 bm25 或 hybrid 模式，则从数据库获取所有文档
+      let documents: Document[] = []
+      if (base.retriever === 'bm25' || base.retriever === 'hybrid') {
+        documents = await this.getAllDocuments(base)
       }
-    })
+      if (documents.length === 0) return []
+
+      const retrieverFactory = new RetrieverFactory()
+      const retriever = retrieverFactory.createRetriever(base, vectorStore, documents)
+
+      const results = await retriever.invoke(search)
+      logger.info(`Search Results: ${JSON.stringify(results)}`)
+
+      // VectorStoreRetriever 和 EnsembleRetriever 会将分数附加到 metadata.score
+      // BM25Retriever 默认不返回分数，所以我们需要处理这种情况
+      return results.map((item) => {
+        return {
+          pageContent: item.pageContent,
+          metadata: item.metadata,
+          // 如果 metadata 中没有 score，提供一个默认值
+          score: typeof item.metadata.score === 'number' ? item.metadata.score : 0
+        }
+      })
+    } catch (error: any) {
+      logger.error(`Error during search in knowledge base ${base.id}: ${error.message}`)
+      return []
+    }
   }
 
   private fileTask(
