@@ -877,7 +877,7 @@
     "add_note": "Agregar nota",
     "add_sitemap": "Mapa del sitio",
     "add_url": "Agregar URL",
-    "add_video": "Agregar vídeo",
+    "add_video": "[to be translated]:添加视频",
     "cancel_index": "Cancelar índice",
     "chunk_overlap": "Superposición de fragmentos",
     "chunk_overlap_placeholder": "Valor predeterminado (no recomendado para modificar)",
@@ -892,12 +892,11 @@
     "delete_confirm": "¿Está seguro de querer eliminar esta base de conocimientos?",
     "dimensions": "Dimensión de incrustación",
     "dimensions_auto_set": "Configuración automática de dimensiones de incrustación",
-    "dimensions_default": "El modelo utilizará la dimensión de incrustación predeterminada. Al seleccionar esta opción, la base de conocimientos creará una base de datos vectorial utilizando la dimensión de incrustación predeterminada del modelo, y no se pasará el parámetro dimensions en las solicitudes de incrustación.",
+    "dimensions_default": "[to be translated]:模型将使用默认嵌入维度。选择此选项后，知识库会使用模型默认的嵌入维度创建向量数据库，同时不会在嵌入请求中传入 dimensions 参数。",
     "dimensions_error_invalid": "Por favor ingrese el tamaño de dimensión de incrustación",
-    "dimensions_getting": "Obteniendo dimensiones de incrustación...",
     "dimensions_set_right": "⚠️ Asegúrese de que el modelo admita el tamaño de dimensión de incrustación establecido",
     "dimensions_size_too_large": "La dimensión de incrustación no puede exceder el límite del contexto del modelo ({{max_context}})",
-    "dimensions_size_tooltip": "Tamaño de la dimensión de incrustación; cuanto mayor sea el valor, más tokens se consumirán.",
+    "dimensions_size_tooltip": "[to be translated]:嵌入维度大小，数值越大消耗的 Token 也越多。",
     "directories": "Directorios",
     "directory_placeholder": "Ingrese la ruta del directorio",
     "document_count": "Número de fragmentos de documentos solicitados",
@@ -912,7 +911,7 @@
     "error": {
       "failed_to_create": "Error al crear la base de conocimientos",
       "failed_to_edit": "Error al editar la base de conocimientos",
-      "get_embedding_dimensions": "Error al obtener la dimensión del embedding",
+      "get_embedding_dimensions": "[to be translated]:获取嵌入维度失败",
       "model_invalid": "No se ha seleccionado un modelo o ha sido eliminado"
     },
     "file_hint": "Formatos soportados: {{file_types}}",
@@ -933,8 +932,8 @@
         "failed": "Error en la migración"
       },
       "migrate_to_langchain": {
-        "content": "La migración de la base de conocimientos no elimina la base de conocimientos antigua, sino que crea una copia y vuelve a procesar todas las entradas de la base de conocimientos, lo que podría consumir una gran cantidad de tokens. Realice esta operación con precaución.",
-        "info": "La estructura de la base de conocimientos ha sido actualizada, haga clic para migrar a la nueva estructura"
+        "content": "[to be translated]:知识库迁移不会删除旧知识库，而是创建一个副本之后重新处理所有知识库条目，可能消耗大量 tokens，请谨慎操作。",
+        "info": "[to be translated]:知识库架构已更新，点击迁移到新架构"
       },
       "source_dimensions": "Dimensiones de origen",
       "source_model": "Modelo de origen",
@@ -954,14 +953,14 @@
     "quota": "Cupo restante de {{name}}: {{quota}}",
     "quota_infinity": "Cupo restante de {{name}}: ilimitado",
     "rename": "Renombrar",
-    "retriever": "Modo de búsqueda",
-    "retriever_bm25": "búsqueda de texto completo",
-    "retriever_bm25_desc": "Buscar documentos según la relevancia y frecuencia de las palabras clave.",
-    "retriever_hybrid": "Búsqueda mixta (recomendado)",
-    "retriever_hybrid_desc": "Combinar la búsqueda por palabras clave con la búsqueda semántica para lograr la máxima precisión en la recuperación.",
-    "retriever_tooltip": "Utilizar diferentes métodos de recuperación para consultar la base de conocimientos",
-    "retriever_vector": "búsqueda vectorial",
-    "retriever_vector_desc": "Buscar documentos según la similitud semántica y el significado.",
+    "retriever": "[to be translated]:检索模式",
+    "retriever_bm25": "[to be translated]:全文搜索",
+    "retriever_bm25_desc": "[to be translated]:根据关键字的相关性和频率查找文档。",
+    "retriever_hybrid": "[to be translated]:混合搜索 (推荐)",
+    "retriever_hybrid_desc": "[to be translated]:结合关键词搜索和语义搜索，以实现最佳检索准确性。",
+    "retriever_tooltip": "[to be translated]:使用不同的检索方式检索知识库",
+    "retriever_vector": "[to be translated]:向量搜索",
+    "retriever_vector_desc": "[to be translated]:根据语义相似性和含义查找文档。",
     "search": "Buscar en la base de conocimientos",
     "search_placeholder": "Ingrese el contenido de la consulta",
     "settings": {
@@ -995,7 +994,7 @@
     "url_added": "URL agregada",
     "url_placeholder": "Ingrese la URL, múltiples URLs separadas por enter",
     "urls": "URLs",
-    "videos": "vídeo"
+    "videos": "[to be translated]:视频"
   },
   "languages": {
     "arabic": "Árabe",
@@ -1066,9 +1065,6 @@
     "embedding_model": "Modelo de incrustación",
     "enable_global_memory_first": "Por favor, active primero la memoria global",
     "end_date": "Fecha de finalización",
-    "error": {
-      "update_settings": "Error al actualizar la configuración"
-    },
     "global_memory": "Memoria global",
     "global_memory_description": "Se debe activar la memoria global en la configuración del asistente para poder usarla",
     "global_memory_disabled_desc": "Para usar la función de memoria, active primero la memoria global en la configuración del asistente.",
