@@ -165,7 +165,7 @@ const PopupContainer: React.FC<Props> = ({ base, resolve }) => {
                         </a>
                       )}
                     </Text>
-                    <ScoreTag>Score: {(item.score * 100).toFixed(1)}%</ScoreTag>
+                    {item.score !== 0 && <ScoreTag>Score: {(item.score * 100).toFixed(1)}%</ScoreTag>}
                   </MetadataContainer>
                   <TagContainer>
                     <Tooltip title={t('common.copy')}>
