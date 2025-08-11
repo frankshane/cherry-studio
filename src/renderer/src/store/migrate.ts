@@ -2106,8 +2106,6 @@ const migrateConfig = {
         // 使用embedjs的旧知识库不依赖dimensions字段，设置userDims为false保证使用安全
         if (base.dimensions === undefined) {
           base.userDims = false
-        } else {
-          base.userDims = true
         }
       })
       return state
