@@ -1,8 +1,20 @@
 import { loggerService } from '@logger'
 import Scrollbar from '@renderer/components/Scrollbar'
 import { NotesTreeNode } from '@renderer/types/note'
-import { Input, Tooltip } from 'antd'
-import { ChevronDown, ChevronRight, Edit3, File, FilePlus, Folder, FolderOpen, FolderPlus, Trash2 } from 'lucide-react'
+import { Dropdown, Input, MenuProps, Tooltip } from 'antd'
+import {
+  ChevronDown,
+  ChevronRight,
+  Edit3,
+  File,
+  FilePlus,
+  FileSearch,
+  Folder,
+  FolderOpen,
+  FolderPlus,
+  Star,
+  Trash2
+} from 'lucide-react'
 import { FC, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
@@ -119,8 +131,52 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
     setDragOverNodeId(null)
   }, [])
 
-  // TODO 实现右键菜单
-  // const getMenuItems = useCallback(
+  // 实现右键菜单
+  const getMenuItems = useCallback(
+    (node: NotesTreeNode) => {
+      const baseMenuItems: MenuProps['items'] = [
+        {
+          label: t('notes.rename'),
+          key: 'rename',
+          icon: <Edit3 size={14} />,
+          onClick: () => {
+            handleStartEdit(node)
+          }
+        }
+      ]
+      if (node.type !== 'folder') {
+        baseMenuItems.push(
+          {
+            label: t('notes.star'),
+            key: 'star',
+            icon: <Star size={14} />,
+            onClick: () => {}
+          },
+          {
+            label: t('notes.export_knowledge'),
+            key: 'export_knowledge',
+            icon: <FileSearch size={14} />,
+            onClick: () => {}
+          }
+        )
+      }
+      baseMenuItems.push(
+        { type: 'divider' },
+        {
+          label: t('notes.delete'),
+          danger: true,
+          key: 'delete',
+          icon: <Trash2 size={14} />,
+          onClick: () => {
+            handleDeleteNode(node)
+          }
+        }
+      )
+
+      return baseMenuItems
+    },
+    [t, handleStartEdit, handleDeleteNode]
+  )
 
   const renderTreeNode = useCallback(
     (node: NotesTreeNode, depth: number = 0) => {
@@ -132,84 +188,66 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
 
       return (
         <div key={node.id}>
-          <TreeNodeContainer
-            active={isActive}
-            depth={depth}
-            isDragging={isDragging}
-            isDragOver={isDragOver}
-            draggable={!isEditing}
-            onDragStart={(e) => handleDragStart(e, node)}
-            onDragOver={(e) => handleDragOver(e, node)}
-            onDragLeave={handleDragLeave}
-            onDrop={(e) => handleDrop(e, node)}
-            onDragEnd={handleDragEnd}>
-            <TreeNodeContent onClick={() => onSelectNode(node)}>
-              <NodeIndent depth={depth} />
+          <Dropdown menu={{ items: getMenuItems(node) }} trigger={['contextMenu']}>
+            <div>
+              <TreeNodeContainer
+                active={isActive}
+                depth={depth}
+                isDragging={isDragging}
+                isDragOver={isDragOver}
+                draggable={!isEditing}
+                onDragStart={(e) => handleDragStart(e, node)}
+                onDragOver={(e) => handleDragOver(e, node)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, node)}
+                onDragEnd={handleDragEnd}>
+                <TreeNodeContent onClick={() => onSelectNode(node)}>
+                  <NodeIndent depth={depth} />
 
-              {node.type === 'folder' && (
-                <ExpandIcon
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onToggleExpanded(node.id)
-                  }}
-                  title={node.expanded ? t('notes.collapse') : t('notes.expand')}>
-                  {node.expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                </ExpandIcon>
-              )}
+                  {node.type === 'folder' && (
+                    <ExpandIcon
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onToggleExpanded(node.id)
+                      }}
+                      title={node.expanded ? t('notes.collapse') : t('notes.expand')}>
+                      {node.expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                    </ExpandIcon>
+                  )}
 
-              <NodeIcon>
-                {node.type === 'folder' ? (
-                  node.expanded ? (
-                    <FolderOpen size={16} />
+                  <NodeIcon>
+                    {node.type === 'folder' ? (
+                      node.expanded ? (
+                        <FolderOpen size={16} />
+                      ) : (
+                        <Folder size={16} />
+                      )
+                    ) : (
+                      <File size={16} />
+                    )}
+                  </NodeIcon>
+
+                  {isEditing ? (
+                    <EditInput
+                      value={editingName}
+                      onChange={(e) => setEditingName(e.target.value)}
+                      onPressEnter={handleFinishEdit}
+                      onBlur={handleFinishEdit}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') {
+                          handleCancelEdit()
+                        }
+                      }}
+                      autoFocus
+                      size="small"
+                    />
                   ) : (
-                    <Folder size={16} />
-                  )
-                ) : (
-                  <File size={16} />
-                )}
-              </NodeIcon>
-
-              {isEditing ? (
-                <EditInput
-                  value={editingName}
-                  onChange={(e) => setEditingName(e.target.value)}
-                  onPressEnter={handleFinishEdit}
-                  onBlur={handleFinishEdit}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Escape') {
-                      handleCancelEdit()
-                    }
-                  }}
-                  autoFocus
-                  size="small"
-                />
-              ) : (
-                <NodeName>{node.name}</NodeName>
-              )}
-            </TreeNodeContent>
-
-            <NodeActions className="node-actions">
-              <Tooltip title={t('notes.rename')}>
-                <ActionButton
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleStartEdit(node)
-                  }}>
-                  <Edit3 size={14} />
-                </ActionButton>
-              </Tooltip>
-
-              <Tooltip title={t('notes.delete')}>
-                <ActionButton
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleDeleteNode(node)
-                  }}>
-                  <Trash2 size={14} />
-                </ActionButton>
-              </Tooltip>
-            </NodeActions>
-          </TreeNodeContainer>
+                    <NodeName>{node.name}</NodeName>
+                  )}
+                </TreeNodeContent>
+              </TreeNodeContainer>
+            </div>
+          </Dropdown>
 
           {node.type === 'folder' && node.expanded && hasChildren && (
             <div>{node.children!.map((child) => renderTreeNode(child, depth + 1))}</div>
@@ -225,8 +263,6 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
       dragOverNodeId,
       onSelectNode,
       onToggleExpanded,
-      handleStartEdit,
-      handleDeleteNode,
       handleFinishEdit,
       handleCancelEdit,
       handleDragStart,
@@ -234,6 +270,7 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
       handleDragLeave,
       handleDrop,
       handleDragEnd,
+      getMenuItems,
       t
     ]
   )
@@ -384,14 +421,6 @@ const EditInput = styled(Input)`
     padding: 2px 6px;
     border: 1px solid var(--color-primary);
   }
-`
-
-const NodeActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  opacity: 0;
-  transition: opacity 0.2s ease;
 `
 
 const ActionButton = styled.div`

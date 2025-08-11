@@ -8,7 +8,7 @@ import NotesNavbar from '@renderer/pages/notes/NotesNavbar'
 import FileManager from '@renderer/services/FileManager'
 import { estimateTextTokens } from '@renderer/services/TokenService'
 import { NotesTreeNode } from '@renderer/types/note'
-import { Button, Empty } from 'antd'
+import { Button, Empty, Spin } from 'antd'
 import { Edit, Save } from 'lucide-react'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -28,6 +28,7 @@ const NotesPage: FC = () => {
   const [currentContent, setCurrentContent] = useState<string>('')
   const [tokenCount, setTokenCount] = useState(0)
   const [showPreview, setShowPreview] = useState(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   // 估算 token 数量
   useEffect(() => {
@@ -67,7 +68,7 @@ const NotesPage: FC = () => {
         logger.error('Failed to save note:', error as Error)
       }
     },
-    [activeNodeId, findNodeById, notesTree]
+    [activeNodeId, currentContent, findNodeById, notesTree]
   )
 
   // 内容变更时保存笔记
@@ -102,6 +103,7 @@ const NotesPage: FC = () => {
   useEffect(() => {
     const loadNoteContent = async () => {
       if (activeNodeId && notesTree.length > 0) {
+        setIsLoading(true)
         try {
           const activeNode = findNodeById(notesTree, activeNodeId)
           logger.debug('Active node:', activeNode)
@@ -118,11 +120,14 @@ const NotesPage: FC = () => {
             } catch (error) {
               logger.error('Failed to read file:', error as Error)
               setCurrentContent('')
+              setShowPreview(false)
             }
           }
         } catch (error) {
           logger.error('Failed to load note content:', error as Error)
           setCurrentContent('')
+        } finally {
+          setIsLoading(false)
         }
       } else if (!activeNodeId) {
         setCurrentContent('')
@@ -263,40 +268,48 @@ const NotesPage: FC = () => {
         <EditorWrapper>
           {activeNodeId ? (
             <EditorContainer>
-              <RichEditorContainer>
-                <RichEditor
-                  key={`${activeNodeId}-${showPreview ? 'preview' : 'edit'}`}
-                  ref={editorRef}
-                  initialContent={currentContent}
-                  onMarkdownChange={handleMarkdownChange}
-                  onCommandsReady={handleCommandsReady}
-                  showToolbar={!showPreview}
-                  editable={!showPreview}
-                  className="notes-rich-editor"
-                />
-              </RichEditorContainer>
-              <BottomPanel>
-                <HSpaceBetweenStack width="100%" justifyContent="space-between" alignItems="center">
-                  <TokenCount>Tokens: {tokenCount}</TokenCount>
-                  <Button
-                    type="primary"
-                    size="small"
-                    icon={showPreview ? <Edit size={14} /> : <Save size={14} />}
-                    onClick={() => {
-                      const currentScrollTop = editorRef.current?.getScrollTop?.() || 0
-                      if (showPreview) {
-                        setShowPreview(false)
-                        requestAnimationFrame(() => editorRef.current?.setScrollTop?.(currentScrollTop))
-                      } else {
-                        setShowPreview(true)
-                        window.message.success(t('common.saved'))
-                        requestAnimationFrame(() => editorRef.current?.setScrollTop?.(currentScrollTop))
-                      }
-                    }}>
-                    {showPreview ? t('common.edit') : t('common.save')}
-                  </Button>
-                </HSpaceBetweenStack>
-              </BottomPanel>
+              {isLoading ? (
+                <LoadingContainer>
+                  <Spin tip={t('common.loading')} />
+                </LoadingContainer>
+              ) : (
+                <>
+                  <RichEditorContainer>
+                    <RichEditor
+                      key={`${activeNodeId}-${showPreview ? 'preview' : 'edit'}`}
+                      ref={editorRef}
+                      initialContent={currentContent}
+                      onMarkdownChange={handleMarkdownChange}
+                      onCommandsReady={handleCommandsReady}
+                      showToolbar={!showPreview}
+                      editable={!showPreview}
+                      className="notes-rich-editor"
+                    />
+                  </RichEditorContainer>
+                  <BottomPanel>
+                    <HSpaceBetweenStack width="100%" justifyContent="space-between" alignItems="center">
+                      <TokenCount>Tokens: {tokenCount}</TokenCount>
+                      <Button
+                        type="primary"
+                        size="small"
+                        icon={showPreview ? <Edit size={14} /> : <Save size={14} />}
+                        onClick={() => {
+                          const currentScrollTop = editorRef.current?.getScrollTop?.() || 0
+                          if (showPreview) {
+                            setShowPreview(false)
+                            requestAnimationFrame(() => editorRef.current?.setScrollTop?.(currentScrollTop))
+                          } else {
+                            setShowPreview(true)
+                            window.message.success(t('common.saved'))
+                            requestAnimationFrame(() => editorRef.current?.setScrollTop?.(currentScrollTop))
+                          }
+                        }}>
+                        {showPreview ? t('common.edit') : t('common.save')}
+                      </Button>
+                    </HSpaceBetweenStack>
+                  </BottomPanel>
+                </>
+              )}
             </EditorContainer>
           ) : (
             <MainContent>
@@ -313,6 +326,14 @@ const Container = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
+`
+
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
 `
 
 const ContentContainer = styled.div`
