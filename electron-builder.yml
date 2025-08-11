@@ -116,4 +116,4 @@ afterSign: scripts/notarize.js
 artifactBuildCompleted: scripts/artifact-build-completed.js
 releaseInfo:
   releaseNotes: |
-    稳定性改进和错误修复
+    重构知识库，增加视频嵌入

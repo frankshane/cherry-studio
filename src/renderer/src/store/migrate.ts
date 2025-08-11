@@ -2096,7 +2096,7 @@ const migrateConfig = {
       return state
     }
   },
-  '199': (state: RootState) => {
+  '131': (state: RootState) => {
     try {
       state.knowledge.bases.forEach((base) => {
         if (!base.framework) {
