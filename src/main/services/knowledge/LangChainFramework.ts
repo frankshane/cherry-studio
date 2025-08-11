@@ -258,6 +258,9 @@ export class LangChainFramework implements IKnowledgeFramework {
               loaderDoneReturn.uniqueIds.push(result.uniqueId)
               return result
             })
+            .then(async () => {
+              await vectorStore.save(path.join(this.storageDir, base.id))
+            })
             .catch((err) => {
               logger.error(err)
               return {
@@ -296,6 +299,9 @@ export class LangChainFramework implements IKnowledgeFramework {
                 loaderTask.loaderDoneReturn = result
                 return result
               })
+              .then(async () => {
+                await vectorStore.save(path.join(this.storageDir, base.id))
+              })
               .catch((e) => {
                 logger.error(`Error in addWebLoader for ${url}: ${e}`)
                 const errorResult: LoaderReturn = {
@@ -333,6 +339,9 @@ export class LangChainFramework implements IKnowledgeFramework {
               .then((result) => {
                 loaderTask.loaderDoneReturn = result
                 return result
+              })
+              .then(async () => {
+                await vectorStore.save(path.join(this.storageDir, base.id))
               })
               .catch((e) => {
                 logger.error(`Error in addWebLoader for ${url}: ${e}`)
@@ -377,6 +386,9 @@ export class LangChainFramework implements IKnowledgeFramework {
                 loaderTask.loaderDoneReturn = result
                 return result
               })
+              .then(async () => {
+                await vectorStore.save(path.join(this.storageDir, base.id))
+              })
               .catch((e) => {
                 logger.error(`Error in addNoteLoader for ${sourceUrl}: ${e}`)
                 const errorResult: LoaderReturn = {
@@ -413,6 +425,9 @@ export class LangChainFramework implements IKnowledgeFramework {
               .then((result) => {
                 loaderTask.loaderDoneReturn = result
                 return result
+              })
+              .then(async () => {
+                await vectorStore.save(path.join(this.storageDir, base.id))
               })
               .catch((e) => {
                 logger.error(`Preprocessing failed for ${files[0].name}: ${e}`)
