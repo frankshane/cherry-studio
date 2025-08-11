@@ -29,6 +29,7 @@ const AssistantPromptSettings: React.FC<Props> = ({ assistant, updateAssistant }
   const [emoji, setEmoji] = useState(getLeadingEmoji(assistant.name) || assistant.emoji)
   const [name, setName] = useState(assistant.name.replace(getLeadingEmoji(assistant.name) || '', '').trim())
   const [prompt, setPrompt] = useState(assistant.prompt)
+  const draftPrompt = useRef(prompt)
   const [tokenCount, setTokenCount] = useState(0)
   const { t } = useTranslation()
   const [showPreview, setShowPreview] = useState(prompt.length > 0)
@@ -36,9 +37,7 @@ const AssistantPromptSettings: React.FC<Props> = ({ assistant, updateAssistant }
 
   useEffect(() => {
     const updateTokenCount = async () => {
-      // 对于 Markdown 内容，先转换为纯文本再计算 token
-      const textContent = editorRef.current?.getContent() || prompt
-      const count = await estimateTextTokens(textContent)
+      const count = await estimateTextTokens(draftPrompt.current)
       setTokenCount(count)
     }
     updateTokenCount()
@@ -52,6 +51,8 @@ const AssistantPromptSettings: React.FC<Props> = ({ assistant, updateAssistant }
   const onUpdate = useMemo(
     () =>
       throttle(() => {
+        const commited = draftPrompt.current
+        setPrompt(commited)
         const _assistant = { ...assistant, name: name.trim(), emoji, prompt }
         updateAssistant(_assistant)
         window.message.success(t('common.saved'))
@@ -81,7 +82,7 @@ const AssistantPromptSettings: React.FC<Props> = ({ assistant, updateAssistant }
   }
 
   const handleMarkdownChange = (newMarkdown: string) => {
-    setPrompt(newMarkdown)
+    draftPrompt.current = newMarkdown
   }
 
   return (
