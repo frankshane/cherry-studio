@@ -4,12 +4,13 @@ import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
 import { PPTXLoader } from '@langchain/community/document_loaders/fs/pptx'
 import { CheerioWebBaseLoader } from '@langchain/community/document_loaders/web/cheerio'
 import { SitemapLoader } from '@langchain/community/document_loaders/web/sitemap'
-import { LibSQLVectorStore } from '@langchain/community/vectorstores/libsql'
+import { FaissStore } from '@langchain/community/vectorstores/faiss'
 import { Document } from '@langchain/core/documents' // <-- 引入 Document 类型
-import { loggerService } from '@main/services/LoggerService'
+import { loggerService } from '@logger'
 import { UrlSource } from '@main/utils/knowledge'
 import { LoaderReturn } from '@shared/config/types'
 import { FileMetadata, FileTypes, KnowledgeBaseParams } from '@types'
+import { randomUUID } from 'crypto'
 import { JSONLoader } from 'langchain/document_loaders/fs/json'
 import { TextLoader } from 'langchain/document_loaders/fs/text'
 
@@ -39,7 +40,7 @@ function formatDocument(docs: Document[], type: string): Document[] {
 
 export async function addFileLoader(
   base: KnowledgeBaseParams,
-  vectorStore: LibSQLVectorStore,
+  vectorStore: FaissStore,
   file: FileMetadata
 ): Promise<LoaderReturn> {
   const fileExt = file.ext.toLowerCase()
@@ -97,11 +98,12 @@ export async function addFileLoader(
         chunkOverlap: base.chunkOverlap
       })
       const splitterResults = await splitter.splitDocuments(docs)
-      const ids = await vectorStore.addDocuments(splitterResults)
+      const ids = splitterResults.map(() => randomUUID())
+      await vectorStore.addDocuments(splitterResults, { ids: ids })
       return {
         entriesAdded: docs.length,
-        uniqueId: ids && ids.length > 0 ? ids[0] : '',
-        uniqueIds: ids || [],
+        uniqueId: ids[0],
+        uniqueIds: ids,
         loaderType: specificLoaderType
       }
     } catch (error) {
@@ -119,7 +121,7 @@ export async function addFileLoader(
 
 export async function addWebLoader(
   base: KnowledgeBaseParams,
-  vectorStore: LibSQLVectorStore,
+  vectorStore: FaissStore,
   url: string,
   source: UrlSource
 ): Promise<LoaderReturn> {
@@ -149,11 +151,12 @@ export async function addWebLoader(
         type: source === 'youtube' ? 'srt' : 'recursive'
       })
       const splitterResults = await splitter.splitDocuments(docs)
-      const ids = await vectorStore.addDocuments(splitterResults)
+      const ids = splitterResults.map(() => randomUUID())
+      await vectorStore.addDocuments(splitterResults, { ids: ids })
       return {
         entriesAdded: docs.length,
-        uniqueId: ids && ids.length > 0 ? ids[0] : '',
-        uniqueIds: ids || [],
+        uniqueId: ids[0],
+        uniqueIds: ids,
         loaderType: source
       }
     } catch (error) {
@@ -171,7 +174,7 @@ export async function addWebLoader(
 
 export async function addSitemapLoader(
   base: KnowledgeBaseParams,
-  vectorStore: LibSQLVectorStore,
+  vectorStore: FaissStore,
   url: string
 ): Promise<LoaderReturn> {
   const loaderInstance = new SitemapLoader(url)
@@ -181,11 +184,12 @@ export async function addSitemapLoader(
     docs = formatDocument(docs, 'sitemap')
     const splitter = SplitterFactory.create({ chunkSize: base.chunkSize, chunkOverlap: base.chunkOverlap })
     const splitterResults = await splitter.splitDocuments(docs)
-    const ids = await vectorStore.addDocuments(splitterResults)
+    const ids = splitterResults.map(() => randomUUID())
+    await vectorStore.addDocuments(splitterResults, { ids: ids })
     return {
       entriesAdded: docs.length,
-      uniqueId: ids && ids.length > 0 ? ids[0] : '',
-      uniqueIds: ids || [],
+      uniqueId: ids[0],
+      uniqueIds: ids,
       loaderType: 'sitemap'
     }
   } catch (error) {
@@ -201,7 +205,7 @@ export async function addSitemapLoader(
 
 export async function addNoteLoader(
   base: KnowledgeBaseParams,
-  vectorStore: LibSQLVectorStore,
+  vectorStore: FaissStore,
   content: string,
   sourceUrl: string
 ): Promise<LoaderReturn> {
@@ -212,11 +216,12 @@ export async function addNoteLoader(
     docs = formatDocument(docs, 'note')
     const splitter = SplitterFactory.create({ chunkSize: base.chunkSize, chunkOverlap: base.chunkOverlap })
     const splitterResults = await splitter.splitDocuments(docs)
-    const ids = await vectorStore.addDocuments(splitterResults)
+    const ids = splitterResults.map(() => randomUUID())
+    await vectorStore.addDocuments(splitterResults, { ids: ids })
     return {
       entriesAdded: docs.length,
-      uniqueId: ids && ids.length > 0 ? ids[0] : '',
-      uniqueIds: ids || [],
+      uniqueId: ids[0],
+      uniqueIds: ids,
       loaderType: 'note'
     }
   } catch (error) {
@@ -232,7 +237,7 @@ export async function addNoteLoader(
 
 export async function addVideoLoader(
   base: KnowledgeBaseParams,
-  vectorStore: LibSQLVectorStore,
+  vectorStore: FaissStore,
   files: FileMetadata[]
 ): Promise<LoaderReturn> {
   const srtFile = files.find((f) => f.type === FileTypes.TEXT)
@@ -268,11 +273,12 @@ export async function addVideoLoader(
       type: 'srt'
     })
     const splitterResults = await splitter.splitDocuments(docs)
-    const ids = await vectorStore.addDocuments(splitterResults)
+    const ids = splitterResults.map(() => randomUUID())
+    await vectorStore.addDocuments(splitterResults, { ids: ids })
     return {
       entriesAdded: splitterResults.length,
-      uniqueId: ids && ids.length > 0 ? ids[0] : '',
-      uniqueIds: ids || [],
+      uniqueId: ids[0],
+      uniqueIds: ids,
       loaderType: 'video'
     }
   } catch (error) {

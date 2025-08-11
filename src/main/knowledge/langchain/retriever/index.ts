@@ -1,6 +1,6 @@
 import { BM25Retriever } from '@langchain/community/retrievers/bm25'
+import { FaissStore } from '@langchain/community/vectorstores/faiss'
 import { BaseRetriever } from '@langchain/core/retrievers'
-import { VectorStore } from '@langchain/core/vectorstores'
 import { loggerService } from '@main/services/LoggerService'
 import { type KnowledgeBaseParams } from '@types'
 import { type Document } from 'langchain/document'
@@ -15,7 +15,7 @@ export class RetrieverFactory {
    * @param documents 文档列表，用于初始化 BM25Retriever。
    * @returns 返回一个 BaseRetriever 实例。
    */
-  public createRetriever(base: KnowledgeBaseParams, vectorStore: VectorStore, documents: Document[]): BaseRetriever {
+  public createRetriever(base: KnowledgeBaseParams, vectorStore: FaissStore, documents: Document[]): BaseRetriever {
     const retrieverType = base.retriever ?? 'hybrid'
     const searchK = base.documentCount ?? 5
 

@@ -1,9 +1,8 @@
 import * as fs from 'node:fs'
 import path from 'node:path'
 
-import { LibSQLVectorStore } from '@langchain/community/vectorstores/libsql'
-import { Document } from '@langchain/core/documents'
-import { createClient } from '@libsql/client'
+import { FaissStore } from '@langchain/community/vectorstores/faiss'
+import type { Document } from '@langchain/core/documents'
 import { loggerService } from '@logger'
 import Embeddings from '@main/knowledge/langchain/embeddings/Embeddings'
 import {
@@ -57,54 +56,47 @@ export class LangChainFramework implements IKnowledgeFramework {
   }
 
   private async createDatabase(base: KnowledgeBaseParams): Promise<void> {
-    const client = createClient({
-      url: `file:${path.join(this.storageDir, base.id)}`
-    })
+    // 在base.id目录下创建一个新的数据库 包含docstore.json 和 faiss.index
+    const dbPath = path.join(this.storageDir, base.id)
+    // Create empty FAISS vector store
+    const embeddings = this.getEmbeddings(base)
+    const vectorStore = new FaissStore(embeddings, {})
 
-    await client.execute('PRAGMA auto_vacuum = FULL;')
+    const mockDocument: Document = {
+      pageContent: 'Create Database Document',
+      metadata: {}
+    }
 
-    await client.batch(
-      [
-        `CREATE TABLE IF NOT EXISTS Knowledge
-              (
-                  id        INTEGER PRIMARY KEY AUTOINCREMENT,
-                  content   TEXT,
-                  metadata  TEXT,
-                  EMBEDDING_COLUMN F32_BLOB(${base.dimensions})
-                  );
-                `,
-        `CREATE INDEX IF NOT EXISTS idx_Knowledge_EMBEDDING_COLUMN ON Knowledge (libsql_vector_idx(EMBEDDING_COLUMN));`
-      ],
-      'write'
-    )
+    await vectorStore.addDocuments([mockDocument], { ids: ['1'] })
+    await vectorStore.save(dbPath)
+    await vectorStore.delete({ ids: ['1'] })
+    await vectorStore.save(dbPath)
   }
 
-  private async getVectorStore(base: KnowledgeBaseParams): Promise<LibSQLVectorStore> {
-    const embeddings = new Embeddings({
+  private getEmbeddings(base: KnowledgeBaseParams): Embeddings {
+    return new Embeddings({
       embedApiClient: base.embedApiClient,
       dimensions: base.userDims ? base.dimensions : undefined
     })
-    const client = createClient({
-      url: `file:${path.join(this.storageDir, base.id)}`
-    })
+  }
 
-    const vectorStore = new LibSQLVectorStore(embeddings, {
-      db: client,
-      table: 'Knowledge',
-      column: 'EMBEDDING_COLUMN'
-    })
+  private async getVectorStore(base: KnowledgeBaseParams): Promise<FaissStore> {
+    const embeddings = this.getEmbeddings(base)
+    const vectorStore = await FaissStore.load(path.join(this.storageDir, base.id), embeddings)
 
     return vectorStore
   }
 
   async initialize(base: KnowledgeBaseParams): Promise<void> {
     await this.createDatabase(base)
-    await this.getVectorStore(base)
   }
   async reset(base: KnowledgeBaseParams): Promise<void> {
-    const vectorStore = await this.getVectorStore(base)
-    await vectorStore.delete({ deleteAll: true })
+    const dbPath = path.join(this.storageDir, base.id)
+    if (fs.existsSync(dbPath)) {
+      fs.rmSync(dbPath, { recursive: true })
+    }
   }
+
   async delete(id: string): Promise<void> {
     const dbPath = path.join(this.storageDir, id)
     if (fs.existsSync(dbPath)) {
@@ -140,6 +132,7 @@ export class LangChainFramework implements IKnowledgeFramework {
     logger.info(`[ KnowledgeService Remove Item UniqueIds: ${uniqueIds}]`)
 
     await vectorStore.delete({ ids: uniqueIds })
+    await vectorStore.save(path.join(this.storageDir, base.id))
   }
   async search(options: { search: string; base: KnowledgeBaseParams }): Promise<KnowledgeSearchResult[]> {
     const { search, base } = options
@@ -172,7 +165,7 @@ export class LangChainFramework implements IKnowledgeFramework {
   }
 
   private fileTask(
-    getVectorStore: () => Promise<LibSQLVectorStore>,
+    getVectorStore: () => Promise<FaissStore>,
     options: KnowledgeBaseAddItemOptionsNonNullableAttribute
   ): LoaderTask {
     const { base, item, userId } = options
@@ -184,15 +177,19 @@ export class LangChainFramework implements IKnowledgeFramework {
           state: LoaderTaskItemState.PENDING,
           task: async () => {
             try {
+              const vectorStore = await getVectorStore()
+
               // 添加预处理逻辑
               const fileToProcess: FileMetadata = await preprocessingService.preprocessFile(file, base, item, userId)
-              const vectorStore = await getVectorStore()
 
               // 使用处理后的文件进行加载
               return addFileLoader(base, vectorStore, fileToProcess)
                 .then((result) => {
                   loaderTask.loaderDoneReturn = result
                   return result
+                })
+                .then(async () => {
+                  await vectorStore.save(path.join(this.storageDir, base.id))
                 })
                 .catch((e) => {
                   logger.error(`Error in addFileLoader for ${file.name}: ${e}`)
@@ -224,7 +221,7 @@ export class LangChainFramework implements IKnowledgeFramework {
     return loaderTask
   }
   private directoryTask(
-    getVectorStore: () => Promise<LibSQLVectorStore>,
+    getVectorStore: () => Promise<FaissStore>,
     options: KnowledgeBaseAddItemOptionsNonNullableAttribute
   ): LoaderTask {
     const { base, item } = options
@@ -281,7 +278,7 @@ export class LangChainFramework implements IKnowledgeFramework {
   }
 
   private urlTask(
-    getVectorStore: () => Promise<LibSQLVectorStore>,
+    getVectorStore: () => Promise<FaissStore>,
     options: KnowledgeBaseAddItemOptionsNonNullableAttribute
   ): LoaderTask {
     const { base, item } = options
@@ -319,7 +316,7 @@ export class LangChainFramework implements IKnowledgeFramework {
   }
 
   private sitemapTask(
-    getVectorStore: () => Promise<LibSQLVectorStore>,
+    getVectorStore: () => Promise<FaissStore>,
     options: KnowledgeBaseAddItemOptionsNonNullableAttribute
   ): LoaderTask {
     const { base, item } = options
@@ -357,7 +354,7 @@ export class LangChainFramework implements IKnowledgeFramework {
   }
 
   private noteTask(
-    getVectorStore: () => Promise<LibSQLVectorStore>,
+    getVectorStore: () => Promise<FaissStore>,
     options: KnowledgeBaseAddItemOptionsNonNullableAttribute
   ): LoaderTask {
     const { base, item } = options
@@ -400,7 +397,7 @@ export class LangChainFramework implements IKnowledgeFramework {
   }
 
   private videoTask(
-    getVectorStore: () => Promise<LibSQLVectorStore>,
+    getVectorStore: () => Promise<FaissStore>,
     options: KnowledgeBaseAddItemOptionsNonNullableAttribute
   ): LoaderTask {
     const { base, item } = options
@@ -436,33 +433,17 @@ export class LangChainFramework implements IKnowledgeFramework {
     return loaderTask
   }
 
-  private async getAllDocuments({ id }: KnowledgeBaseParams): Promise<Document[]> {
-    logger.info(`Fetching all documents from database for knowledge base: ${id}`)
-    const client = createClient({
-      url: `file:${path.join(this.storageDir, id)}`
-    })
+  private async getAllDocuments(base: KnowledgeBaseParams): Promise<Document[]> {
+    logger.info(`Fetching all documents from database for knowledge base: ${base.id}`)
 
     try {
-      const resultSet = await client.execute('SELECT content, metadata FROM Knowledge')
+      const results = (await this.getVectorStore(base)).docstore._docs
 
-      const documents: Document[] = []
-      for (const row of resultSet.rows) {
-        if (row.content && row.metadata) {
-          try {
-            const pageContent = row.content as string
-            // metadata 在数据库中存储为 TEXT，需要解析回 JSON 对象
-            const metadata = JSON.parse(row.metadata as string)
-            documents.push(new Document({ pageContent, metadata }))
-          } catch (e) {
-            logger.error(`Failed to parse document row: ${e}`, row)
-          }
-        }
-      }
-
+      const documents: Document[] = Array.from(results.values())
       logger.info(`Fetched ${documents.length} documents for BM25/Hybrid retriever.`)
       return documents
     } catch (e) {
-      logger.error(`Could not fetch documents from database for base ${id}: ${e}`)
+      logger.error(`Could not fetch documents from database for base ${base.id}: ${e}`)
       // 如果表不存在或查询失败，返回空数组
       return []
     }
