@@ -892,11 +892,12 @@
     "delete_confirm": "Are you sure you want to delete this knowledge base?",
     "dimensions": "Embedding dimension",
     "dimensions_auto_set": "Auto-set embedding dimensions",
-    "dimensions_default": "[to be translated]:模型将使用默认嵌入维度。选择此选项后，知识库会使用模型默认的嵌入维度创建向量数据库，同时不会在嵌入请求中传入 dimensions 参数。",
+    "dimensions_default": "The model will use default embedding dimensions",
     "dimensions_error_invalid": "Invalid embedding dimension",
     "dimensions_set_right": "⚠️ Please ensure the model supports the set embedding dimension size",
+    "dimensions_size_placeholder": "Leave empty to not pass dimensions",
     "dimensions_size_too_large": "The embedding dimension cannot exceed the model's context limit ({{max_context}}).",
-    "dimensions_size_tooltip": "[to be translated]:嵌入维度大小，数值越大消耗的 Token 也越多。",
+    "dimensions_size_tooltip": "Embedding dimension size, the larger the value, the more tokens will be consumed. Leave empty to not pass dimensions parameter.",
     "directories": "Directories",
     "directory_placeholder": "Enter Directory Path",
     "document_count": "Requested Document Chunks",
@@ -911,7 +912,6 @@
     "error": {
       "failed_to_create": "Knowledge base creation failed",
       "failed_to_edit": "Knowledge base editing failed",
-      "get_embedding_dimensions": "[to be translated]:获取嵌入维度失败",
       "model_invalid": "No model selected"
     },
     "file_hint": "Support {{file_types}}",
@@ -1215,6 +1215,7 @@
         "name": "Please enter the name of the knowledge base"
       },
       "fetchTopicName": "Failed to name the topic",
+      "get_embedding_dimensions": "Failed to get embedding dimensions",
       "invalid": {
         "api": {
           "host": "Invalid API Host",

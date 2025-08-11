@@ -892,11 +892,12 @@
     "delete_confirm": "Tem certeza de que deseja excluir este repositório de conhecimento?",
     "dimensions": "Dimensão de incorporação",
     "dimensions_auto_set": "Definição automática de dimensões de incorporação",
-    "dimensions_default": "[to be translated]:模型将使用默认嵌入维度。选择此选项后，知识库会使用模型默认的嵌入维度创建向量数据库，同时不会在嵌入请求中传入 dimensions 参数。",
+    "dimensions_default": "O modelo utilizará as dimensões de incorporação padrão",
     "dimensions_error_invalid": "Por favor insira o tamanho da dimensão de incorporação",
     "dimensions_set_right": "⚠️ Certifique-se de que o modelo suporta o tamanho da dimensão de incorporação definido",
+    "dimensions_size_placeholder": " Tamanho da dimensão de incorporação, ex. 1024",
     "dimensions_size_too_large": "A dimensão de incorporação não pode exceder o limite do contexto do modelo ({{max_context}})",
-    "dimensions_size_tooltip": "[to be translated]:嵌入维度大小，数值越大消耗的 Token 也越多。",
+    "dimensions_size_tooltip": "Tamanho da dimensão de incorporação, quanto maior o valor, maior a dimensão de incorporação, mas também maior o consumo de tokens",
     "directories": "Diretórios",
     "directory_placeholder": "Digite o caminho do diretório",
     "document_count": "Número de fragmentos de documentos solicitados",
@@ -911,7 +912,6 @@
     "error": {
       "failed_to_create": "Falha ao criar o repositório de conhecimento",
       "failed_to_edit": "Falha ao editar o repositório de conhecimento",
-      "get_embedding_dimensions": "[to be translated]:获取嵌入维度失败",
       "model_invalid": "Modelo não selecionado ou eliminado"
     },
     "file_hint": "Formatos suportados: {{file_types}}",
@@ -1215,6 +1215,7 @@
         "name": "Insira o nome da base de conhecimento"
       },
       "fetchTopicName": "Falha ao nomear o tópico",
+      "get_embedding_dimensions": "Falha ao obter dimensões de incorporação",
       "invalid": {
         "api": {
           "host": "Endereço API inválido",

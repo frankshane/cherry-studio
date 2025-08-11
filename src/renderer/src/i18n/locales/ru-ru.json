@@ -892,11 +892,12 @@
     "delete_confirm": "Вы уверены, что хотите удалить эту базу знаний?",
     "dimensions": "векторное пространство",
     "dimensions_auto_set": "Автоматическая установка размерности эмбеддинга",
-    "dimensions_default": "[to be translated]:模型将使用默认嵌入维度。选择此选项后，知识库会使用模型默认的嵌入维度创建向量数据库，同时不会在嵌入请求中传入 dimensions 参数。",
+    "dimensions_default": "Модель будет использовать размер эмбеддинга по умолчанию",
     "dimensions_error_invalid": "Неверная размерность эмбеддинга",
     "dimensions_set_right": "⚠️ Убедитесь, что модель поддерживает заданный размер эмбеддинга",
+    "dimensions_size_placeholder": "Оставьте пустым, чтобы не устанавливать",
     "dimensions_size_too_large": "Размерность вложения не может превышать ограничение контекста модели ({{max_context}})",
-    "dimensions_size_tooltip": "[to be translated]:嵌入维度大小，数值越大消耗的 Token 也越多。",
+    "dimensions_size_tooltip": "Размерность вложения - чем больше значение, тем больше токенов потребляется. Если оставить пустым, параметр dimensions не будет передаваться.",
     "directories": "Директории",
     "directory_placeholder": "Введите путь к директории",
     "document_count": "Количество запрошенных документов",
@@ -911,7 +912,6 @@
     "error": {
       "failed_to_create": "Создание базы знаний завершено с ошибками",
       "failed_to_edit": "Редактирование базы знаний завершено с ошибками",
-      "get_embedding_dimensions": "[to be translated]:获取嵌入维度失败",
       "model_invalid": "Модель не выбрана"
     },
     "file_hint": "Поддерживаются {{file_types}}",
@@ -1215,6 +1215,7 @@
         "name": "Пожалуйста, введите название базы знаний"
       },
       "fetchTopicName": "Не удалось назвать топик",
+      "get_embedding_dimensions": "Не удалось получить размерность встраивания",
       "invalid": {
         "api": {
           "host": "Неверный API адрес",

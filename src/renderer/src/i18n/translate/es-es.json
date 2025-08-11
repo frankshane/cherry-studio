@@ -892,11 +892,12 @@
     "delete_confirm": "¿Está seguro de querer eliminar esta base de conocimientos?",
     "dimensions": "Dimensión de incrustación",
     "dimensions_auto_set": "Configuración automática de dimensiones de incrustación",
-    "dimensions_default": "[to be translated]:模型将使用默认嵌入维度。选择此选项后，知识库会使用模型默认的嵌入维度创建向量数据库，同时不会在嵌入请求中传入 dimensions 参数。",
+    "dimensions_default": "El modelo utilizará las dimensiones de incrustación predeterminadas",
     "dimensions_error_invalid": "Por favor ingrese el tamaño de dimensión de incrustación",
     "dimensions_set_right": "⚠️ Asegúrese de que el modelo admita el tamaño de dimensión de incrustación establecido",
+    "dimensions_size_placeholder": " Tamaño de dimensión de incrustación, ej. 1024",
     "dimensions_size_too_large": "La dimensión de incrustación no puede exceder el límite del contexto del modelo ({{max_context}})",
-    "dimensions_size_tooltip": "[to be translated]:嵌入维度大小，数值越大消耗的 Token 也越多。",
+    "dimensions_size_tooltip": "Tamaño de la dimensión de incrustación, cuanto mayor sea el valor, mayor será la dimensión de incrustación, pero también consumirá más Tokens",
     "directories": "Directorios",
     "directory_placeholder": "Ingrese la ruta del directorio",
     "document_count": "Número de fragmentos de documentos solicitados",
@@ -911,7 +912,6 @@
     "error": {
       "failed_to_create": "Error al crear la base de conocimientos",
       "failed_to_edit": "Error al editar la base de conocimientos",
-      "get_embedding_dimensions": "[to be translated]:获取嵌入维度失败",
       "model_invalid": "No se ha seleccionado un modelo o ha sido eliminado"
     },
     "file_hint": "Formatos soportados: {{file_types}}",
@@ -1215,6 +1215,7 @@
         "name": "Ingrese el nombre de la base de conocimiento"
       },
       "fetchTopicName": "Error al asignar nombre al tema",
+      "get_embedding_dimensions": "Fallo al obtener las dimensiones de incrustación",
       "invalid": {
         "api": {
           "host": "Dirección API inválida",

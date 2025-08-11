@@ -1,14 +1,11 @@
 import { loggerService } from '@logger'
-import AiProvider from '@renderer/aiCore'
 import { TopView } from '@renderer/components/TopView'
 import { useKnowledgeBases } from '@renderer/hooks/useKnowledge'
 import { useKnowledgeBaseForm } from '@renderer/hooks/useKnowledgeBaseForm'
-import { getProviderByModel } from '@renderer/services/AssistantService'
 import { getKnowledgeBaseParams } from '@renderer/services/KnowledgeService'
-import { KnowledgeBase, Model, Provider } from '@renderer/types'
-import { formatErrorMessage, getErrorMessage } from '@renderer/utils/error'
-import { Button } from 'antd'
-import { useCallback, useState } from 'react'
+import { KnowledgeBase } from '@renderer/types'
+import { formatErrorMessage } from '@renderer/utils/error'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import {
@@ -30,7 +27,6 @@ interface PopupContainerProps extends ShowParams {
 
 const PopupContainer: React.FC<PopupContainerProps> = ({ title, resolve }) => {
   const [open, setOpen] = useState(true)
-  const [loading, setLoading] = useState(false)
   const { t } = useTranslation()
   const { addKnowledgeBase } = useKnowledgeBases()
   const {
@@ -39,27 +35,6 @@ const PopupContainer: React.FC<PopupContainerProps> = ({ title, resolve }) => {
     handlers,
     providerData: { selectedDocPreprocessProvider, docPreprocessSelectOptions }
   } = useKnowledgeBaseForm()
-
-  const fetchDimension = useCallback(
-    async (provider: Provider, model: Model) => {
-      setLoading(true)
-      try {
-        const aiProvider = new AiProvider(provider)
-        return await aiProvider.getEmbeddingDimensions(model)
-        // for controlled input
-        // if (ref?.current) {
-        //   ref.current.value = dimension.toString()
-        // }
-        // onChange?.(dimension)
-      } catch (error) {
-        logger.error(t('knowledge.error.get_embedding_dimensions'), error as Error)
-        throw new Error(t('knowledge.error.get_embedding_dimensions') + '\n' + getErrorMessage(error))
-      } finally {
-        setLoading(false)
-      }
-    },
-    [t]
-  )
 
   const onOk = async () => {
     if (!newBase.name?.trim()) {
@@ -70,18 +45,6 @@ const PopupContainer: React.FC<PopupContainerProps> = ({ title, resolve }) => {
     if (!newBase.model) {
       window.message.error(t('knowledge.embedding_model_required'))
       return
-    }
-
-    // auto dims
-    if (!newBase.userDims || newBase.dimensions === -1) {
-      try {
-        window.message.loading({ content: t('knowledge.dimensions_getting'), key: 'dimensions-getting' })
-        const dimensions = await fetchDimension(getProviderByModel(newBase.model), newBase.model)
-        window.message.destroy('dimensions-getting')
-        newBase.dimensions = dimensions
-      } catch (e) {
-        window.message.error(t('knowledge.error.failed_to_create') + formatErrorMessage(e))
-      }
     }
 
     try {
@@ -129,23 +92,7 @@ const PopupContainer: React.FC<PopupContainerProps> = ({ title, resolve }) => {
     }
   ]
 
-  return (
-    <KnowledgeBaseFormModal
-      title={title}
-      open={open}
-      onOk={onOk}
-      onCancel={onCancel}
-      panels={panelConfigs}
-      footer={[
-        <Button key="cancel" onClick={onCancel}>
-          {t('common.cancel')}
-        </Button>,
-        <Button type="primary" key="submit" onClick={onOk} loading={loading}>
-          {t('common.add')}
-        </Button>
-      ]}
-    />
-  )
+  return <KnowledgeBaseFormModal title={title} open={open} onOk={onOk} onCancel={onCancel} panels={panelConfigs} />
 }
 
 export default class AddKnowledgeBasePopup {

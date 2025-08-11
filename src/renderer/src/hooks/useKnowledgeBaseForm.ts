@@ -15,9 +15,7 @@ const createInitialKnowledgeBase = (): KnowledgeBase => ({
   created_at: Date.now(),
   updated_at: Date.now(),
   version: 1,
-  framework: 'langchain',
-  dimensions: 1024,
-  userDims: false
+  framework: 'langchain'
 })
 
 /**
@@ -81,7 +79,7 @@ export const useKnowledgeBaseForm = (base?: KnowledgeBase) => {
   )
 
   const handleDimensionChange = useCallback((value: number | null) => {
-    setNewBase((prev) => ({ ...prev, dimensions: value || 0 }))
+    setNewBase((prev) => ({ ...prev, dimensions: value || undefined }))
   }, [])
 
   const handleDocPreprocessChange = useCallback(
