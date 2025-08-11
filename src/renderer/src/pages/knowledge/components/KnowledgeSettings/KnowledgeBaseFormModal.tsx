@@ -27,7 +27,7 @@ const KnowledgeBaseFormModal: React.FC<KnowledgeBaseFormModalProps> = ({ panels,
       transitionName="animation-move-down"
       width="min(800px, 70vw)"
       styles={{
-        body: { padding: 0, height: 550 },
+        body: { padding: 0, height: 650 },
         header: {
           padding: '10px 15px',
           borderBottom: '0.5px solid var(--color-border)',

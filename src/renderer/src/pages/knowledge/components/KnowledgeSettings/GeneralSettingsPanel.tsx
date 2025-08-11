@@ -49,6 +49,21 @@ const GeneralSettingsPanel: React.FC<GeneralSettingsPanelProps> = ({
 
       <SettingsItem>
         <div className="settings-label">
+          {t('settings.tool.preprocess.title')}
+          <InfoTooltip title={t('settings.tool.preprocess.tooltip')} placement="right" />
+        </div>
+        <Select
+          value={selectedDocPreprocessProvider?.id}
+          style={{ width: '100%' }}
+          onChange={handleDocPreprocessChange}
+          placeholder={t('settings.tool.preprocess.provider_placeholder')}
+          options={docPreprocessSelectOptions}
+          allowClear
+        />
+      </SettingsItem>
+
+      <SettingsItem>
+        <div className="settings-label">
           {t('models.embedding_model')}
           <InfoTooltip title={t('models.embedding_model_tooltip')} placement="right" />
         </div>
@@ -98,7 +113,6 @@ const GeneralSettingsPanel: React.FC<GeneralSettingsPanelProps> = ({
             <InfoTooltip title={t('knowledge.retriever_tooltip')} placement="right" />
           </div>
           <Segmented
-            style={{ width: '100%' }}
             value={newBase.retriever || 'hybrid'}
             onChange={(value) => setNewBase({ ...newBase, retriever: value as 'vector' | 'bm25' | 'hybrid' })}
             options={[
@@ -124,21 +138,6 @@ const GeneralSettingsPanel: React.FC<GeneralSettingsPanelProps> = ({
           )}
         </SettingsItem>
       )}
-
-      <SettingsItem>
-        <div className="settings-label">
-          {t('settings.tool.preprocess.title')}
-          <InfoTooltip title={t('settings.tool.preprocess.tooltip')} placement="right" />
-        </div>
-        <Select
-          value={selectedDocPreprocessProvider?.id}
-          style={{ width: '100%' }}
-          onChange={handleDocPreprocessChange}
-          placeholder={t('settings.tool.preprocess.provider_placeholder')}
-          options={docPreprocessSelectOptions}
-          allowClear
-        />
-      </SettingsItem>
 
       <SettingsItem>
         <div className="settings-label">
