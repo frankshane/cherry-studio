@@ -6,12 +6,10 @@ import ModelSelector from '@renderer/components/ModelSelector'
 import { isEmbeddingModel, isRerankModel } from '@renderer/config/models'
 import { useModel } from '@renderer/hooks/useModel'
 import { useProviders } from '@renderer/hooks/useProvider'
-import { fetchDimensions } from '@renderer/services/ApiService'
 import { getModelUniqId } from '@renderer/services/ModelService'
 import { selectMemoryConfig, updateMemoryConfig } from '@renderer/store/memory'
 import { Model } from '@renderer/types'
-import { getErrorMessage } from '@renderer/utils'
-import { Flex, Form, Modal, Switch } from 'antd'
+import { Flex, Form, Modal } from 'antd'
 import { t } from 'i18next'
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -29,7 +27,6 @@ type formValue = {
   llmModel: string
   embedderModel: string
   embedderDimensions: number
-  autoDims: boolean
 }
 
 const MemoriesSettingsModal: FC<MemoriesSettingsModalProps> = ({ visible, onSubmit, onCancel, form }) => {
@@ -78,24 +75,10 @@ const MemoriesSettingsModal: FC<MemoriesSettingsModalProps> = ({ visible, onSubm
           return
         }
 
-        let finalDimensions: number
-        if (values.autoDims) {
-          try {
-            window.message.loading({ content: t('knowledge.dimensions_getting'), key: 'dimensions-getting' })
-            finalDimensions = await fetchDimensions(embedderModel)
-            window.message.destroy('dimensions-getting')
-            setLoading(false)
-          } catch (e) {
-            window.message.error(getErrorMessage(e))
-            setLoading(false)
-            return
-          }
-        } else {
-          finalDimensions =
-            typeof values.embedderDimensions === 'string'
-              ? parseInt(values.embedderDimensions)
-              : values.embedderDimensions
-        }
+        const finalDimensions =
+          typeof values.embedderDimensions === 'string'
+            ? parseInt(values.embedderDimensions)
+            : values.embedderDimensions
 
         const updatedConfig = {
           ...memoryConfig,
@@ -113,8 +96,7 @@ const MemoriesSettingsModal: FC<MemoriesSettingsModalProps> = ({ visible, onSubm
             baseURL: aiEmbedderProvider.getBaseURL(),
             apiVersion: embedderProvider?.apiVersion
           },
-          embedderDimensions: finalDimensions,
-          isAutoDimensions: values.autoDims
+          embedderDimensions: finalDimensions
           // customFactExtractionPrompt: values.customFactExtractionPrompt,
           // customUpdateMemoryPrompt: values.customUpdateMemoryPrompt
         }
@@ -175,24 +157,10 @@ const MemoriesSettingsModal: FC<MemoriesSettingsModalProps> = ({ visible, onSubm
             placeholder={t('memory.select_embedding_model_placeholder')}
           />
         </Form.Item>
-
-        <Flex justify="space-between">
-          {t('knowledge.dimensions_auto_set')}
-          <Form.Item name="autoDims" initialValue={true} valuePropName="checked">
-            <Switch />
-          </Form.Item>
-        </Flex>
-
         <Form.Item
           noStyle
-          shouldUpdate={(prevValues, currentValues) =>
-            prevValues.embedderModel !== currentValues.embedderModel || prevValues.autoDims !== currentValues.autoDims
-          }>
+          shouldUpdate={(prevValues, currentValues) => prevValues.embedderModel !== currentValues.embedderModel}>
           {({ getFieldValue }) => {
-            const autoDims = getFieldValue('autoDims')
-            if (autoDims) {
-              return null
-            }
             const embedderModelId = getFieldValue('embedderModel')
             const embedderModel = findModelById(embedderModelId)
             return (
