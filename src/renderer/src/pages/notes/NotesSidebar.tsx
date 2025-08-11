@@ -5,6 +5,7 @@ import { useKnowledgeBases } from '@renderer/hooks/useKnowledge'
 import { NotesTreeNode } from '@renderer/types/note'
 import { Dropdown, Input, MenuProps, Tooltip } from 'antd'
 import {
+  ArrowLeft,
   ChevronDown,
   ChevronRight,
   Edit3,
@@ -15,9 +16,10 @@ import {
   FolderOpen,
   FolderPlus,
   Star,
+  StarOff,
   Trash2
 } from 'lucide-react'
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
@@ -28,6 +30,7 @@ interface NotesSidebarProps {
   onDeleteNode: (nodeId: string) => void
   onRenameNode: (nodeId: string, newName: string) => void
   onToggleExpanded: (nodeId: string) => void
+  onToggleStar: (nodeId: string) => void
   onMoveNode: (nodeId: string, targetParentId?: string) => void
   activeNodeId?: string
   notesTree: NotesTreeNode[]
@@ -42,6 +45,7 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
   onDeleteNode,
   onRenameNode,
   onToggleExpanded,
+  onToggleStar,
   onMoveNode,
   activeNodeId,
   notesTree
@@ -52,6 +56,7 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
   const [editingName, setEditingName] = useState('')
   const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null)
   const [dragOverNodeId, setDragOverNodeId] = useState<string | null>(null)
+  const [isShowStarred, setIsShowStarred] = useState(false)
 
   const handleCreateFolder = useCallback(() => {
     onCreateFolder(t('notes.untitled_folder'))
@@ -155,6 +160,32 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
     setDragOverNodeId(null)
   }, [])
 
+  // 切换收藏视图
+  const handleToggleStarredView = useCallback(() => {
+    setIsShowStarred(!isShowStarred)
+  }, [isShowStarred])
+
+  // 筛选收藏的笔记
+  const filteredTree = useMemo(() => {
+    if (!isShowStarred) return notesTree
+    const flattenNodes = (nodes: NotesTreeNode[]): NotesTreeNode[] => {
+      let result: NotesTreeNode[] = []
+
+      for (const node of nodes) {
+        if (node.type === 'file' && node.is_starred) {
+          result.push(node)
+        }
+
+        if (node.children && node.children.length > 0) {
+          result = [...result, ...flattenNodes(node.children)]
+        }
+      }
+      return result
+    }
+
+    return flattenNodes(notesTree)
+  }, [notesTree, isShowStarred])
+
   // 实现右键菜单
   const getMenuItems = useCallback(
     (node: NotesTreeNode) => {
@@ -171,10 +202,12 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
       if (node.type !== 'folder') {
         baseMenuItems.push(
           {
-            label: t('notes.star'),
+            label: node.is_starred ? t('notes.unstar') : t('notes.star'),
             key: 'star',
-            icon: <Star size={14} />,
-            onClick: () => {}
+            icon: node.is_starred ? <StarOff size={14} /> : <Star size={14} />,
+            onClick: () => {
+              onToggleStar(node.id)
+            }
           },
           {
             label: t('notes.export_knowledge'),
@@ -201,7 +234,7 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
 
       return baseMenuItems
     },
-    [t, handleStartEdit, handleExportKnowledge, handleDeleteNode]
+    [t, handleStartEdit, onToggleStar, handleExportKnowledge, handleDeleteNode]
   )
 
   const renderTreeNode = useCallback(
@@ -305,23 +338,40 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
     <SidebarContainer>
       <SidebarHeader>
         <HeaderActions>
-          <Tooltip title={t('notes.new_folder')} mouseEnterDelay={0.8}>
-            <ActionButton onClick={handleCreateFolder}>
-              <FolderPlus size={18} />
-            </ActionButton>
-          </Tooltip>
+          {!isShowStarred && (
+            <>
+              <Tooltip title={t('notes.new_folder')} mouseEnterDelay={0.8}>
+                <ActionButton onClick={handleCreateFolder}>
+                  <FolderPlus size={18} />
+                </ActionButton>
+              </Tooltip>
 
-          <Tooltip title={t('notes.new_note')} mouseEnterDelay={0.8}>
-            <ActionButton onClick={handleCreateNote}>
-              <FilePlus size={18} />
-            </ActionButton>
-          </Tooltip>
+              <Tooltip title={t('notes.new_note')} mouseEnterDelay={0.8}>
+                <ActionButton onClick={handleCreateNote}>
+                  <FilePlus size={18} />
+                </ActionButton>
+              </Tooltip>
+
+              <Tooltip title={t('notes.show_starred')} mouseEnterDelay={0.8}>
+                <ActionButton onClick={handleToggleStarredView}>
+                  <Star size={18} />
+                </ActionButton>
+              </Tooltip>
+            </>
+          )}
+          {isShowStarred && (
+            <Tooltip title={t('common.back')} mouseEnterDelay={0.8}>
+              <ActionButton onClick={handleToggleStarredView}>
+                <ArrowLeft size={18} />
+              </ActionButton>
+            </Tooltip>
+          )}
         </HeaderActions>
       </SidebarHeader>
 
       <NotesTreeContainer>
         <StyledScrollbar>
-          <TreeContent>{notesTree.map((node) => renderTreeNode(node))}</TreeContent>
+          <TreeContent>{filteredTree.map((node) => renderTreeNode(node))}</TreeContent>
         </StyledScrollbar>
       </NotesTreeContainer>
     </SidebarContainer>

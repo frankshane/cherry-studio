@@ -248,6 +248,18 @@ const NotesPage: FC = () => {
     }
   }
 
+  // 切换收藏状态
+  const handleToggleStar = async (nodeId: string) => {
+    try {
+      await NotesService.toggleStarred(nodeId)
+      const updatedTree = await NotesService.getNotesTree()
+      setNotesTree(updatedTree)
+    } catch (error) {
+      window.message.error(t('notes.starred_failed'))
+      logger.error(`Failed to toggle star for note: ${error}`)
+    }
+  }
+
   return (
     <Container id="notes-page">
       <NotesNavbar />
@@ -262,6 +274,7 @@ const NotesPage: FC = () => {
             onDeleteNode={handleDeleteNode}
             onRenameNode={handleRenameNode}
             onToggleExpanded={handleToggleExpanded}
+            onToggleStar={handleToggleStar}
             onMoveNode={handleMoveNode}
           />
         )}
