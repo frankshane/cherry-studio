@@ -186,7 +186,6 @@ function createKnowledgeBase(overrides: Partial<KnowledgeBase> = {}): KnowledgeB
     id: 'test-base-id',
     name: 'Test Knowledge Base',
     model: defaultModel,
-    dimensions: 1024,
     retriever: 'hybrid',
     items: [],
     created_at: Date.now(),
