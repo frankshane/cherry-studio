@@ -2102,11 +2102,6 @@ const migrateConfig = {
         if (!base.framework) {
           base.framework = 'embedjs'
         }
-        // 新知识库要求必须传入dimensions参数
-        // 使用embedjs的旧知识库不依赖dimensions字段，设置userDims为false保证使用安全
-        if (base.dimensions === undefined) {
-          base.userDims = false
-        }
       })
       return state
     } catch (error) {
