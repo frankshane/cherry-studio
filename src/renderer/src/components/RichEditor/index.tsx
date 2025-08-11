@@ -2,7 +2,7 @@ import DragHandle from '@tiptap/extension-drag-handle-react'
 import { EditorContent } from '@tiptap/react'
 import { t } from 'i18next'
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Trash2 } from 'lucide-react'
-import React, { useEffect, useImperativeHandle, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
 
 import { MdiDragHandle } from '../Icons/SVGIcon'
 import {
@@ -116,112 +116,115 @@ const RichEditor = ({
     })
   }
 
-  const handleCommand = (command: FormattingCommand) => {
-    if (!editor) return
+  const handleCommand = useCallback(
+    (command: FormattingCommand) => {
+      if (!editor) return
 
-    switch (command) {
-      case 'bold':
-        editor.chain().focus().toggleBold().run()
-        break
-      case 'italic':
-        editor.chain().focus().toggleItalic().run()
-        break
-      case 'underline':
-        editor.chain().focus().toggleUnderline().run()
-        break
-      case 'strike':
-        editor.chain().focus().toggleStrike().run()
-        break
-      case 'code':
-        editor.chain().focus().toggleCode().run()
-        break
-      case 'clearMarks':
-        editor.chain().focus().unsetAllMarks().run()
-        break
-      case 'paragraph':
-        editor.chain().focus().setParagraph().run()
-        break
-      case 'heading1':
-        editor.chain().focus().toggleHeading({ level: 1 }).run()
-        break
-      case 'heading2':
-        editor.chain().focus().toggleHeading({ level: 2 }).run()
-        break
-      case 'heading3':
-        editor.chain().focus().toggleHeading({ level: 3 }).run()
-        break
-      case 'heading4':
-        editor.chain().focus().toggleHeading({ level: 4 }).run()
-        break
-      case 'heading5':
-        editor.chain().focus().toggleHeading({ level: 5 }).run()
-        break
-      case 'heading6':
-        editor.chain().focus().toggleHeading({ level: 6 }).run()
-        break
-      case 'bulletList':
-        editor.chain().focus().toggleBulletList().run()
-        break
-      case 'orderedList':
-        editor.chain().focus().toggleOrderedList().run()
-        break
-      case 'codeBlock':
-        editor.chain().focus().toggleCodeBlock().run()
-        break
-      case 'blockquote':
-        editor.chain().focus().toggleBlockquote().run()
-        break
-      case 'link': {
-        const { selection } = editor.state
-        const { $from } = selection
+      switch (command) {
+        case 'bold':
+          editor.chain().focus().toggleBold().run()
+          break
+        case 'italic':
+          editor.chain().focus().toggleItalic().run()
+          break
+        case 'underline':
+          editor.chain().focus().toggleUnderline().run()
+          break
+        case 'strike':
+          editor.chain().focus().toggleStrike().run()
+          break
+        case 'code':
+          editor.chain().focus().toggleCode().run()
+          break
+        case 'clearMarks':
+          editor.chain().focus().unsetAllMarks().run()
+          break
+        case 'paragraph':
+          editor.chain().focus().setParagraph().run()
+          break
+        case 'heading1':
+          editor.chain().focus().toggleHeading({ level: 1 }).run()
+          break
+        case 'heading2':
+          editor.chain().focus().toggleHeading({ level: 2 }).run()
+          break
+        case 'heading3':
+          editor.chain().focus().toggleHeading({ level: 3 }).run()
+          break
+        case 'heading4':
+          editor.chain().focus().toggleHeading({ level: 4 }).run()
+          break
+        case 'heading5':
+          editor.chain().focus().toggleHeading({ level: 5 }).run()
+          break
+        case 'heading6':
+          editor.chain().focus().toggleHeading({ level: 6 }).run()
+          break
+        case 'bulletList':
+          editor.chain().focus().toggleBulletList().run()
+          break
+        case 'orderedList':
+          editor.chain().focus().toggleOrderedList().run()
+          break
+        case 'codeBlock':
+          editor.chain().focus().toggleCodeBlock().run()
+          break
+        case 'blockquote':
+          editor.chain().focus().toggleBlockquote().run()
+          break
+        case 'link': {
+          const { selection } = editor.state
+          const { $from } = selection
 
-        // 如果当前已经是链接，则取消链接
-        if (editor.isActive('link')) {
-          editor.chain().focus().unsetLink().run()
-        } else {
-          // 获取当前段落的文本内容
-          const paragraphText = $from.parent.textContent
+          // 如果当前已经是链接，则取消链接
+          if (editor.isActive('link')) {
+            editor.chain().focus().unsetLink().run()
+          } else {
+            // 获取当前段落的文本内容
+            const paragraphText = $from.parent.textContent
 
-          // 如果段落有文本，将段落文本设置为链接
-          if (paragraphText.trim()) {
-            const url = paragraphText.trim().startsWith('http')
-              ? paragraphText.trim()
-              : `https://${paragraphText.trim()}`
+            // 如果段落有文本，将段落文本设置为链接
+            if (paragraphText.trim()) {
+              const url = paragraphText.trim().startsWith('http')
+                ? paragraphText.trim()
+                : `https://${paragraphText.trim()}`
 
-            try {
-              const { $from } = selection
-              const start = $from.start()
-              const end = $from.end()
-              editor.chain().focus().setTextSelection({ from: start, to: end }).setLink({ href: url }).run()
-            } catch (error) {
+              try {
+                const { $from } = selection
+                const start = $from.start()
+                const end = $from.end()
+                editor.chain().focus().setTextSelection({ from: start, to: end }).setLink({ href: url }).run()
+              } catch (error) {
+                editor.chain().focus().toggleLink().run()
+              }
+            } else {
               editor.chain().focus().toggleLink().run()
             }
-          } else {
-            editor.chain().focus().toggleLink().run()
           }
+          break
         }
-        break
+        case 'undo':
+          editor.chain().focus().undo().run()
+          break
+        case 'redo':
+          editor.chain().focus().redo().run()
+          break
+        case 'blockMath': {
+          // Math is handled by the MathInputDialog component in toolbar
+          // This case is here for completeness but shouldn't be called directly
+          break
+        }
+        case 'table':
+          editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+          break
+        case 'image':
+          // Image insertion is handled by the ImageUploader component in toolbar
+          // This case is here for completeness but shouldn't be called directly
+          break
       }
-      case 'undo':
-        editor.chain().focus().undo().run()
-        break
-      case 'redo':
-        editor.chain().focus().redo().run()
-        break
-      case 'blockMath': {
-        // Math is handled by the MathInputDialog component in toolbar
-        // This case is here for completeness but shouldn't be called directly
-        break
-      }
-      case 'table':
-        editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
-        break
-      case 'image':
-        // Image insertion is handled by the ImageUploader component in toolbar
-        // This case is here for completeness but shouldn't be called directly
-        break
-    }
-  }
+    },
+    [editor]
+  )
 
   // Expose editor methods via ref
   useImperativeHandle(
