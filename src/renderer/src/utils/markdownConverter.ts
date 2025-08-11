@@ -13,13 +13,7 @@ export interface TaskListOptions {
 }
 
 // Create markdown-it instance with task list plugin
-const md = new MarkdownIt({
-  html: true, // Enable HTML tags in source
-  xhtmlOut: true, // Use '/' to close single tags (<br />)
-  breaks: true, // Convert '\n' in paragraphs into <br>
-  linkify: true, // Autoconvert URL-like text to links
-  typographer: true // Enable smartypants and other sweet transforms
-})
+const md = new MarkdownIt('commonmark')
 
 // Custom task list plugin for markdown-it
 function taskListPlugin(md: MarkdownIt, options: TaskListOptions = {}) {

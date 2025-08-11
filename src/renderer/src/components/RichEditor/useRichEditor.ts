@@ -177,7 +177,6 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
         suggestion: commandSuggestion
       }),
       Typography,
-      EnhancedImage,
       TableKit.configure({
         table: {
           resizable: true,

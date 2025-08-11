@@ -55,6 +55,18 @@ describe('markdownConverter', () => {
       const result = htmlToMarkdown(html)
       expect(result).toBe('$$$a+b+c$$$\n\n$$d+e+f$$')
     })
+
+    it('should convert heading and img to Markdown', () => {
+      const html = '<h1>Hello</h1>\n<p><img src="https://example.com/image.png" alt="alt text"></p>\n'
+      const result = htmlToMarkdown(html)
+      expect(result).toBe('# Hello\n\n![alt text](https://example.com/image.png)')
+    })
+
+    it('should convert heading and paragraph to Markdown', () => {
+      const html = '<h1>Hello</h1>\n<p>Hello</p>\n'
+      const result = htmlToMarkdown(html)
+      expect(result).toBe('# Hello\n\nHello')
+    })
   })
 
   describe('markdownToHtml', () => {
@@ -124,7 +136,7 @@ describe('markdownConverter', () => {
     })
 
     it('should handle regular list items alongside task lists', () => {
-      const markdown = '- Regular item\n- [ ] Task item\n- Another regular item'
+      const markdown = '- Regular item\n\n- [ ] Task item\n\n- Another regular item'
       const result = markdownToHtml(markdown)
       expect(result).toContain('data-type="taskList"')
       expect(result).toContain('Regular item')
@@ -140,6 +152,20 @@ describe('markdownConverter', () => {
     it('should handle null/undefined input', () => {
       expect(markdownToHtml(null as any)).toBe('')
       expect(markdownToHtml(undefined as any)).toBe('')
+    })
+
+    it('should handle heading and img', () => {
+      const markdown = `# 🌠 Screenshot
+
+![](https://example.com/image.png)`
+      const result = markdownToHtml(markdown)
+      expect(result).toBe('<h1>🌠 Screenshot</h1>\n<p><img src="https://example.com/image.png" alt="" /></p>\n')
+    })
+
+    it('should handle heading and paragraph', () => {
+      const markdown = '# Hello\n\nHello'
+      const result = markdownToHtml(markdown)
+      expect(result).toBe('<h1>Hello</h1>\n<p>Hello</p>\n')
     })
   })
 
@@ -172,12 +198,11 @@ describe('markdownConverter', () => {
 
   describe('Task List with Labels', () => {
     it('should wrap task items with labels when label option is true', () => {
-      const markdown = '- [ ] abcd\n- [x] efgh'
+      const markdown = '- [ ] abcd\n\n- [x] efgh'
       const result = markdownToHtml(markdown)
-      expect(result).toContain('<label><input type="checkbox" disabled> abcd</label>')
-      expect(result).toContain('<label><input type="checkbox" checked disabled> efgh</label>')
-      expect(result).toContain('data-type="taskList"')
-      expect(result).toContain('data-type="taskItem"')
+      expect(result).toBe(
+        '<ul data-type="taskList" class="task-list">\n<li data-type="taskItem" class="task-list-item" data-checked="false">\n<p><label><input type="checkbox" disabled> abcd</label></p>\n</li>\n<li data-type="taskItem" class="task-list-item" data-checked="true">\n<p><label><input type="checkbox" checked disabled> efgh</label></p>\n</li>\n</ul>\n'
+      )
     })
 
     it('should preserve labels in sanitized HTML', () => {
@@ -196,20 +221,16 @@ describe('markdownConverter', () => {
       const html = markdownToHtml(originalMarkdown)
       const backToMarkdown = htmlToMarkdown(html)
 
-      expect(backToMarkdown).toContain('- [ ] abcd')
-      expect(backToMarkdown).toContain('- [x] efgh')
+      expect(backToMarkdown).toBe(originalMarkdown)
     })
 
     it('should handle complex task lists with multiple items', () => {
       const originalMarkdown =
-        '- [ ] First unchecked task\n- [x] First checked task\n- [ ] Second unchecked task\n- [x] Second checked task'
+        '- [ ] First unchecked task\n\n- [x] First checked task\n\n- [ ] Second unchecked task\n\n- [x] Second checked task'
       const html = markdownToHtml(originalMarkdown)
       const backToMarkdown = htmlToMarkdown(html)
 
-      expect(backToMarkdown).toContain('- [ ] First unchecked task')
-      expect(backToMarkdown).toContain('- [x] First checked task')
-      expect(backToMarkdown).toContain('- [ ] Second unchecked task')
-      expect(backToMarkdown).toContain('- [x] Second checked task')
+      expect(backToMarkdown).toBe(originalMarkdown)
     })
   })
 })
