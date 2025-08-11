@@ -1,5 +1,7 @@
 import { loggerService } from '@logger'
+import SaveToKnowledgePopup from '@renderer/components/Popups/SaveToKnowledgePopup'
 import Scrollbar from '@renderer/components/Scrollbar'
+import { useKnowledgeBases } from '@renderer/hooks/useKnowledge'
 import { NotesTreeNode } from '@renderer/types/note'
 import { Dropdown, Input, MenuProps, Tooltip } from 'antd'
 import {
@@ -45,6 +47,7 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
   notesTree
 }) => {
   const { t } = useTranslation()
+  const { bases } = useKnowledgeBases()
   const [editingNodeId, setEditingNodeId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
   const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null)
@@ -92,6 +95,27 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
       })
     },
     [onDeleteNode, t]
+  )
+
+  const handleExportKnowledge = useCallback(
+    async (note: NotesTreeNode) => {
+      try {
+        if (bases.length === 0) {
+          window.message.warning(t('chat.save.knowledge.empty.no_knowledge_base'))
+          return
+        }
+
+        const result = await SaveToKnowledgePopup.showForNote(note)
+
+        if (result?.success) {
+          window.message.success(t('notes.export_success', { count: result.savedCount }))
+        }
+      } catch (error) {
+        window.message.error(t('notes.export_failed'))
+        logger.error(`Failed to export note to knowledge base: ${error}`)
+      }
+    },
+    [bases.length, t]
   )
 
   const handleDragStart = useCallback((e: React.DragEvent, node: NotesTreeNode) => {
@@ -156,7 +180,9 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
             label: t('notes.export_knowledge'),
             key: 'export_knowledge',
             icon: <FileSearch size={14} />,
-            onClick: () => {}
+            onClick: () => {
+              handleExportKnowledge(node)
+            }
           }
         )
       }
@@ -175,7 +201,7 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
 
       return baseMenuItems
     },
-    [t, handleStartEdit, handleDeleteNode]
+    [t, handleStartEdit, handleExportKnowledge, handleDeleteNode]
   )
 
   const renderTreeNode = useCallback(
