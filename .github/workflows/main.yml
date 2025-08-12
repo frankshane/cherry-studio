@@ -24,7 +24,7 @@ jobs:
     steps:
       # 第一步：检出(下载)你的仓库代码到虚拟机
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           # 确保检出的是触发此流程的分支
           ref: ${{ github.ref }}
@@ -32,7 +32,7 @@ jobs:
       # 第二步：设置 Node.js 环境
       # (大多数前端或Electron项目都需要Node.js)
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '16' # 根据项目需要可以修改版本
           cache: 'npm' # 缓存依赖项以加快后续构建速度
