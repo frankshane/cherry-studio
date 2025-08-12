@@ -15,23 +15,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          repository: 'CherryHQ/cherry-studio' # 直接从源仓库拉取
-          ref: 'build/windows7-support' # 指定我们关心的分支
+          repository: 'CherryHQ/cherry-studio'
+          ref: 'build/windows7-support'
 
-      # 第2步：设置 Node.js 环境
+      # 第2步：设置 Node.js 环境并缓存依赖
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          # 为 yarn 设置缓存
-          cache: 'yarn'
+          cache: 'yarn' # 为 yarn 自动设置缓存
 
-      # 第3步：安装项目依赖 (使用Yarn)
-      # 由于上一步设置了 cache: 'yarn'，依赖会被自动缓存和恢复
+      # 第3步：安装 Node.js 依赖
       - name: Install dependencies with Yarn
         run: yarn install --immutable
 
-      # 第4步：安装 Rust 环境并为 Cargo/Tauri 设置缓存
+      # 第4步：安装 Rust 环境并缓存 Cargo 依赖
       - name: Setup Rust and Cache Cargo
         uses: dtolnay/rust-toolchain@stable
       - name: Cache Cargo dependencies
@@ -43,21 +41,19 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             src-tauri/target/
-          # 缓存的 key，当 Cargo.lock 文件变化时，缓存会失效并重新生成
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       # 第5步：打包 Tauri 应用
+      # 【关键修改】明确指定只打包 nsis (.exe) 类型，避免 WiX 工具的权限问题
       - name: Build the application
-        run: yarn build
+        run: yarn tauri build --bundles "nsis"
         env:
-          # 注意：这个 secret 需要在你的仓库中设置
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       # 第6步：上传打包好的文件
+      # 【关键修改】只上传存在的 .exe 文件
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: cherry-studio-windows-installer
-          path: |
-            src-tauri/target/release/bundle/nsis/*.exe
-            src-tauri/target/release/bundle/msi/*.msi
+          path: src-tauri/target/release/bundle/nsis/*.exe
