@@ -11,50 +11,46 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # 第1步：获取代码
-      # 使用 actions/checkout@v4 这个官方动作来拉取代码
-      # ref: 'build/windows7-support' 指定了我们要打包的分支
+      # 第1步：获取代码，并明确指定要拉取的分支
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          repository: 'CherryHQ/cherry-studio' # 直接从源仓库拉取，避免你自己fork的仓库分支不同步
           ref: 'build/windows7-support'
 
-      # 第2步：设置 Node.js 和 Yarn 环境
-      # 使用 actions/setup-node@v4 来安装 Node.js v18
-      # cache: 'yarn' 会缓存依赖，加快后续构建速度
+      # 第2步：安装 pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8 # 使用 pnpm 版本 8
+      
+      # 第3步：设置 Node.js 环境
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'yarn'
+          cache: 'pnpm' # 使用 pnpm 缓存
 
-      # 第3步：安装 Rust 环境
-      # Tauri 后端需要 Rust
+      # 第4步：安装 Rust 环境
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
-      # 第4步：安装项目依赖
-      # 运行 yarn install 命令
-      - name: Install dependencies with Yarn
-        run: yarn install --frozen-lockfile
+      # 第5步：安装项目依赖
+      - name: Install dependencies with pnpm
+        run: pnpm install --frozen-lockfile
 
-      # 第5步：打包 Tauri 应用
-      # 运行打包命令，并设置环境变量以避免 Tauri 的一些交互式提示
+      # 第6步：打包 Tauri 应用
       - name: Build the application
-        run: yarn build:win
+        run: pnpm build:win
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
 
-      # 第6步：上传打包好的文件
-      # 将打包生成的文件上传，方便我们从网页下载
+      # 第7步：上传打包好的文件
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          # 上传后的文件包名字
           name: cherry-studio-windows-installer
-          # 要上传的文件路径。* 是通配符，能匹配所有 .exe 和 .msi 文件
+          # 路径保持不变，这通常是Tauri的默认输出路径
           path: |
             src-tauri/target/release/bundle/nsis/*.exe
             src-tauri/target/release/bundle/msi/*.msi
