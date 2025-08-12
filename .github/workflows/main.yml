@@ -1,9 +1,7 @@
 # .github/workflows/build-installer.yml
 
-# 工作流程的名称
 name: Build Windows Installer
 
-# 触发工作流程的事件
 on:
   workflow_dispatch:
   push:
@@ -15,32 +13,28 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # 步骤 1: 检出代码
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
 
-      # 步骤 2: 设置 Node.js 环境，并指定缓存给 Yarn
+      # 新增步骤：安装 Microsoft C++ Build Tools
+      # 这是解决 better-sqlite3 编译问题的关键！
+      - name: Install C++ Build Tools
+        uses: microsoft/setup-msbuild@v2
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          # 该项目似乎需要 Node.js 18
           node-version: '18'
-          # 将缓存从 'npm' 改为 'yarn' <--- 关键变更 1
           cache: 'yarn'
 
-      # 步骤 3: 使用 Yarn 安装依赖
       - name: Install dependencies with Yarn
-        # 将 'npm install' 改为 'yarn install' <--- 关键变更 2
         run: yarn install --frozen-lockfile
 
-      # 步骤 4: 使用 Yarn 执行构建
       - name: Build and package application
-        # 将 'npm run build' 改为 'yarn run build' <--- 关键变更 3
         run: yarn run build
 
-      # 步骤 5: 上传构建产物 (此步骤不变)
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
