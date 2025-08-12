@@ -23,7 +23,11 @@ jobs:
       - name: Install dependencies with Yarn
         run: yarn install --immutable
 
-      - name: Setup Rust and Cache Cargo
+      # 安装 tauri CLI 和 Rust 环境
+      - name: Install Tauri CLI
+        run: yarn add @tauri-apps/cli --dev
+
+      - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
       - name: Cache Cargo dependencies
@@ -37,13 +41,13 @@ jobs:
             src-tauri/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      # 这里用 npx 来调用 tauri-cli，只打包 nsis 的 .exe
+      # 构建只打包 NSIS .exe
       - name: Build the application (.exe only)
-        run: npx tauri build --bundles nsis
+        run: yarn tauri build --bundles nsis
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      # 只上传 .exe Artifact
+      # 上传打好的 exe
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
