@@ -33,10 +33,14 @@ jobs:
       - name: Install dependencies with Yarn
         run: yarn install --frozen-lockfile
 
-      # 使用 Yarn 执行构建，并强制使用 VS 2022
-      # 这是解决问题的关键！
-      - name: Build and package application
-        run: yarn run build
+      # 安装 dotenv-cli (项目的构建脚本需要它)
+      - name: Install dotenv-cli globally
+        run: npm install -g dotenv-cli
+
+      # 使用项目专门的 Windows 7 构建命令
+      # 这个命令会自动处理 Windows 7 的补丁
+      - name: Build Windows 7 version
+        run: yarn run build:win7
         env:
           npm_config_msvs_version: 2022
 
@@ -45,5 +49,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cherry-studio-installer
-          path: dist/*.exe
+          path: |
+            dist/*.exe
+            dist/*.msi
+            dist/*.zip
           retention-days: 7
