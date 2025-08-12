@@ -11,7 +11,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # 第1步：获取代码，并明确指定要拉取的分支
+      # 第1步：获取代码
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -19,27 +19,38 @@ jobs:
           ref: 'build/windows7-support' # 指定我们关心的分支
 
       # 第2步：设置 Node.js 环境
-      # (Yarn Berry v2+ 需要 Node.js环境来启用 Corepack)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
+          # 为 yarn 设置缓存
+          cache: 'yarn'
 
       # 第3步：安装项目依赖 (使用Yarn)
-      # Yarn Berry (v2+) 通过 Corepack 管理，无需单独安装
-      # `yarn install` 会自动读取 .yarnrc.yml 和 package.json 来安装依赖
+      # 由于上一步设置了 cache: 'yarn'，依赖会被自动缓存和恢复
       - name: Install dependencies with Yarn
         run: yarn install --immutable
 
-      # 第4步：安装 Rust 环境
-      - name: Setup Rust
+      # 第4步：安装 Rust 环境并为 Cargo/Tauri 设置缓存
+      - name: Setup Rust and Cache Cargo
         uses: dtolnay/rust-toolchain@stable
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            src-tauri/target/
+          # 缓存的 key，当 Cargo.lock 文件变化时，缓存会失效并重新生成
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       # 第5步：打包 Tauri 应用
-      # 注意：package.json中的打包命令是 `build`，而不是 `build:win`
       - name: Build the application
         run: yarn build
         env:
+          # 注意：这个 secret 需要在你的仓库中设置
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       # 第6步：上传打包好的文件
