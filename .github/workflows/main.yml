@@ -33,14 +33,24 @@ jobs:
       - name: Install dependencies with Yarn
         run: yarn install --frozen-lockfile
 
-      # 安装 dotenv-cli (项目的构建脚本需要它)
+      # 安装 dotenv-cli (构建脚本需要它)
       - name: Install dotenv-cli globally
         run: npm install -g dotenv-cli
 
-      # 使用项目专门的 Windows 7 构建命令
-      # 这个命令会自动处理 Windows 7 的补丁
-      - name: Build Windows 7 version
-        run: yarn run build:win7
+      # 手动应用 Windows 7 补丁 (如果存在)
+      - name: Apply Windows 7 patches
+        run: |
+          if (Test-Path "src\patch\windows7") {
+            Write-Host "Applying Windows 7 patches..."
+            xcopy "src\patch\windows7\*" "node_modules\" /E /Y /I
+          } else {
+            Write-Host "No Windows 7 patches found, proceeding with standard build"
+          }
+        shell: powershell
+
+      # 使用现有的 Windows x64 构建命令
+      - name: Build Windows x64 version
+        run: yarn run build:win:x64
         env:
           npm_config_msvs_version: 2022
 
