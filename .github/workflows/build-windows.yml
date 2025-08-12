@@ -1,0 +1,59 @@
+# GitHub Actions 配置文件的名字
+name: Build Cherry Studio for Windows
+
+# 触发条件：当手动点击 "Run workflow" 按钮时运行
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    # 指定运行环境：使用 GitHub 提供的最新版 Windows 虚拟机
+    runs-on: windows-latest
+
+    steps:
+      # 第1步：获取代码
+      # 使用 actions/checkout@v4 这个官方动作来拉取代码
+      # ref: 'build/windows7-support' 指定了我们要打包的分支
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: 'build/windows7-support'
+
+      # 第2步：设置 Node.js 和 Yarn 环境
+      # 使用 actions/setup-node@v4 来安装 Node.js v18
+      # cache: 'yarn' 会缓存依赖，加快后续构建速度
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'yarn'
+
+      # 第3步：安装 Rust 环境
+      # Tauri 后端需要 Rust
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      # 第4步：安装项目依赖
+      # 运行 yarn install 命令
+      - name: Install dependencies with Yarn
+        run: yarn install --frozen-lockfile
+
+      # 第5步：打包 Tauri 应用
+      # 运行打包命令，并设置环境变量以避免 Tauri 的一些交互式提示
+      - name: Build the application
+        run: yarn build:win
+        env:
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+
+      # 第6步：上传打包好的文件
+      # 将打包生成的文件上传，方便我们从网页下载
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          # 上传后的文件包名字
+          name: cherry-studio-windows-installer
+          # 要上传的文件路径。* 是通配符，能匹配所有 .exe 和 .msi 文件
+          path: |
+            src-tauri/target/release/bundle/nsis/*.exe
+            src-tauri/target/release/bundle/msi/*.msi
