@@ -5,58 +5,45 @@ name: Build Windows Installer
 
 # 触发工作流程的事件
 on:
-  # 允许你手动在 Actions 页面点击按钮来触发构建
   workflow_dispatch:
-
-  # 当有代码推送到 'build/windows7-support' 分支时自动触发
   push:
     branches:
       - 'build/windows7-support'
 
-# 定义一个或多个 "jobs" (任务)
 jobs:
-  # 任务的唯一ID
   build:
-    # 指定运行此任务的虚拟机环境，我们使用最新的 Windows 环境
     runs-on: windows-latest
 
-    # 定义任务的执行步骤
     steps:
-      # 第一步：检出(下载)你的仓库代码到虚拟机
+      # 步骤 1: 检出代码
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          # 确保检出的是触发此流程的分支
           ref: ${{ github.ref }}
 
-      # 第二步：设置 Node.js 环境
-      # (大多数前端或Electron项目都需要Node.js)
+      # 步骤 2: 设置 Node.js 环境，并指定缓存给 Yarn
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '16' # 根据项目需要可以修改版本
-          cache: 'npm' # 缓存依赖项以加快后续构建速度
+          # 该项目似乎需要 Node.js 18
+          node-version: '18'
+          # 将缓存从 'npm' 改为 'yarn' <--- 关键变更 1
+          cache: 'yarn'
 
-      # 第三步：安装项目依赖
-      # 这会执行 npm install 命令
-      - name: Install dependencies
-        run: npm install
+      # 步骤 3: 使用 Yarn 安装依赖
+      - name: Install dependencies with Yarn
+        # 将 'npm install' 改为 'yarn install' <--- 关键变更 2
+        run: yarn install --frozen-lockfile
 
-      # 第四步：执行构建和打包命令
-      # 这个命令通常在 package.json 的 "scripts" 中定义
-      # 常见的打包命令是 "build", "pack", "dist" 等
+      # 步骤 4: 使用 Yarn 执行构建
       - name: Build and package application
-        run: npm run build
+        # 将 'npm run build' 改为 'yarn run build' <--- 关键变更 3
+        run: yarn run build
 
-      # 第五步：上传构建好的安装包
-      # 将打包生成的文件作为 "artifact" (产物) 上传，以便你能下载
+      # 步骤 5: 上传构建产物 (此步骤不变)
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
-          # 产物的名称，可以自定义
           name: cherry-studio-installer
-          # 要上传的文件的路径
-          # 通常打包工具会把文件生成在 'dist' 或 'release' 目录下
-          # '.exe' 文件是 Windows 安装包
           path: dist/*.exe
-
+          retention-days: 7
