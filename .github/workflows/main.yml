@@ -18,23 +18,29 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
-      # 新增步骤：安装 Microsoft C++ Build Tools
-      # 这是解决 better-sqlite3 编译问题的关键！
+      # 安装 MSBuild (VS C++ Build Tools)
       - name: Install C++ Build Tools
         uses: microsoft/setup-msbuild@v2
 
+      # 设置 Node.js 环境
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'yarn'
 
+      # 使用 Yarn 安装依赖
       - name: Install dependencies with Yarn
         run: yarn install --frozen-lockfile
 
+      # 使用 Yarn 执行构建，并强制使用 VS 2022
+      # 这是解决问题的关键！
       - name: Build and package application
         run: yarn run build
+        env:
+          npm_config_msvs_version: 2022
 
+      # 上传构建产物
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
